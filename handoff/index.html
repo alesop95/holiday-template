@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --sea:#1A3F5E;--sea2:#1A6860;--teal:#1A7A6E;--terra:#C4832A;
+  --sand:#F8F4EC;--sand2:#EDE7D9;--white:#FFFFFF;
+  --text:#2A2520;--muted:#7A7060;--border:#E2D9CE;
+  --sh:rgba(26,37,48,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;}
+#overlay{position:fixed;inset:0;background:var(--sand);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:14px;transition:opacity .4s;}
+.load-icon{font-size:3rem;animation:pulse 1.6s ease-in-out infinite;}
+.load-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--sea);}
+#load-status{font-size:12.5px;color:var(--muted);}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.75}}
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#4CAF50;position:fixed;bottom:18px;right:18px;z-index:300;animation:syncp 2.5s infinite;}
+@keyframes syncp{0%{box-shadow:0 0 0 0 rgba(76,175,80,.4)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hero{background:linear-gradient(155deg,#0C2B42 0%,#1A4A6E 45%,#1A6860 100%);padding:2.8rem 1.4rem 2.2rem;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:100px;padding:4px 14px;font-size:11.5px;color:rgba(255,255,255,.85);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.9rem;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,7vw,4rem);font-weight:600;color:#fff;line-height:1.05;margin-bottom:.35rem;}
+.hero-sub{font-family:'Cormorant Garamond',serif;font-size:clamp(1rem,3vw,1.35rem);font-style:italic;color:rgba(255,255,255,.72);margin-bottom:1.6rem;}
+.hero-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;}
+.hero-stat{background:rgba(255,255,255,.13);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:7px 13px;font-size:12px;color:rgba(255,255,255,.9);font-weight:500;}
+.nav-wrap{position:sticky;top:0;z-index:200;background:var(--white);border-bottom:1px solid var(--border);box-shadow:0 2px 10px var(--sh);}
+.nav{display:flex;overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-btn{flex:none;padding:13px 17px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:color .2s,border-color .2s;}
+.nav-btn.active{color:var(--sea);border-bottom-color:var(--sea);font-weight:600;}
+.main{max-width:760px;margin:0 auto;padding:1.4rem 1rem 5rem;}
+.panel{display:none;}
+.panel.active{display:block;animation:fu .28s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.sec-head{margin-bottom:1.2rem;}
+.sec-head h2{font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:600;color:var(--sea);margin-bottom:3px;}
+.sec-head p{font-size:13px;color:var(--muted);line-height:1.55;}
+.change-banner{background:linear-gradient(100deg,#1A3F5E,#1A6860);border-radius:14px;padding:14px 18px;color:#fff;margin:10px 0;display:flex;align-items:center;gap:12px;}
+.change-banner-icon{font-size:1.6rem;flex-shrink:0;}
+.change-banner h4{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;margin-bottom:2px;}
+.change-banner p{font-size:12px;opacity:.8;line-height:1.4;}
+.day-card{background:var(--white);border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 12px var(--sh);border:2px solid transparent;transition:border-color .2s,opacity .3s;}
+.day-card.open{border-color:var(--dc,#2B5C8A);}
+.day-card.day-done{opacity:.7;}
+.day-hdr{display:flex;align-items:center;gap:13px;padding:15px 17px;cursor:pointer;user-select:none;}
+.day-ico{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
+.day-meta{flex:1;min-width:0;}
+.day-lbl{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px;}
+.day-ttl{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:600;color:var(--text);line-height:1.2;}
+.day-done .day-ttl{text-decoration:line-through;opacity:.6;}
+.day-pl{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.done-badge{background:#E8F5F2;color:#1A7A6E;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:100px;display:none;white-space:nowrap;}
+.day-chv{color:var(--muted);font-size:11px;transition:transform .25s;}
+.day-card.open .day-chv{transform:rotate(180deg);}
+.day-body{display:none;padding:0 17px 17px;border-top:1px solid rgba(0,0,0,.06);}
+.day-card.open .day-body{display:block;animation:fu .22s ease;}
+.sec-blk{margin-top:15px;}
+.sec-ttl{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.sec-txt{font-size:13.5px;color:#4A4540;line-height:1.7;}
+.tips-box{margin-top:15px;background:var(--sand);border-left:3px solid var(--dc,#ccc);border-radius:0 10px 10px 0;padding:11px 13px;}
+.tips-ttl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.tip{font-size:12.5px;color:#5A5048;margin-bottom:4px;padding-left:12px;position:relative;line-height:1.5;}
+.tip::before{content:'›';position:absolute;left:0;color:var(--terra);font-weight:700;}
+.dcosts{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;}
+.cpill{font-size:12px;padding:4px 11px;border-radius:100px;font-weight:500;}
+.cf{background:#E8F5F2;color:#1A7A6E;}.ca{background:#F0ECF8;color:#6B4F9A;}.cg{background:#EAF5EA;color:#2E7D32;}
+.day-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.act-btn{padding:7px 14px;border:1.5px solid var(--border);background:var(--sand);border-radius:100px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;color:var(--muted);transition:all .2s;font-weight:500;}
+.act-btn:hover{border-color:var(--dc,#ccc);color:var(--dc,#ccc);}
+.act-btn.btn-done-active{background:#E8F5F2;border-color:#1A7A6E;color:#1A7A6E;}
+.note-area{margin-top:10px;}
+.note-area textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:#FDFAF6;resize:vertical;min-height:80px;outline:none;transition:border-color .2s;line-height:1.6;}
+.note-area textarea:focus{border-color:var(--dc,#2B5C8A);}
+.note-area textarea::placeholder{color:#B0A898;}
+.note-saved{font-size:11px;color:#4CAF50;margin-top:4px;display:none;}
+#map{width:100%;height:370px;border-radius:14px;margin-bottom:1.2rem;box-shadow:0 4px 20px var(--sh);}
+.map-leg{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.leg-item{display:flex;align-items:center;gap:8px;background:var(--white);border-radius:10px;padding:9px 11px;font-size:12.5px;box-shadow:0 1px 6px var(--sh);}
+.leg-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.leg-lbl{font-weight:500;line-height:1.2;}
+.leg-day{font-size:11px;color:var(--muted);}
+.rest-area{margin-bottom:1.8rem;}
+.rest-area-ttl{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:600;color:var(--sea);margin-bottom:3px;}
+.rest-area-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.rest-grid{display:flex;flex-direction:column;gap:9px;}
+.rest-card{background:var(--white);border-radius:12px;padding:13px 15px;box-shadow:0 2px 10px var(--sh);display:flex;gap:11px;align-items:flex-start;}
+.rest-em{font-size:1.45rem;flex-shrink:0;margin-top:2px;}
+.rest-nm{font-weight:600;font-size:13.5px;color:var(--text);margin-bottom:3px;}
+.rest-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px;}
+.rtag{font-size:10.5px;padding:2px 8px;border-radius:100px;background:var(--sand);color:var(--muted);font-weight:500;}
+.rtag.p{background:#E8F5F2;color:var(--teal);}
+.rest-note{font-size:12.5px;color:#5A5048;line-height:1.55;}
+.rest-sp{font-size:12px;color:var(--terra);font-weight:500;margin-top:4px;}
+.ck-prog{background:var(--white);border-radius:12px;padding:15px;margin-bottom:1.4rem;box-shadow:0 2px 10px var(--sh);}
+.ck-prog-lbl{display:flex;justify-content:space-between;font-size:13px;font-weight:500;margin-bottom:9px;}
+.ck-bar{height:7px;background:var(--sand2);border-radius:100px;overflow:hidden;}
+.ck-fill{height:100%;background:linear-gradient(to right,var(--teal),var(--sea));border-radius:100px;transition:width .4s ease;}
+.ck-cat{margin-bottom:1.4rem;}
+.ck-cat-ttl{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--terra);padding:7px 13px;background:var(--sand2);border-radius:8px;margin-bottom:7px;}
+.ck-list{display:flex;flex-direction:column;gap:4px;}
+.ck-item{display:flex;align-items:center;gap:11px;padding:10px 13px;background:var(--white);border-radius:10px;cursor:pointer;transition:background .15s;box-shadow:0 1px 4px var(--sh);}
+.ck-item:hover{background:#F5F0E8;}
+.ck-item.done{opacity:.5;}
+.ck-item.done .ck-lbl{text-decoration:line-through;color:var(--muted);}
+.ck-box{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .15s;}
+.ck-item.done .ck-box{background:var(--teal);border-color:var(--teal);color:#fff;}
+.ck-lbl{font-size:13.5px;color:var(--text);flex:1;}
+.ck-note{font-size:11px;color:var(--muted);flex-shrink:0;text-align:right;}
+.info-hotel{background:var(--white);border-radius:14px;padding:17px;margin-bottom:12px;box-shadow:0 2px 10px var(--sh);}
+.ih-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.ih-name{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:600;}
+.ih-badge{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:100px;}
+.ih-loc{font-size:12.5px;color:var(--muted);margin-bottom:7px;}
+.ih-opt{background:var(--sand);border-radius:10px;padding:11px 13px;margin-bottom:8px;}
+.ih-opt:last-child{margin-bottom:0;}
+.ih-oname{font-weight:600;font-size:13.5px;margin-bottom:2px;}
+.ih-price{font-size:14px;font-weight:600;color:var(--sea);}
+.ih-desc{font-size:12.5px;color:#4A4540;line-height:1.6;margin-top:6px;}
+.ih-note{font-size:11.5px;color:var(--terra);font-weight:500;margin-top:5px;}
+.cost-tbl{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px var(--sh);margin-bottom:1.4rem;}
+.cost-row{display:flex;align-items:center;gap:13px;padding:13px 17px;border-bottom:1px solid var(--border);}
+.cost-row:last-child{border-bottom:none;}
+.cost-ico{font-size:1.3rem;width:34px;text-align:center;flex-shrink:0;}
+.cost-inf{flex:1;min-width:0;}
+.cost-lbl{font-size:13.5px;font-weight:500;}
+.cost-desc{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.cost-amt{font-size:13.5px;font-weight:700;color:var(--sea);text-align:right;flex-shrink:0;}
+.cost-total{background:linear-gradient(135deg,var(--sea),var(--teal));color:#fff;padding:18px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem;}
+.ct-lbl{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;opacity:.9;}
+.ct-amt{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;}
+.ct-sub{font-size:11px;opacity:.72;text-align:right;margin-top:2px;}
+.bgl-tbl{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px var(--sh);margin-bottom:1.4rem;}
+.bg-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);}
+.bg-row:last-child{border-bottom:none;}
+.bg-name{flex:1;font-size:13px;color:var(--text);}
+.bg-price{font-size:13px;font-weight:700;}
+.info-tips{background:#FFF8F0;border:1px solid #F0D5B0;border-radius:14px;padding:15px 17px;}
+.it-ttl{font-size:12px;font-weight:700;color:var(--terra);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;}
+.divider{height:1px;background:var(--border);margin:1.8rem 0;}
+@media(min-width:600px){.map-leg{grid-template-columns:1fr 1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div class="load-icon">⚓</div>
+  <div class="load-title" style="font-family:'Cormorant Garamond',serif">Caricamento...</div>
+  <div id="load-status">Connessione a Firebase...</div>
+</div>
+
+<div class="sync-dot" title="Connesso — sincronizzazione attiva"></div>
+
+<!-- Hero: renderizzato dinamicamente da TRIP_META in trip.config.js -->
+<div id="hero-root" class="hero"></div>
+
+<div class="nav-wrap">
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showTab('itinerario',this)">🗓️ Itinerario</button>
+    <button class="nav-btn" onclick="showTab('mappa',this)">🗺️ Mappa</button>
+    <button class="nav-btn" onclick="showTab('ristoranti',this)">🍽️ Ristoranti</button>
+    <button class="nav-btn" onclick="showTab('valigia',this)">🧳 Valigia</button>
+    <button class="nav-btn" onclick="showTab('info',this)">💶 Info &amp; Costi</button>
+  </nav>
+</div>
+
+<div class="main">
+  <div id="itinerario" class="panel active">
+    <div class="sec-head">
+      <h2>Il Programma</h2>
+      <p>4 notti a Marina di Camerota → Castellabate e Paestum on the way → 2 notti a Caserta. Un solo cambio hotel, tutto visto.</p>
+    </div>
+    <div id="days-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
+  </div>
+  <div id="mappa" class="panel">
+    <div class="sec-head"><h2>Mappa del Viaggio</h2><p>Tutte le tappe in ordine. Tocca i marker per i dettagli.</p></div>
+    <div id="map"></div>
+    <div class="map-leg" id="map-legend"></div>
+  </div>
+  <div id="ristoranti" class="panel">
+    <div class="sec-head"><h2>Dove Mangiare</h2><p>Selezione per ogni zona del viaggio.</p></div>
+    <div id="rest-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
+  </div>
+  <div id="valigia" class="panel">
+    <div class="sec-head"><h2>Lista Valigia</h2><p>Sincronizzata in tempo reale — se tu spunti qualcosa, lei lo vede subito.</p></div>
+    <div class="ck-prog">
+      <div class="ck-prog-lbl"><span id="prog-emoji">🧳 Preparazione</span><span id="prog-txt">0 / 0</span></div>
+      <div class="ck-bar"><div class="ck-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div id="ck-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
+  </div>
+  <div id="info" class="panel">
+    <div class="sec-head"><h2>Gli Hotel</h2><p>Un solo cambio · 4 notti + 2 notti</p></div>
+    <div class="info-hotel">
+      <div class="ih-head"><div><div class="ih-name">🏖️ Base 1 — Marina di Camerota</div><div class="ih-loc">📍 Cilento Sud · SA · Giorni 1–4 (4 notti)</div></div><div class="ih-badge" style="background:#E8F5F2;color:#1A7A6E;">Base principale</div></div>
+      <div class="ih-opt"><div class="ih-oname">🥇 Park Hotel Cilento — ★★★</div><div class="ih-price">€75–120 / notte (doppia)</div><div class="ih-desc">Circondato da uliveti nel Parco Nazionale, con piscina e ristorante. Colazione a buffet.</div><div class="ih-note">Via Sirene 26 · Tel. 0974 932154</div></div>
+      <div class="ih-opt"><div class="ih-oname">🥈 Albergo Tirreno — ★★★</div><div class="ih-price">€65–100 / notte (doppia)</div><div class="ih-desc">Tra porto e spiaggia, tutto a piedi. Gestione familiare, terrazza panoramica.</div></div>
+      <div class="ih-opt"><div class="ih-oname">💡 Alternativa — Airbnb bilocale</div><div class="ih-price">€80–140 / notte</div><div class="ih-desc">Con cucina propria per colazioni e pranzi al sacco.</div></div>
+    </div>
+    <div class="info-hotel">
+      <div class="ih-head"><div><div class="ih-name">👑 Base 2 — Caserta</div><div class="ih-loc">📍 Caserta Città · Giorni 5–6 (2 notti)</div></div><div class="ih-badge" style="background:#F5F0FA;color:#7B4F9E;">Finale</div></div>
+      <div class="ih-opt"><div class="ih-oname">🥇 Hotel Vanvitelli — ★★★★</div><div class="ih-price">€80–130 / notte (doppia)</div><div class="ih-desc">A pochi minuti dalla Reggia.</div></div>
+      <div class="ih-opt"><div class="ih-oname">🥈 Hotel Amadeus — ★★★</div><div class="ih-price">€60–90 / notte (doppia)</div><div class="ih-desc">Buon rapporto qualità/prezzo, vicino a stazione e Reggia.</div></div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec-head"><h2>Stima Costi</h2><p>Per persona · camera doppia condivisa</p></div>
+    <div class="cost-tbl">
+      <div class="cost-row"><div class="cost-ico">🏨</div><div class="cost-inf"><div class="cost-lbl">Alloggio</div><div class="cost-desc">4 notti Marina di Camerota + 2 notti Caserta</div></div><div class="cost-amt">€160–290</div></div>
+      <div class="cost-row"><div class="cost-ico">🍽️</div><div class="cost-inf"><div class="cost-lbl">Pasti</div><div class="cost-desc">Colazioni (parte incluse), 3 pranzi al sacco, 5 cene</div></div><div class="cost-amt">€200–300</div></div>
+      <div class="cost-row"><div class="cost-ico">🎟️</div><div class="cost-inf"><div class="cost-lbl">Biglietti & Attività</div><div class="cost-desc">Barca Palinuro + Paestum + Grotte + Reggia</div></div><div class="cost-amt">€57–82</div></div>
+      <div class="cost-row"><div class="cost-ico">⛽</div><div class="cost-inf"><div class="cost-lbl">Carburante diesel</div><div class="cost-desc">~800 km · 6L/100km · €1.65/L ÷ 2 persone</div></div><div class="cost-amt">€20–40</div></div>
+      <div class="cost-row"><div class="cost-ico">💼</div><div class="cost-inf"><div class="cost-lbl">Extra & Imprevisti</div></div><div class="cost-amt">€50–100</div></div>
+    </div>
+    <div class="cost-total"><div class="ct-lbl" style="font-family:'Cormorant Garamond',serif">Totale stimato per persona</div><div><div class="ct-amt" style="font-family:'Cormorant Garamond',serif">€490–810</div><div class="ct-sub">7 giorni · tutto incluso</div></div></div>
+    <div class="sec-head"><h2>Biglietti & Ingressi</h2></div>
+    <div class="bgl-tbl">
+      <div class="bg-row"><div class="bg-name">🌿 Trekking Baia degli Infreschi</div><div class="bg-price" style="color:var(--teal)">Gratuito</div></div>
+      <div class="bg-row"><div class="bg-name">⛵ Barca Infreschi (alternativa)</div><div class="bg-price">~€35</div></div>
+      <div class="bg-row"><div class="bg-name">🌊 Palinuro — Tour costa completo</div><div class="bg-price">€25–35</div></div>
+      <div class="bg-row"><div class="bg-name">🏔️ Gole Sammaro + Roscigno Vecchia</div><div class="bg-price" style="color:var(--teal)">Gratuito</div></div>
+      <div class="bg-row"><div class="bg-name">🏰 Castellabate (borgo)</div><div class="bg-price" style="color:var(--teal)">Gratuito</div></div>
+      <div class="bg-row"><div class="bg-name">🏺 Paestum — Area arch. + Museo</div><div class="bg-price">€10</div></div>
+      <div class="bg-row"><div class="bg-name">🦇 Grotte di Pertosa-Auletta</div><div class="bg-price">€18–19</div></div>
+      <div class="bg-row"><div class="bg-name">👑 Reggia di Caserta (Appart. + Parco)</div><div class="bg-price">€14–18</div></div>
+    </div>
+    <div class="info-tips">
+      <div class="it-ttl">💡 Come Risparmiare</div>
+      <div class="tip">Prima domenica del mese: Paestum e Reggia di Caserta gratuiti</div>
+      <div class="tip" style="margin-top:6px">Hotel con colazione inclusa → risparmio €8–15/giorno a persona</div>
+      <div class="tip" style="margin-top:6px">Pranzi al sacco nei giorni di trekking (risparmio €15–25 a pasto)</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script type="module">
+// ── Importa SDK Firebase e configurazione del viaggio ─────────────────────────
+import { initializeApp }                                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS }  from './trip.config.js';
+
+// ── Stato applicativo in memoria ──────────────────────────────────────────────
+const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false };
+let db;
+
+// ── Punto di ingresso ─────────────────────────────────────────────────────────
+async function init() {
+  renderHero(); // non richiede Firebase, renderizza subito
+
+  if (FIREBASE_CONFIG.apiKey === 'REPLACE_ME') {
+    setStatus('Configura Firebase: sostituisci i valori REPLACE_ME in trip.config.js');
+    return;
+  }
+  try {
+    setStatus('Connessione a Firebase...');
+    const app = initializeApp(FIREBASE_CONFIG);
+    db = getFirestore(app);
+
+    setStatus('Verifica dati...');
+    await seedIfNeeded();
+
+    setStatus('Caricamento itinerario...');
+    await loadContent();
+
+    setStatus('Attivazione sync in tempo reale...');
+    listenRealtime();
+
+    renderAll();
+    hideLoading();
+  } catch (e) {
+    setStatus('Errore: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ── Hero dinamico da TRIP_META ────────────────────────────────────────────────
+function renderHero() {
+  document.getElementById('hero-root').innerHTML = `
+    <div class="hero-badge">${TRIP_META.badge}</div>
+    <h1 style="font-family:'Cormorant Garamond',serif">${TRIP_META.title}</h1>
+    <p class="hero-sub">${TRIP_META.subtitle}</p>
+    <div class="hero-stats">
+      ${TRIP_META.stats.map(s => `<div class="hero-stat">${s}</div>`).join('')}
+    </div>`;
+}
+
+// ── Seed automatico al primo avvio ────────────────────────────────────────────
+async function seedIfNeeded() {
+  const snap = await getDoc(doc(db, 'content', 'days'));
+  if (snap.exists()) return;
+  await Promise.all([
+    setDoc(doc(db, 'content', 'days'),        { data: TRIP_DATA.days }),
+    setDoc(doc(db, 'content', 'restaurants'), { data: TRIP_DATA.restaurants }),
+    setDoc(doc(db, 'content', 'checklist'),   { data: TRIP_DATA.checklist }),
+    setDoc(doc(db, 'state',   'checklist'),   { items: {} }),
+    setDoc(doc(db, 'state',   'notes'),       { days: {}, completed: {} }),
+  ]);
+}
+
+// ── Lettura contenuto da Firestore ────────────────────────────────────────────
+async function loadContent() {
+  const [d, r, c] = await Promise.all([
+    getDoc(doc(db, 'content', 'days')),
+    getDoc(doc(db, 'content', 'restaurants')),
+    getDoc(doc(db, 'content', 'checklist')),
+  ]);
+  S.days = d.data().data; S.restaurants = r.data().data; S.checklist = c.data().data;
+}
+
+// ── Listener real-time per stato condiviso ────────────────────────────────────
+function listenRealtime() {
+  onSnapshot(doc(db, 'state', 'checklist'), snap => {
+    if (!snap.exists()) return;
+    S.ckState = snap.data().items || {};
+    updateCkUI();
+  });
+  onSnapshot(doc(db, 'state', 'notes'), snap => {
+    if (!snap.exists()) return;
+    S.notes = snap.data().days || {}; S.completed = snap.data().completed || {};
+    updateNotesUI();
+  });
+}
+
+// ── Scritture su Firestore ────────────────────────────────────────────────────
+async function writeCk(key, val)       { await updateDoc(doc(db,'state','checklist'), { [`items.${key}`]: val }); }
+async function writeNote(id, text)     { await setDoc(doc(db,'state','notes'), { days: { [id]: text } }, { merge:true }); }
+async function writeCompleted(id, val) { await setDoc(doc(db,'state','notes'), { completed: { [id]: val } }, { merge:true }); }
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderAll() { renderDays(); renderRest(); renderCk(); }
+
+function renderDays() {
+  const c = document.getElementById('days-container'); let html = '';
+  S.days.forEach((d, i) => {
+    if (i === 4) html += `<div class="change-banner"><div class="change-banner-icon">🏨</div><div><h4>Cambio Hotel — Giorno 5</h4><p>Check-out da Marina di Camerota. Castellabate e Paestum sono lungo la strada verso Caserta — nessuna deviazione. Check-in Caserta la sera.</p></div></div>`;
+    const done = S.completed[d.id] || false;
+    html += `<div class="day-card${done?' day-done':''}" id="dc${d.id}" style="--dc:${d.color}">
+      <div class="day-hdr" onclick="tog(${d.id})">
+        <div class="day-ico" style="background:${d.color}">${d.icon}</div>
+        <div class="day-meta"><div class="day-lbl" style="color:${d.color}">${d.label}</div><div class="day-ttl">${d.title}</div><div class="day-pl">${d.places}</div></div>
+        <div class="hdr-right"><div class="done-badge" id="done-badge-${d.id}" style="${done?'display:flex':'display:none'}">✓ Fatto</div><div class="day-chv">▼</div></div>
+      </div>
+      <div class="day-body">
+        ${d.sections.map(s=>`<div class="sec-blk"><div class="sec-ttl" style="color:${d.color}">${s.i} ${s.t}</div><div class="sec-txt">${s.tx}</div></div>`).join('')}
+        ${d.tips?`<div class="tips-box" style="border-left-color:${d.color}"><div class="tips-ttl" style="color:${d.color}">Consigli Pratici</div>${d.tips.map(t=>`<div class="tip">${t}</div>`).join('')}</div>`:''}
+        <div class="dcosts"><div class="cpill cf">Pasti: €${d.cf}/pers.</div>${d.ca==='0'?'<div class="cpill cg">Attività: Gratuito</div>':`<div class="cpill ca">Attività: €${d.ca}/pers.</div>`}</div>
+        <div class="day-actions">
+          <button class="act-btn${done?' btn-done-active':''}" id="done-btn-${d.id}" onclick="markDone(${d.id})">${done?'✓ Fatto!':'○ Segna come fatto'}</button>
+          <button class="act-btn" onclick="toggleNote(${d.id})">📝 Note</button>
+        </div>
+        <div class="note-area" id="note-area-${d.id}" style="display:${S.notes[d.id]?'block':'none'}">
+          <textarea id="note-ta-${d.id}" placeholder="Aggiungi una nota condivisa..." onblur="saveNote(${d.id},this.value)">${S.notes[d.id]||''}</textarea>
+          <div class="note-saved" id="note-saved-${d.id}">✓ Salvato</div>
+        </div>
+      </div></div>`;
+  });
+  c.innerHTML = html;
+}
+
+function renderRest() {
+  document.getElementById('rest-container').innerHTML = S.restaurants.map(a=>`
+    <div class="rest-area"><div class="rest-area-ttl">${a.area}</div><div class="rest-area-sub">${a.days}</div>
+    <div class="rest-grid">${a.items.map(r=>`<div class="rest-card"><div class="rest-em">${r.em}</div><div style="flex:1;min-width:0"><div class="rest-nm">${r.nm}</div><div class="rest-tags">${r.tags.map(t=>`<span class="rtag${t.startsWith('$')?' p':''}">${t}</span>`).join('')}</div><div class="rest-note">${r.note}</div>${r.sp?`<div class="rest-sp">${r.sp}</div>`:''}</div></div>`).join('')}</div></div>`).join('');
+}
+
+function renderCk() {
+  S.checklist.forEach((cat,ci)=>cat.items.forEach((_,ii)=>{ const k=`${ci}-${ii}`; if(!(k in S.ckState)) S.ckState[k]=false; }));
+  document.getElementById('ck-container').innerHTML = S.checklist.map((cat,ci)=>`
+    <div class="ck-cat"><div class="ck-cat-ttl">${cat.cat}</div><div class="ck-list">
+    ${cat.items.map((item,ii)=>{ const k=`${ci}-${ii}`;const done=S.ckState[k]||false;
+      return `<div class="ck-item${done?' done':''}" data-key="${k}" onclick="ckTog('${k}',this)"><div class="ck-box">${done?'✓':''}</div><div class="ck-lbl">${item.t}</div>${item.n?`<div class="ck-note">${item.n}</div>`:''}</div>`;
+    }).join('')}</div></div>`).join('');
+  updateCkProgress();
+}
+
+function updateCkUI() {
+  Object.entries(S.ckState).forEach(([k,v])=>{
+    const el=document.querySelector(`.ck-item[data-key="${k}"]`); if(!el) return;
+    el.classList.toggle('done',v); const box=el.querySelector('.ck-box'); if(box) box.textContent=v?'✓':'';
+  }); updateCkProgress();
+}
+
+function updateCkProgress() {
+  const total=Object.keys(S.ckState).length, done=Object.values(S.ckState).filter(Boolean).length, pct=total>0?Math.round(done/total*100):0;
+  const t=document.getElementById('prog-txt'),f=document.getElementById('prog-fill'),e=document.getElementById('prog-emoji');
+  if(t) t.textContent=`${done} / ${total}`; if(f) f.style.width=pct+'%';
+  if(e) e.textContent=pct===100?'🎉 Tutto pronto!':pct>60?'✈️ Quasi pronti':pct>0?'🧳 In preparazione':'🧳 Preparazione';
+}
+
+function updateNotesUI() {
+  S.days.forEach(d=>{
+    const area=document.getElementById(`note-area-${d.id}`), ta=document.getElementById(`note-ta-${d.id}`);
+    const badge=document.getElementById(`done-badge-${d.id}`), btn=document.getElementById(`done-btn-${d.id}`);
+    const card=document.getElementById(`dc${d.id}`), note=S.notes[d.id]||'', done=S.completed[d.id]||false;
+    if(area&&note) area.style.display='block';
+    if(ta&&ta!==document.activeElement&&note) ta.value=note;
+    if(badge) badge.style.display=done?'flex':'none';
+    if(btn){ btn.textContent=done?'✓ Fatto!':'○ Segna come fatto'; btn.classList.toggle('btn-done-active',done); }
+    if(card) card.classList.toggle('day-done',done);
+  });
+}
+
+// ── Mappa Leaflet ─────────────────────────────────────────────────────────────
+function renderMap() {
+  setTimeout(()=>{
+    if(S.mapDone) return; S.mapDone=true;
+    const map=L.map('map').setView([40.55,15.1],7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'© OpenStreetMap', maxZoom:18 }).addTo(map);
+    MAP_LOCATIONS.forEach(loc=>{
+      const ico=L.divIcon({ html:`<div style="width:32px;height:32px;border-radius:50%;background:${loc.c};border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:13px;">${loc.em}</div>`, className:'', iconSize:[32,32], iconAnchor:[16,16], popupAnchor:[0,-18] });
+      L.marker([loc.lat,loc.lng],{icon:ico}).addTo(map).bindPopup(`<strong>${loc.nm}</strong><br><span style="color:#666;font-size:11px">${loc.sub}</span>`);
+    });
+    L.polyline(MAP_LOCATIONS.map(l=>[l.lat,l.lng]),{color:'#C4832A',weight:2,dashArray:'8,10',opacity:.55}).addTo(map);
+    document.getElementById('map-legend').innerHTML = MAP_LOCATIONS.map(l=>`<div class="leg-item"><div class="leg-dot" style="background:${l.c}"></div><div><div class="leg-lbl">${l.nm}</div><div class="leg-day">${l.sub}</div></div></div>`).join('');
+  },120);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function hideLoading() { const o=document.getElementById('overlay'); if(o){ o.style.opacity='0'; setTimeout(()=>o.style.display='none',400); } }
+function setStatus(msg) { const el=document.getElementById('load-status'); if(el) el.textContent=msg; }
+
+// ── Esportazioni verso il DOM (handler onclick nell'HTML) ─────────────────────
+window.showTab = (id,btn) => {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active'); btn.classList.add('active');
+  if(id==='mappa') renderMap();
+};
+window.tog = id => document.getElementById(`dc${id}`).classList.toggle('open');
+window.ckTog = (key,el) => {
+  const v=!S.ckState[key]; S.ckState[key]=v;
+  el.classList.toggle('done',v); const box=el.querySelector('.ck-box'); if(box) box.textContent=v?'✓':''; updateCkProgress();
+  writeCk(key,v).catch(e=>{ S.ckState[key]=!v; el.classList.toggle('done',!v); if(box) box.textContent=!v?'✓':''; updateCkProgress(); console.error(e); });
+};
+window.toggleNote = id => {
+  const area=document.getElementById(`note-area-${id}`); if(!area) return;
+  const show=area.style.display==='none'||area.style.display===''; area.style.display=show?'block':'none';
+  if(show){ const ta=area.querySelector('textarea'); if(ta){ if(S.notes[id]) ta.value=S.notes[id]; ta.focus(); } }
+};
+window.saveNote = (id,text) => {
+  writeNote(id,text).then(()=>{ const s=document.getElementById(`note-saved-${id}`); if(s){ s.style.display='block'; setTimeout(()=>s.style.display='none',2000); } }).catch(console.error);
+};
+window.markDone = id => { const c=S.completed[id]||false; writeCompleted(id,!c).catch(console.error); };
+
+init();
+</script>
+</body>
+</html>

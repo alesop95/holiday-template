@@ -1,0 +1,38 @@
+# =====================================================================
+# Sistema di progetto portabile: livello privato e ignorato (sezione 6/10)
+# =====================================================================
+
+# Livello privato e verboso
+_notes/
+
+# Override personali e permessi personali
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Estratti temporanei dei .docx (cartelle scratch)
+_notes/.tmp-docx-*/
+.tmp-docx-*/
+
+# Documenti Word grezzi (binari). Dichiarare qui le eventuali eccezioni curate.
+*.docx
+
+# =====================================================================
+# Progetto: Firebase / Node / ambiente (sezione 13)
+# =====================================================================
+
+# Firebase: il binding locale al progetto e' specifico per macchina, non si versiona
+.firebaserc
+.firebase/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

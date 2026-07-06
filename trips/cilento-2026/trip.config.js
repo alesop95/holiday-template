@@ -1,25 +1,38 @@
 /**
- * trip.config.js
+ * trip.config.js — viaggio: cilento-2026
  *
- * File di configurazione del viaggio. È l'unico file che cambia tra un viaggio
- * e l'altro. index.html importa da questo modulo e non va mai modificato.
+ * File di configurazione del viaggio. È l'unico file (insieme a questa intera
+ * cartella trips/cilento-2026/) che cambia tra un viaggio e l'altro. index.html
+ * non va mai modificato per un nuovo viaggio.
  *
  * Per un nuovo viaggio:
- *   1. Copia l'intera repository
- *   2. Crea un nuovo progetto Firebase e aggiorna FIREBASE_CONFIG
- *   3. Modifica TRIP_META, TRIP_DATA e MAP_LOCATIONS con i nuovi dati
- *   4. Esegui firebase deploy
+ *   1. Copia questa cartella in trips/<nuovo-nome>/
+ *   2. Cambia TRIP_ID con un identificativo univoco (es. "tokyo-2026")
+ *   3. FIREBASE_CONFIG resta lo stesso progetto Firebase di tutti i viaggi
+ *      (un solo progetto, dati separati per viaggio via TRIP_ID) — non ricrearlo
+ *   4. Modifica TRIP_META, TRIP_DATA e MAP_LOCATIONS con i nuovi dati
+ *   5. Dentro trips/<nuovo-nome>/: firebase deploy
  */
 
+// ─── IDENTIFICATIVO DEL VIAGGIO ────────────────────────────────────────────────
+// Namespace dei documenti Firestore di questo viaggio: tutti i percorsi in
+// index.html sono trips/{TRIP_ID}/content/... e trips/{TRIP_ID}/state/...,
+// cosi' piu' viaggi possono condividere lo stesso progetto Firebase senza
+// sovrascrivere i dati gli uni degli altri. Deve essere univoco tra i viaggi.
+
+export const TRIP_ID = "cilento-2026";
+
 // ─── FIREBASE ────────────────────────────────────────────────────────────────
-// Credenziali del progetto Firebase. Recuperabili dalla Firebase Console
-// sotto: Impostazioni progetto > Le tue app > SDK setup and configuration.
+// Credenziali del progetto Firebase, condiviso da tutti i viaggi (progetto
+// "viaggio-new" su Firebase Console). apiKey, storageBucket, messagingSenderId
+// e appId non sono deducibili dal solo project id: vanno incollati da Firebase
+// Console > Impostazioni progetto > Le tue app > SDK setup and configuration.
 
 export const FIREBASE_CONFIG = {
   apiKey:            "REPLACE_ME",
-  authDomain:        "REPLACE_ME.firebaseapp.com",
-  projectId:         "REPLACE_ME",
-  storageBucket:     "REPLACE_ME.appspot.com",
+  authDomain:        "viaggio-new.firebaseapp.com",
+  projectId:         "viaggio-new",
+  storageBucket:     "REPLACE_ME", // verificare formato reale in Console (appspot.com o firebasestorage.app)
   messagingSenderId: "REPLACE_ME",
   appId:             "REPLACE_ME"
 };

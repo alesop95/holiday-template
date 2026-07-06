@@ -245,7 +245,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 // ── Importa SDK Firebase e configurazione del viaggio ─────────────────────────
 import { initializeApp }                                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS }  from './trip.config.js';
+import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID }  from './trip.config.js';
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
 const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false };
@@ -294,35 +294,35 @@ function renderHero() {
 
 // ── Seed automatico al primo avvio ────────────────────────────────────────────
 async function seedIfNeeded() {
-  const snap = await getDoc(doc(db, 'content', 'days'));
+  const snap = await getDoc(doc(db, 'trips', TRIP_ID, 'content', 'days'));
   if (snap.exists()) return;
   await Promise.all([
-    setDoc(doc(db, 'content', 'days'),        { data: TRIP_DATA.days }),
-    setDoc(doc(db, 'content', 'restaurants'), { data: TRIP_DATA.restaurants }),
-    setDoc(doc(db, 'content', 'checklist'),   { data: TRIP_DATA.checklist }),
-    setDoc(doc(db, 'state',   'checklist'),   { items: {} }),
-    setDoc(doc(db, 'state',   'notes'),       { days: {}, completed: {} }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'content', 'days'),        { data: TRIP_DATA.days }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'content', 'restaurants'), { data: TRIP_DATA.restaurants }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'content', 'checklist'),   { data: TRIP_DATA.checklist }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'checklist'),   { items: {} }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'notes'),       { days: {}, completed: {} }),
   ]);
 }
 
 // ── Lettura contenuto da Firestore ────────────────────────────────────────────
 async function loadContent() {
   const [d, r, c] = await Promise.all([
-    getDoc(doc(db, 'content', 'days')),
-    getDoc(doc(db, 'content', 'restaurants')),
-    getDoc(doc(db, 'content', 'checklist')),
+    getDoc(doc(db, 'trips', TRIP_ID, 'content', 'days')),
+    getDoc(doc(db, 'trips', TRIP_ID, 'content', 'restaurants')),
+    getDoc(doc(db, 'trips', TRIP_ID, 'content', 'checklist')),
   ]);
   S.days = d.data().data; S.restaurants = r.data().data; S.checklist = c.data().data;
 }
 
 // ── Listener real-time per stato condiviso ────────────────────────────────────
 function listenRealtime() {
-  onSnapshot(doc(db, 'state', 'checklist'), snap => {
+  onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'checklist'), snap => {
     if (!snap.exists()) return;
     S.ckState = snap.data().items || {};
     updateCkUI();
   });
-  onSnapshot(doc(db, 'state', 'notes'), snap => {
+  onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'notes'), snap => {
     if (!snap.exists()) return;
     S.notes = snap.data().days || {}; S.completed = snap.data().completed || {};
     updateNotesUI();
@@ -330,9 +330,9 @@ function listenRealtime() {
 }
 
 // ── Scritture su Firestore ────────────────────────────────────────────────────
-async function writeCk(key, val)       { await updateDoc(doc(db,'state','checklist'), { [`items.${key}`]: val }); }
-async function writeNote(id, text)     { await setDoc(doc(db,'state','notes'), { days: { [id]: text } }, { merge:true }); }
-async function writeCompleted(id, val) { await setDoc(doc(db,'state','notes'), { completed: { [id]: val } }, { merge:true }); }
+async function writeCk(key, val)       { await updateDoc(doc(db,'trips',TRIP_ID,'state','checklist'), { [`items.${key}`]: val }); }
+async function writeNote(id, text)     { await setDoc(doc(db,'trips',TRIP_ID,'state','notes'), { days: { [id]: text } }, { merge:true }); }
+async function writeCompleted(id, val) { await setDoc(doc(db,'trips',TRIP_ID,'state','notes'), { completed: { [id]: val } }, { merge:true }); }
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderAll() { renderDays(); renderRest(); renderCk(); }

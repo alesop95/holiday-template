@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "_trip-notes/**"],
+    "rewrites": [{ "source": "**", "destination": "/index.html" }]
+  }
+}

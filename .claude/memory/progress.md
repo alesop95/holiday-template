@@ -1,10 +1,69 @@
 # Work-log
 
+## 2026-07-06 — Fix cache Hosting, verifica reale del backend flight-search
+
+Commit: non ancora committato (HEAD resta fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff).
+File toccati: `trips/cilento-2026/firebase.json` e `README.md` (aggiunta direttiva `headers` con
+`Cache-Control: no-cache, max-age=0` su HTML/JS), `services/flight-search/app/adapters/fast_flights_adapter.py`
+(riscritto), `services/flight-search/README.md` (stato di verifica aggiornato da "non eseguito" a
+verificato), `services/flight-search/requirements-dev.txt` (nuovo, per `httpx` di test),
+`.claude/context/current-work.md`.
+Motivo: un secondo screenshot dell'utente mostrava ancora contenuto vecchio (badge "Estate 2025",
+emoji, trattini lunghi) nonostante due deploy e due reseed Firestore corretti. Verificato con
+`curl` diretto sull'URL di hosting che il server serviva già il file giusto: la causa reale era
+`Cache-Control: max-age=3600` di default di Firebase Hosting, non un problema di deploy. Corretto
+alla radice con una direttiva `no-cache` sui file HTML/JS, verificata via header HTTP reali dopo
+il fix, e propagata al template README per i viaggi futuri.
+Poi ripresa `services/flight-search/`, mai eseguita contro un ambiente reale: creato un virtualenv,
+installate le dipendenze reali, ed eseguita una ricerca live. Emersi due problemi reali non
+deducibili dalla sola lettura di documentazione: (1) l'API della libreria `fast-flights` installata
+(v3.0.2) è strutturalmente diversa da quella descritta dalla ricerca web usata nella prima stesura
+dell'adapter (struttura annidata Result→Flights→SingleFlight invece di un oggetto Flight piatto
+con `is_best`/`name`/eccetera, che semplicemente non esistono in questa versione); (2) da rete
+europea le richieste dirette a Google Flights atterrano sul muro di consenso GDPR
+(`consent.google.com`), aggirato impostando il cookie `SOCS` tramite il punto di estensione
+`FetchIntegration` della libreria. Dopo la correzione, verificato con una ricerca reale FCO→CDG:
+11 offerte reali con prezzi EUR, orari e compagnie vere, servite sia via `TestClient` sia via un
+processo `uvicorn` reale interrogato con `curl`. Alcuni itinerari vengono scartati per una
+`ValueError` nello spacchettare un formato orario anomalo: gestito con un except mirato invece di
+propagare l'errore, documentato come limite strutturale di un adapter basato su scraping.
+Verifica residua: il cookie di bypass del consenso non è garantito stabile nel tempo (dipende da
+un comportamento di Google non contrattuale).
+
+
 > Append-only, in ordine cronologico inverso (la voce più recente in alto). Ogni passo
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento. Qui confluisce anche il log di riconciliazione dei
 > documenti `.docx`, con il nome del documento sorgente e l'esito, così la data di allineamento
 > sopravvive a un clone.
+
+## 2026-07-06 — Palette WeRoad applicata alla shell, tipografia sans-serif, rimozione emoji
+
+Commit: non ancora committato (HEAD resta fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff).
+File toccati: `public/index.html` e `trips/cilento-2026/index.html` (riscrittura completa: palette
+gia' applicata nel giro precedente, qui font 'Cormorant Garamond' sostituito con 'Poppins' per i
+titoli, rimossi tutti gli elementi emoji della shell e sostituiti con simboli funzionali dove
+serviva uno stato — numero del giorno al posto dell'icona, spinner CSS al posto dell'ancora nel
+loading, stelle hotel riscritte come testo "3 stelle"/"4 stelle"), `trips/cilento-2026/trip.config.js`
+(riscrittura completa: rimossi i campi `icon`/`i`/`em` ormai non renderizzati, rimossa ogni emoji
+e i simboli decorativi ★/♥ da tutto il contenuto), `README.md` (sezioni 4.3, 4.4, 4.5 allineate al
+nuovo schema senza emoji).
+Motivo: l'utente ha giudicato l'aspetto (font serif corsivo Cormorant Garamond + emoji ovunque)
+tipico di un'app "AI generated", chiedendo di cambiare font e rimuovere tutte le emoji, da
+replicare per ogni vacanza futura (quindi nella shell condivisa, non solo nei dati di Cilento). Ho
+tentato di verificare il font reale di WeRoad scaricando la loro homepage, ma il risultato
+("Google Sans") e' quasi certamente un artefatto di un layer di traduzione/proxy Google, non il
+font reale del sito: scartato esplicitamente invece di essere presentato come fatto verificato.
+Scelto invece Poppins (bold, geometrico, moderno) per i titoli in sostituzione del serif corsivo,
+mantenendo DM Sans per il corpo del testo. La distinzione adottata per le emoji: rimossi tutti i
+pittogrammi a colori e i simboli decorativi (★, ♥) dal contenuto; mantenuti solo i simboli
+funzionali di stato gia' presenti nell'interazione della shell (✓ completato, ○ da fare, ▼
+espandi, › punto elenco dei consigli), perche' non sono flourish decorativo ma stato dell'interfaccia.
+Ogni redeploy di TRIP_DATA richiede un nuovo seed forzato (cancellazione di
+`trips/cilento-2026/content/days` via `firebase firestore:delete`, verificata via REST API): fatto
+due volte in questa sessione, una per il fix dell'anno e dei trattini, una per palette/font/emoji.
+Verifica residua: l'utente deve confermare via screenshot che il risultato visivo sia quello
+voluto prima di procedere oltre.
 
 ## 2026-07-06 — Credenziali Firebase reali, deployment.md popolata con confronto a my-wedding-day
 

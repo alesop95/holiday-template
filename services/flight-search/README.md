@@ -12,26 +12,44 @@ normalizzati (`app/schemas.py`). L'unico adapter attivo, `FastFlightsAdapter`
 (`app/adapters/fast_flights_adapter.py`), usa la libreria `fast-flights` (repository
 `AWeirdDev/flights`) per interrogare Google Flights senza chiave.
 
-## Stato di verifica — da leggere prima di usarlo
+## Stato di verifica
 
-L'interfaccia della libreria `fast-flights` (`create_query`, `FlightQuery`, `Passengers`,
-`get_flights`, e i campi `name`/`departure`/`arrival`/`duration`/`stops`/`price`/`is_best`
-dell'oggetto `Flight` restituito) è stata verificata in questa sessione leggendo il README
-del branch main del repository upstream e incrociandola con fonti indipendenti, non eseguendo
-una ricerca reale. Il codice non è stato ancora fatto girare contro un ambiente Python con la
-libreria installata. Prima di usarlo, verificare con una ricerca reale:
+Eseguito realmente in questa sessione: `pip install -r requirements.txt` in un virtualenv,
+avvio di `uvicorn` reale (non solo `TestClient`), ricerca live FCO→CDG del 2026-09-15. Risultato:
+11 offerte reali con prezzi in EUR, orari e compagnie vere. Non è una verifica di sola
+compilazione, è stato osservato traffico reale verso Google Flights e una risposta reale
+parsata correttamente.
+
+Due cose emerse dalla verifica, non deducibili dalla sola documentazione:
+
+**Il muro di consenso GDPR.** Da rete europea, la richiesta diretta della libreria atterra su
+`consent.google.com` invece che sui risultati, perché il fetcher di default non gestisce
+l'interstitial di consenso. La libreria espone un punto di estensione pulito per questo
+(`FetchIntegration`), usato in `fast_flights_adapter.py` (classe `_ConsentBypassFetch`) per
+impostare il cookie `SOCS` prima della richiesta. Questo comportamento di Google non è
+garantito nel tempo: se l'adapter inizia a restituire sempre zero risultati, il primo sospetto
+è che l'interstitial sia cambiato, verificabile isolando la chiamata:
+
+```bash
+.venv/Scripts/python -c "from app.adapters.fast_flights_adapter import FastFlightsAdapter; from app.schemas import FlightSearchRequest; print(FastFlightsAdapter().search(FlightSearchRequest(origin='FCO', destination='CDG', departure_date='2026-09-15')))"
+```
+
+**Fragilità del parsing su alcuni itinerari.** Nella stessa ricerca di verifica, alcuni
+itinerari restituiti da Google hanno una forma dati che il parser della libreria non gestisce
+(`ValueError` nello spacchettare l'orario). L'adapter scarta il singolo itinerario problematico
+e tiene gli altri, invece di far fallire l'intera ricerca: è una caratteristica strutturale di
+un adapter basato su scraping, non un bug isolato da correggere una volta per tutte.
+
+Per eseguire i test che richiedono `TestClient` (non necessario per far girare il servizio,
+solo per verificarlo da script): `pip install -r requirements-dev.txt`.
 
 ```bash
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8001
 curl -X POST http://localhost:8001/api/flights/search \
   -H "Content-Type: application/json" \
-  -d '{"origin":"FCO","destination":"NRT","departure_date":"2026-10-10","adults":1}'
+  -d '{"origin":"FCO","destination":"CDG","departure_date":"2026-09-15","adults":1}'
 ```
-
-Se i nomi dei campi restituiti dalla libreria non coincidono con quelli usati in
-`fast_flights_adapter.py`, il traceback dell'eccezione (propagato come `502` con il messaggio
-dell'adapter fallito) indica subito dove correggere.
 
 ## Cosa manca — vedi roadmap.md per il piano completo
 

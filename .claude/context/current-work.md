@@ -60,6 +60,13 @@ del servizio stesso, `services/flight-search/README.md`.
 Definition of done:
 
 - [x] Scaffold FastAPI con un adapter funzionante e un endpoint di ricerca
+- [x] Verificato con esecuzione reale (pip install, uvicorn reale, ricerca live FCO→CDG,
+      11 offerte reali con prezzi/orari veri) — non solo controllo di sintassi. Nel farlo,
+      corretto l'adapter due volte: l'API reale della libreria installata (v3.0.2) differisce
+      da quella descritta dalla ricerca web usata per la prima stesura (struttura annidata
+      Result→Flights→SingleFlight, non un oggetto Flight piatto), e serve un bypass del muro
+      di consenso GDPR di Google (cookie `SOCS`) da rete europea. Dettagli in
+      `services/flight-search/README.md`.
 - [ ] Adapter Amadeus Flight Offers Search come seconda fonte
 - [ ] Adapter Kiwi Tequila per multi-città/self-transfer
 - [ ] Cache delle ricerche (TTL breve)
@@ -67,7 +74,9 @@ Definition of done:
       free-tier, vedi `roadmap.md`) — oggi il servizio esiste solo come codice locale, non deployato
 
 Domande aperte: dove e come deployare questo servizio non è stato deciso in questa sessione — resta
-un item della roadmap, non bloccante per lo sviluppo locale del servizio stesso.
+un item della roadmap, non bloccante per lo sviluppo locale del servizio stesso. Il bypass del
+consenso GDPR (cookie `SOCS` hardcoded) non è garantito stabile nel tempo: se Google cambia
+l'interstitial, l'adapter tornerà a restituire zero risultati finché non si aggiorna il cookie.
 
 ## Riconciliazione
 

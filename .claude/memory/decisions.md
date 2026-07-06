@@ -58,10 +58,25 @@ Conseguenze: le Firestore Security Rules permissive (`allow read, write: if true
 pubblico può leggere/scrivere i dati di qualunque viaggio, passato o futuro, non solo di quello
 in corso.
 
-<!-- ADR-004 — <titolo>
-Data: <YYYY-MM-DD>
-Stato: <proposta / accettata / superata da ADR-NNN>
-Contesto: ...
-Decisione: ...
-Motivazione: ...
-Conseguenze: ... -->
+## ADR-004 — Regole Firestore distribuite via CLI da un firebase.json di radice, non generate dalla Console
+
+Data: 2026-07-06
+Stato: accettata
+Contesto: creando il database Firestore da Console, l'utente ha scelto "modalità di test" per lo
+step delle regole (necessario per avere subito lettura/scrittura funzionanti). La modalità di
+test della Console genera però una regola con una scadenza automatica di 30 giorni incorporata
+nel testo della regola stessa, che richiederebbe di tornare manualmente su Console prima della
+scadenza per sostituirla con una versione permanente — un promemoria ricorrente da non
+dimenticare, che l'utente ha chiesto di eliminare invece di gestire.
+Decisione: le regole permissive già previste (`allow read, write: if true`, invariate nel
+contenuto) sono state scritte in `firestore.rules` (radice del repository, tracciato in Git) e
+distribuite una tantum con `firebase deploy --only firestore:rules`, usando un `firebase.json` di
+radice dedicato (chiave `"firestore"` soltanto, nessuna `"hosting"`) e un `.firebaserc` di radice
+(gitignored) che punta allo stesso progetto condiviso `viaggio-new`.
+Motivazione: una regola distribuita via CLI non porta la condizione di scadenza che la Console
+inserisce automaticamente nella modalità di test; il problema dei 30 giorni si elimina alla radice
+invece di essere rimandato con un promemoria.
+Conseguenze: eventuali modifiche future alle regole (es. restringerle con Firebase Authentication)
+vanno fatte editando `firestore.rules` e rilanciando lo stesso comando di deploy, non dalla
+Console — la Console resta comunque utilizzabile per ispezionare le regole attive, solo non è più
+la fonte di verità del loro contenuto.

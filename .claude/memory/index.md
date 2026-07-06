@@ -8,7 +8,7 @@
 
 ```
 Branch attivo:         main
-Commit di riferimento: f8a0c3d0d692fe9c32b6b89e3902fa4d2dfa53c8
+Commit di riferimento: fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff
 Data snapshot:         2026-07-06
 ```
 
@@ -16,17 +16,12 @@ Data snapshot:         2026-07-06
 
 | Scheda | last-verified | Stato |
 |---|---|---|
-| STACK.md | f8a0c3d | popolata in sessione (2026-07-06), non ancora committata |
-| design-and-security.md | f8a0c3d | da popolare |
-| deployment.md | f8a0c3d | da popolare |
-| dev-testing.md | f8a0c3d | da popolare |
-| current-work.md | f8a0c3d | aggiornata in sessione (2026-07-06), non ancora committata |
-| roadmap.md | f8a0c3d | popolata in sessione (2026-07-06), non ancora committata |
-
-Nota: il commit di riferimento (`f8a0c3d`) precede le modifiche di questa sessione. Le schede
-segnate "non ancora committata" descrivono uno stato del codice più avanzato di quello dell'HEAD
-attuale; `sync-context` andrà rilanciata dopo il prossimo commit dell'utente per bumpare
-`last-verified-commit` sulle schede coerentemente con il nuovo HEAD.
+| STACK.md | fb591e5 | aggiornata e committata |
+| design-and-security.md | fb591e5 | popolata in sessione (2026-07-06), non ancora committata |
+| deployment.md | f8a0c3d | da popolare (covers-paths ancora placeholder, non affinato) |
+| dev-testing.md | f8a0c3d | da popolare (covers-paths ancora placeholder, non affinato) |
+| current-work.md | fb591e5 | aggiornata e committata |
+| roadmap.md | fb591e5 | aggiornata e committata (covers-paths vuoto per scelta: direzione, non area di codice) |
 
 ## Punto di ripresa
 
@@ -35,10 +30,19 @@ Struttura del repository allineata al modello a sotto-cartella per viaggio: `pub
 riscritto. `handoff/` è stata rimossa. La ricerca sulle funzionalità future (comparatore voli/
 alloggi/trasporto + itinerary builder) è confluita in `roadmap.md`; i tre file sorgente in
 `_notes/` sono stati eliminati. Avviato lo scaffold del backend `services/flight-search/` (Fase 1
-della roadmap), non ancora eseguito contro un ambiente reale né deployato.
+della roadmap), non ancora eseguito contro un ambiente reale né deployato. I tre commit
+`aeaeb84`/`5e52006`/`fb591e5` sono committati e pushati su `origin/main`.
 
-Prossima azione: l'utente committa le modifiche di questa sessione (nulla è stato committato
-automaticamente, per vincolo di progetto), poi incolla in `trips/cilento-2026/trip.config.js` i
-campi Firebase ancora `REPLACE_ME` (`apiKey`, `storageBucket`, `messagingSenderId`, `appId`) dal
-progetto Firebase `viaggio-new`. Restano da popolare `design-and-security.md` e `dev-testing.md`
-leggendo il codice reale, e da decidere dove deployare `services/flight-search/`.
+Da quel punto, in sessione, sono state fatte ulteriori modifiche non ancora committate: database
+Firestore creato su Console (`viaggio-new`, location `eur3`, versione Standard); regole di
+sicurezza permanenti distribuite via CLI da `firestore.rules` + `firebase.json` di radice (ADR-004),
+eliminando lo scadenzario a 30 giorni della modalità di test; `.gitignore` esteso con pattern
+Python e `.env`; `design-and-security.md` popolata.
+
+Prossima azione: l'utente sta recuperando da Firebase Console i campi `apiKey`, `storageBucket`,
+`messagingSenderId`, `appId` per completare `trips/cilento-2026/trip.config.js` (ancora
+`REPLACE_ME`). Dopo, va committato tutto il lavoro di questa sessione non ancora versionato
+(`firestore.rules`, `firebase.json` di radice, `.gitignore`, `README.md`, `design-and-security.md`,
+`decisions.md`, questo file). Restano da popolare `deployment.md` e `dev-testing.md` (covers-paths
+ancora il placeholder del template, mai affinato). Da decidere dove deployare
+`services/flight-search/` e da eseguirne una prova reale.

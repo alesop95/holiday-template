@@ -92,9 +92,14 @@ holiday-template/
 │       └── .firebaserc       ← binding locale al progetto Firebase, gitignored
 ├── services/
 │   └── flight-search/        ← backend Fase 1 della roadmap funzionalità (sezione roadmap.md)
+├── firestore.rules           ← regole di sicurezza Firestore, uniche per l'intero progetto condiviso
+├── firebase.json             ← configurazione di radice, solo per il deploy di firestore.rules
+├── .firebaserc                ← binding locale al progetto Firebase, gitignored (radice, non un viaggio)
 ├── .gitignore
 └── README.md                 ← questo documento
 ```
+
+Il `firebase.json` di radice è deliberatamente distinto da quelli dentro `trips/<nome>/`: non ha una chiave `"hosting"`, solo `"firestore"`, perché il suo unico scopo è distribuire `firestore.rules` con `firebase deploy --only firestore:rules` (sezione 12). Le regole Firestore sono una risorsa del progetto Firebase nel suo complesso, non di un singolo viaggio, quindi vivono in radice invece che dentro una cartella `trips/<nome>/`.
 
 Ogni cartella sotto `trips/` è autosufficiente: contiene una propria copia della shell, un proprio file di configurazione e un proprio `firebase.json`, ed è deployabile indipendentemente dalle altre con il comando `firebase deploy` lanciato dalla cartella stessa. `public/index.html` non viene mai deployato direttamente: è il punto da cui si copia la shell quando si crea un nuovo viaggio, e il solo posto dove si applica una correzione o un miglioramento della shell prima di ripropagarlo alle cartelle dei viaggi esistenti.
 
@@ -418,7 +423,9 @@ Per aggiornamenti frequenti al solo contenuto del viaggio (ad esempio modificare
 
 Firebase Hosting eroga i file su HTTPS con certificato TLS gestito automaticamente da Google senza costi aggiuntivi. La comunicazione tra i dispositivi e Firestore avviene attraverso WebSocket sicuri sulla stessa infrastruttura.
 
-Le credenziali in `FIREBASE_CONFIG` — in particolare `apiKey` — non sono un segreto nel senso tradizionale del termine. Sono visibili nel sorgente JavaScript e in alcun modo offuscabili in un'applicazione client-side. La sicurezza in Firebase non si fonda sulla segretezza dell'API key, ma sulle *Firestore Security Rules*: regole dichiarative che definiscono chi può leggere e scrivere quale document. Per questa applicazione, il piano gratuito *Spark* attiva la modalità test con regole permissive che scadono automaticamente dopo 30 giorni. Prima della scadenza, occorre aggiornare le regole dalla Firebase Console (*Firestore > Regole*) con una configurazione permanente. Per un uso personale privato tra due persone con un URL non pubblico, le regole seguenti sono sufficienti:
+Le credenziali in `FIREBASE_CONFIG` — in particolare `apiKey` — non sono un segreto nel senso tradizionale del termine. Sono visibili nel sorgente JavaScript e in alcun modo offuscabili in un'applicazione client-side. La sicurezza in Firebase non si fonda sulla segretezza dell'API key, ma sulle *Firestore Security Rules*: regole dichiarative che definiscono chi può leggere e scrivere quale document.
+
+A differenza di quanto capiterebbe lasciando fare al wizard della Firebase Console — che genera regole di modalità test con una scadenza automatica di 30 giorni incorporata nella regola stessa (`request.time < ...`) — questo progetto tiene le regole in un file versionato, `firestore.rules` in radice, distribuito con la Firebase CLI tramite un `firebase.json` di radice dedicato a questo scopo (distinto dai `firebase.json` di hosting dentro ogni `trips/<nome>/`, sezione 3):
 
 ```javascript
 rules_version = '2';
@@ -431,7 +438,11 @@ service cloud.firestore {
 }
 ```
 
-Queste regole consentono lettura e scrittura a chiunque abbia l'URL dell'applicazione. Per un uso esclusivamente privato, con un URL non indicizzato e non distribuito pubblicamente, il rischio è accettabile. Va notato che, essendo il progetto Firebase ora condiviso da tutti i viaggi, queste regole permissive valgono per l'intero albero `trips/**`, non solo per il viaggio attivo: chiunque conosca l'URL può leggere e scrivere i dati di qualunque viaggio, passato o futuro. Se si desidera una protezione più granulare, Firebase Authentication consente di vincolare le regole a specifici account Google autenticati, ma richiede l'aggiunta dell'SDK di autenticazione e una logica di login nell'applicazione.
+```bash
+firebase deploy --only firestore:rules   # dalla radice del repository, non da trips/<nome>/
+```
+
+Una regola distribuita così non ha alcuna scadenza incorporata: resta valida finché non la si modifica esplicitamente. Queste regole consentono lettura e scrittura a chiunque abbia l'URL dell'applicazione. Per un uso esclusivamente privato, con un URL non indicizzato e non distribuito pubblicamente, il rischio è accettabile. Va notato che, essendo il progetto Firebase condiviso da tutti i viaggi, queste regole permissive valgono per l'intero albero `trips/**`, non solo per il viaggio attivo: chiunque conosca l'URL può leggere e scrivere i dati di qualunque viaggio, passato o futuro. Se si desidera una protezione più granulare, Firebase Authentication consente di vincolare le regole a specifici account Google autenticati, ma richiede l'aggiunta dell'SDK di autenticazione e una logica di login nell'applicazione.
 
 ---
 

@@ -8,7 +8,7 @@ covers-paths:
   - services/flight-search/**
   - README.md
   - .gitignore
-last-verified-commit: f8a0c3d0d692fe9c32b6b89e3902fa4d2dfa53c8
+last-verified-commit: fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff
 stato: in corso
 ---
 
@@ -40,8 +40,9 @@ Definition of done:
 - [x] Struttura del repository a sotto-cartella per viaggio (`public/` + `trips/<nome>/`)
 - [x] `README.md` di radice riscritto per il nuovo modello
 - [x] `handoff/` rimossa dopo la migrazione
-- [ ] Schede di `context/` (design-and-security, dev-testing) ancora da popolare dal codice reale
-      — STACK.md popolata in questa sessione, le altre due restano scaffold vuoto
+- [ ] Scheda `dev-testing.md` ancora da popolare dal codice reale (non esiste ancora nulla da
+      documentare: nessun test nel repository)
+      — STACK.md e design-and-security.md popolate in questa sessione, deployment.md resta scaffold
 - [ ] Diagrammi Mermaid migrati in `context/diagrams/` invece di restare inline in README.md
 
 Domande aperte: nessuna residua su questa feature; le domande originali (layout `public/` e sorte
@@ -71,6 +72,5 @@ un item della roadmap, non bloccante per lo sviluppo locale del servizio stesso.
 
 ## Riconciliazione
 
-Ultima verifica: 2026-07-06 al commit f8a0c3d0d692fe9c32b6b89e3902fa4d2dfa53c8 (le modifiche di
-questa sessione sono successive a questo commit e non ancora versionate: l'utente committerà
-manualmente).
+Ultima verifica: 2026-07-06 al commit fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff, committato e
+pushato su `origin/main` dall'utente (commit `aeaeb84`, `5e52006`, `fb591e5`).

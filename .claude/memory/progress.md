@@ -6,6 +6,41 @@
 > documenti `.docx`, con il nome del documento sorgente e l'esito, così la data di allineamento
 > sopravvive a un clone.
 
+## 2026-07-06 — Database Firestore creato, regole permanenti via CLI, design-and-security.md popolata
+
+Commit: non ancora committato (HEAD resta fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff).
+File toccati: creati `firestore.rules`, `firebase.json` (radice), `.firebaserc` (radice,
+gitignored); modificati `.gitignore` (pattern Python, `.env`), `README.md` (sezioni 3 e 12),
+`.claude/context/design-and-security.md` (popolata da scaffold vuoto), `.claude/memory/decisions.md`
+(ADR-004), `.claude/context/current-work.md`, `.claude/memory/index.md`.
+Motivo: guidato l'utente passo-passo nella creazione del database Firestore su Console per il
+progetto condiviso `viaggio-new` (versione Standard, location `eur3`, avviato in modalità di
+test), verificando ogni passaggio da screenshot reali invece che per ipotesi. L'utente ha poi
+chiesto di "automatizzare" la scadenza a 30 giorni della modalità di test: la soluzione applicata
+non è un promemoria ma l'eliminazione del problema, distribuendo le stesse regole permissive via
+`firebase deploy --only firestore:rules` da un file versionato, che non porta la condizione di
+scadenza che la Console inserisce automaticamente (ADR-004). Deploy eseguito e verificato con
+successo in sessione. Contestualmente popolata `design-and-security.md`, finora scaffold vuoto,
+e corretta una lacuna reale del `.gitignore` (assenza di `.env`, rilevante perché
+`services/flight-search/.env.example` anticipa segreti reali futuri).
+Verifica residua: l'utente sta recuperando da Firebase Console i campi Firebase mancanti in
+`trips/cilento-2026/trip.config.js`.
+
+## 2026-07-06 — Commit e push della ristrutturazione, riconciliazione post-commit
+
+Commit: `aeaeb84`, `5e52006`, `fb591e5` (l'ultimo è HEAD attuale, verificato pushato su
+`origin/main` con `git fetch` + confronto, non solo dall'output incollato dall'utente).
+File toccati: `.claude/memory/index.md` (commit di riferimento e stato schede aggiornati a
+`fb591e5`, rimossa la nota "non ancora committata" ormai falsa), `last-verified-commit` bumpato a
+`fb591e5` in `STACK.md`, `current-work.md`, `roadmap.md`.
+Motivo: i tre commit dell'utente (frammentati in due passaggi per un problema di wrapping delle
+righe multi-percorso incollate in PowerShell, che ha troncato silenziosamente `git add` su alcuni
+percorsi trattandoli come stringhe letterali invece che argomenti) hanno reso obsoleti i
+riferimenti a "modifiche non ancora committate" scritti nella voce di lavoro precedente. Nota per
+sessioni future: preferire `git add` a livello di cartella (poche righe corte) invece di liste
+lunghe di percorsi tra virgolette quando il terminale di destinazione è PowerShell, per evitare
+che il paste tronchi la riga.
+
 ## 2026-07-06 — Ristrutturazione multi-viaggio, integrazione ricerca funzionalità, avvio Fase 1
 
 Commit: non ancora committato (HEAD resta f8a0c3d0d692fe9c32b6b89e3902fa4d2dfa53c8; le modifiche

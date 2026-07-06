@@ -103,17 +103,25 @@ Il `firebase.json` di radice è deliberatamente distinto da quelli dentro `trips
 
 Ogni cartella sotto `trips/` è autosufficiente: contiene una propria copia della shell, un proprio file di configurazione e un proprio `firebase.json`, ed è deployabile indipendentemente dalle altre con il comando `firebase deploy` lanciato dalla cartella stessa. `public/index.html` non viene mai deployato direttamente: è il punto da cui si copia la shell quando si crea un nuovo viaggio, e il solo posto dove si applica una correzione o un miglioramento della shell prima di ripropagarlo alle cartelle dei viaggi esistenti.
 
-`firebase.json` di ogni viaggio istruisce Firebase Hosting a servire i file dalla cartella corrente (`"public": "."`, perché `index.html` e `trip.config.js` stanno direttamente dentro `trips/<nome>/`, non in una sottocartella ulteriore) e a redirezionare tutte le richieste verso `index.html`:
+`firebase.json` di ogni viaggio istruisce Firebase Hosting a servire i file dalla cartella corrente (`"public": "."`, perché `index.html` e `trip.config.js` stanno direttamente dentro `trips/<nome>/`, non in una sottocartella ulteriore), a redirezionare tutte le richieste verso `index.html`, e a disabilitare la cache del browser su HTML e JS:
 
 ```json
 {
   "hosting": {
     "public": ".",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "_trip-notes/**"],
-    "rewrites": [{ "source": "**", "destination": "/index.html" }]
+    "rewrites": [{ "source": "**", "destination": "/index.html" }],
+    "headers": [
+      {
+        "source": "**/*.@(html|js)",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0" }]
+      }
+    ]
   }
 }
 ```
+
+La direttiva `headers` esiste perché il default di Firebase Hosting (`Cache-Control: max-age=3600`, un'ora) rende invisibile ogni nuovo deploy a chi ha già aperto la pagina, finché non fa un refresh forzato: per un'app di contenuto che due persone modificano e ricontrollano spesso durante la pianificazione, un'ora di cache è più un ostacolo che un'ottimizzazione. `no-cache` non disabilita la cache del tutto: dice al browser di rivalidare sempre con il server (tramite ETag), che risponde con un rapido "non è cambiato nulla" (HTTP 304) quando il file è invariato, o il contenuto fresco quando è cambiato. Verificabile in ogni momento con `curl -sI https://<url>/trip.config.js | grep -i cache-control`.
 
 `.firebaserc`, generato da `firebase use --add` (o creato a mano con lo stesso contenuto), contiene il binding tra la cartella del viaggio e il progetto Firebase. È escluso da Git perché è dato di configurazione locale, non perché contenga segreti: essendo lo stesso progetto Firebase condiviso da tutti i viaggi (sezione 6), il suo contenuto è identico in ogni cartella `trips/<nome>/.firebaserc`.
 
@@ -156,24 +164,28 @@ Contiene il contenuto testuale dell'intestazione visiva dell'applicazione: il ba
 
 ```javascript
 export const TRIP_META = {
-  badge:    "Viaggio di Coppia · Estate 2025",
+  badge:    "Viaggio di Coppia · Estate 2026",
   title:    "Cilento &amp; Caserta",
   subtitle: "7 giorni tra mare, natura e storia",
-  stats:    ["📅 7 giorni · 6 notti", "🏨 1 solo cambio hotel", ...]
+  stats:    ["7 giorni · 6 notti", "1 solo cambio hotel", ...]
 };
 ```
+
+Convenzione di contenuto, valida per ogni viaggio: nessuna emoji e nessun trattino lungo nei
+testi. La shell non usa emoji per le icone (il cerchio di ogni giorno mostra il numero, non
+un'icona), quindi neanche il contenuto ne introduce.
 
 Questa separazione consente a `index.html` di renderizzare l'intestazione immediatamente al caricamento, prima ancora che Firebase risponda, perché `renderHero()` viene invocata come prima istruzione di `init()` e non dipende da alcuna chiamata asincrona.
 
 ### 4.4 MAP_LOCATIONS
 
-Array di oggetti che descrivono i marker della mappa Leaflet [^10]. Ogni oggetto definisce coordinate geografiche (`lat`, `lng`), nome visualizzato (`nm`), sottotitolo (`sub`), colore esadecimale del marker (`c`) ed emoji sovrapposta al cerchio del marker (`em`).
+Array di oggetti che descrivono i marker della mappa Leaflet [^10]. Ogni oggetto definisce coordinate geografiche (`lat`, `lng`), nome visualizzato (`nm`), sottotitolo (`sub`) e colore esadecimale del marker (`c`): un pin colorato pieno, senza icona sovrapposta.
 
 La sequenza dell'array rispecchia l'ordine cronologico delle tappe: Leaflet disegna la linea tratteggiata del percorso connettendo i punti nell'ordine in cui compaiono nell'array, tramite `L.polyline(MAP_LOCATIONS.map(l => [l.lat, l.lng]), ...)`.
 
 ### 4.5 TRIP_DATA
 
-Contiene la struttura dati completa del viaggio, suddivisa in tre sotto-array: `days`, `restaurants` e `checklist`. Questa struttura viene caricata su Firestore al primo avvio dell'applicazione (meccanismo di *seeding* descritto nel paragrafo 7.2). Ogni elemento di `days` include un identificatore numerico progressivo (`id`), un colore tema, icona, etichetta, titolo, luoghi, sezioni descrittive, suggerimenti pratici e stime di costo per pasti e attività. Ogni elemento di `checklist` raggruppa gli item sotto una categoria (`cat`) e li lista come oggetti con testo (`t`) e nota opzionale (`n`).
+Contiene la struttura dati completa del viaggio, suddivisa in tre sotto-array: `days`, `restaurants` e `checklist`. Questa struttura viene caricata su Firestore al primo avvio dell'applicazione (meccanismo di *seeding* descritto nel paragrafo 7.2). Ogni elemento di `days` include un identificatore numerico progressivo (`id`, mostrato direttamente come numero nel cerchio colorato della card), un colore tema, etichetta, titolo, luoghi, sezioni descrittive (titolo e testo, senza icona), suggerimenti pratici e stime di costo per pasti e attività. Ogni elemento di `checklist` raggruppa gli item sotto una categoria (`cat`, testo puro) e li lista come oggetti con testo (`t`) e nota opzionale (`n`).
 
 ---
 

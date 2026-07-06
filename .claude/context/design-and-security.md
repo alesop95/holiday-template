@@ -1,10 +1,10 @@
 ---
-generated-from-commit: PENDING-FIRST-COMMIT
+generated-from-commit: f8a0c3d0d692fe9c32b6b89e3902fa4d2dfa53c8
 generated-from-branch: main
 generated-date: 2026-06-15
 covers-paths:
   - <glob delle aree descritte, da affinare leggendo il codice>
-last-verified-commit: PENDING-FIRST-COMMIT
+last-verified-commit: f8a0c3d0d692fe9c32b6b89e3902fa4d2dfa53c8
 ---
 
 # Design e sicurezza applicativa

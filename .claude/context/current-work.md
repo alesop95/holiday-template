@@ -1,11 +1,15 @@
 ---
-generated-from-commit: PENDING-FIRST-COMMIT
+generated-from-commit: f8a0c3d0d692fe9c32b6b89e3902fa4d2dfa53c8
 generated-from-branch: main
 generated-date: 2026-06-15
 covers-paths:
-  - <glob delle aree toccate dalla feature attiva>
-last-verified-commit: PENDING-FIRST-COMMIT
-stato: in pianificazione
+  - public/**
+  - trips/**
+  - services/flight-search/**
+  - README.md
+  - .gitignore
+last-verified-commit: f8a0c3d0d692fe9c32b6b89e3902fa4d2dfa53c8
+stato: in corso
 ---
 
 # Lavoro in corso
@@ -14,38 +18,59 @@ stato: in pianificazione
 > questo file. Ogni feature si descrive con lo schema fisso sotto, così il lavoro pendente è
 > leggibile senza ricostruire il contesto da capo.
 
-## Feature: integrazione del codice consegnato da `handoff/` nella struttura definitiva
+## Feature: integrazione del codice consegnato da `handoff/` nella struttura definitiva — chiusa
 
-Cosa fa: il codice dell'app (travel app Firebase + Leaflet) è stato consegnato da una sessione
-Claude precedente nella cartella `handoff/`. Va portato nella struttura definitiva del repository
-prevista dalla sua stessa documentazione (`handoff/README.md`, sezione 3): `public/index.html`,
-`public/trip.config.js`, `firebase.json`, `.gitignore`, `README.md` in radice.
+Cosa fa: il codice dell'app (travel app Firebase + Leaflet), consegnato da una sessione Claude
+precedente in `handoff/`, è stato portato nella struttura definitiva. A differenza dell'ipotesi
+originale di `handoff/README.md` (un solo `public/` condiviso), la struttura adottata è a
+sotto-cartella per viaggio: `public/index.html` resta la shell canonica sorgente di verità, ogni
+viaggio vive in `trips/<nome>/` con una propria copia di shell, `trip.config.js` e `firebase.json`.
+Decisione motivata in `memory/decisions.md`.
 
-File da creare:
+File creati: `public/index.html`, `trips/cilento-2026/{index.html, trip.config.js, firebase.json,
+.firebaserc}`, `README.md` di radice (riscritto sul modello a cartelle).
 
-```
-<da definire in sessione: collocazione finale di public/, README.md di radice, ecc.>
-```
+File modificati: `.gitignore` (pattern `_trip-notes/`, commento sui pattern Firebase applicati a
+ogni profondità).
 
-File da modificare:
-
-```
-<da definire: eventuale adattamento dei percorsi e del .gitignore di radice>
-```
+File rimossi: `handoff/` (contenuto migrato, nessuna copia di riferimento conservata).
 
 Definition of done:
 
-- [ ] Struttura del repository allineata alla sezione 3 di `handoff/README.md`
-- [ ] Schede di `context/` (STACK, design-and-security, deployment, dev-testing) popolate dal codice reale
-- [ ] Diagrammi Mermaid del README eventualmente migrati in `context/diagrams/`
-- [ ] `sync-context` eseguita dopo il primo commit per ancorare i frontmatter a HEAD
+- [x] Struttura del repository a sotto-cartella per viaggio (`public/` + `trips/<nome>/`)
+- [x] `README.md` di radice riscritto per il nuovo modello
+- [x] `handoff/` rimossa dopo la migrazione
+- [ ] Schede di `context/` (design-and-security, dev-testing) ancora da popolare dal codice reale
+      — STACK.md popolata in questa sessione, le altre due restano scaffold vuoto
+- [ ] Diagrammi Mermaid migrati in `context/diagrams/` invece di restare inline in README.md
 
-Domande aperte:
+Domande aperte: nessuna residua su questa feature; le domande originali (layout `public/` e sorte
+di `handoff/`) sono state risolte in sessione.
 
-Si conferma la struttura `public/` proposta dal README o si adotta un layout diverso? La cartella
-`handoff/` va rimossa dopo l'integrazione o conservata come riferimento? Da risolvere a inizio
-della sessione di integrazione.
+## Feature: motore di ricerca voli (Fase 1 della roadmap) — avviata
+
+Cosa fa: introduce il primo servizio backend del progetto, `services/flight-search/`, uno scaffold
+FastAPI con un adapter funzionante verso una fonte di ricerca voli e uno schema `FlightOffer`
+normalizzato. È l'avvio della Fase 1 descritta in `roadmap.md`, non l'implementazione completa: le
+fonti aggiuntive (Amadeus, Kiwi Tequila) e la cache restano fuori da questa sessione.
+
+File da creare: vedi `roadmap.md` per il piano completo; il dettaglio di questa fase è nel README
+del servizio stesso, `services/flight-search/README.md`.
+
+Definition of done:
+
+- [x] Scaffold FastAPI con un adapter funzionante e un endpoint di ricerca
+- [ ] Adapter Amadeus Flight Offers Search come seconda fonte
+- [ ] Adapter Kiwi Tequila per multi-città/self-transfer
+- [ ] Cache delle ricerche (TTL breve)
+- [ ] Scelta e messa in opera dell'hosting del servizio (self-hosted Docker Compose vs cloud
+      free-tier, vedi `roadmap.md`) — oggi il servizio esiste solo come codice locale, non deployato
+
+Domande aperte: dove e come deployare questo servizio non è stato deciso in questa sessione — resta
+un item della roadmap, non bloccante per lo sviluppo locale del servizio stesso.
 
 ## Riconciliazione
 
-Ultima verifica: 2026-06-15 al commit PENDING-FIRST-COMMIT.
+Ultima verifica: 2026-07-06 al commit f8a0c3d0d692fe9c32b6b89e3902fa4d2dfa53c8 (le modifiche di
+questa sessione sono successive a questo commit e non ancora versionate: l'utente committerà
+manualmente).

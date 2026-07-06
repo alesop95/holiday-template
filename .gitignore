@@ -32,6 +32,17 @@ _notes/.tmp-docx-*/
 node_modules/
 npm-debug.log*
 
+# Python (services/flight-search/ e futuri servizi backend)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Segreti locali dei servizi backend (Amadeus, Kiwi Tequila, ecc.). Il solo .env.example si versiona.
+.env
+.env.*
+!.env.example
+
 # OS
 .DS_Store
 Thumbs.db

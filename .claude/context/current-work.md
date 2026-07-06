@@ -40,9 +40,8 @@ Definition of done:
 - [x] Struttura del repository a sotto-cartella per viaggio (`public/` + `trips/<nome>/`)
 - [x] `README.md` di radice riscritto per il nuovo modello
 - [x] `handoff/` rimossa dopo la migrazione
-- [ ] Scheda `dev-testing.md` ancora da popolare dal codice reale (non esiste ancora nulla da
-      documentare: nessun test nel repository)
-      — STACK.md e design-and-security.md popolate in questa sessione, deployment.md resta scaffold
+- [ ] Scheda `dev-testing.md` ancora da popolare (non esiste ancora nulla da documentare: nessun
+      test nel repository) — STACK.md, design-and-security.md e deployment.md popolate in sessione
 - [ ] Diagrammi Mermaid migrati in `context/diagrams/` invece di restare inline in README.md
 
 Domande aperte: nessuna residua su questa feature; le domande originali (layout `public/` e sorte

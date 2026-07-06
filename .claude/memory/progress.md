@@ -6,6 +6,27 @@
 > documenti `.docx`, con il nome del documento sorgente e l'esito, così la data di allineamento
 > sopravvive a un clone.
 
+## 2026-07-06 — Credenziali Firebase reali, deployment.md popolata con confronto a my-wedding-day
+
+Commit: non ancora committato (HEAD resta fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff).
+File toccati: `trips/cilento-2026/trip.config.js` (`apiKey`, `storageBucket`, `messagingSenderId`,
+`appId` scritti con i valori reali forniti dall'utente da Firebase Console, sostituendo i
+`REPLACE_ME` residui), `.claude/context/deployment.md` (popolata da scaffold vuoto),
+`.claude/context/current-work.md`, `.claude/memory/index.md`.
+Motivo: l'utente ha registrato un'app web sul progetto `viaggio-new` e incollato il blocco
+`firebaseConfig` generato dalla Console. Lo snippet della Console assumeva un progetto con
+bundler (`import ... from "firebase/app"`, stile npm); scartate le righe di import, tenuto solo
+l'oggetto di configurazione, perché questo progetto carica l'SDK da CDN senza npm né build step.
+L'utente ha poi chiesto di documentare con precisione il flusso di deployment e come si
+differenzia da `E:\my-wedding-day`, altro progetto sulla stessa macchina: letti `firebase.json` e
+`package.json` di quel repository per un confronto verificato, non per sentito dire. Sintesi:
+`my-wedding-day` è un prodotto singolo con build step React/TypeScript, Cloud Functions e un solo
+`firebase.json` di radice (richiede il piano Blaze); questo progetto non ha build step, non ha
+Cloud Functions, resta su Spark, ed è pensato per più istanze (viaggi) indipendenti fianco a
+fianco, da cui la struttura a `firebase.json` per cartella invece che uno solo.
+Verifica residua: non è stato ancora eseguito un `firebase deploy` reale dell'hosting per
+verificare che l'app carichi con le credenziali reali.
+
 ## 2026-07-06 — Database Firestore creato, regole permanenti via CLI, design-and-security.md popolata
 
 Commit: non ancora committato (HEAD resta fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff).

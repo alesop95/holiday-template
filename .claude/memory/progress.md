@@ -4,6 +4,30 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-07 — Amadeus abbandonato (portale in chiusura), sostituito da adapter Kiwi Tequila
+
+Commit: non ancora committato.
+File toccati: rimosso `services/flight-search/app/adapters/amadeus_adapter.py`; nuovo
+`services/flight-search/app/adapters/kiwi_adapter.py`; `app/main.py` (tolto il collegamento ad
+Amadeus, aggiunto Kiwi); `.env.example` (tolti i placeholder Amadeus); `roadmap.md`,
+`current-work.md`, `design-and-security.md`, README del servizio, `decisions.md` (ADR-006)
+aggiornati per riflettere il cambio.
+Motivo: mentre l'utente procedeva alla registrazione su Amadeus for Developers per ottenere
+credenziali reali, ha trovato sul sito stesso un avviso di chiusura del portale self-service al
+17 luglio 2026. Verificato con fonti indipendenti (PhocusWire, Tragento) prima di agire, non
+fidandosi del solo annuncio. Deciso di abbandonare Amadeus del tutto invece di procedere con una
+registrazione che avrebbe smesso di funzionare in pochi giorni. Il pattern adapter ha reso la
+sostituzione priva di conseguenze per le altre parti del servizio. Verificata l'API reale di
+Kiwi Tequila prima di scrivere il nuovo adapter: base URL e header di autenticazione (`apikey`)
+confermati con una richiesta HTTP diretta non autenticata (risposta 403 esplicita), ma i nomi dei
+campi della risposta sono ricostruiti da fonti di terzi incrociate, non da un esempio ufficiale
+come era stato possibile fare per Amadeus — verifica più debole, dichiarata esplicitamente nel
+README del servizio. Verificato che l'endpoint degrada correttamente anche senza chiave Kiwi
+configurata (stesso comportamento già validato per Amadeus).
+Verifica residua: la Fase 2 della roadmap (alloggi) perde la propria fonte primaria pianificata
+insieme ad Amadeus, senza sostituto individuato — nuova domanda aperta, non affrontata in questa
+sessione. Ricerca live con una chiave Kiwi reale ancora da fare.
+
 ## 2026-07-07 — Adapter Amadeus Flight Offers Search, seconda fonte del comparatore voli
 
 Commit: non ancora committato.

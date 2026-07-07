@@ -67,13 +67,20 @@ Definition of done:
       Result→Flights→SingleFlight, non un oggetto Flight piatto), e serve un bypass del muro
       di consenso GDPR di Google (cookie `SOCS`) da rete europea. Dettagli in
       `services/flight-search/README.md`.
-- [x] Adapter Amadeus Flight Offers Search come seconda fonte — scritto e collegato in `main.py`,
-      logica di parsing verificata contro un esempio di risposta reale ufficiale
-      (`amadeus4dev/amadeus-code-examples`), ma **non eseguito contro l'API live**: servono
-      credenziali reali (`AMADEUS_CLIENT_ID`/`AMADEUS_CLIENT_SECRET`) che l'utente non ha ancora
-      generato su developers.amadeus.com. Degrada correttamente a lista vuota senza credenziali
-      (verificato: l'endpoint continua a funzionare con la sola fonte `fast_flights`).
-- [ ] Adapter Kiwi Tequila per multi-città/self-transfer
+- [x] ~~Adapter Amadeus Flight Offers Search come seconda fonte~~ — scritto, poi **rimosso**:
+      durante la verifica è emerso che il portale self-service Amadeus chiude il 17 luglio 2026
+      (fonti indipendenti: PhocusWire, Tragento), nuove registrazioni già sospese. Codice
+      cancellato invece di lasciato come riferimento morto. Dettagli e motivazione in
+      `roadmap.md` e ADR-006 (`memory/decisions.md`).
+- [x] Adapter Kiwi Tequila come seconda fonte (sostituisce Amadeus) — scritto e collegato in
+      `main.py`, degrada correttamente a lista vuota senza chiave (verificato: l'endpoint
+      continua a funzionare con la sola fonte `fast_flights`). Verifica più debole delle altre
+      due fonti tentate finora: base URL e header `apikey` confermati con una richiesta HTTP
+      reale non autenticata, ma i nomi dei campi della risposta sono ricostruiti incrociando
+      fonti di terzi (documentazione ufficiale non leggibile, pagina client-side), non verificati
+      contro una risposta live. **Non eseguito contro l'API live**: servono credenziali reali
+      (`KIWI_TEQUILA_API_KEY`) che l'utente non ha ancora generato. Dettagli in
+      `services/flight-search/README.md`.
 - [ ] Cache delle ricerche (TTL breve)
 - [ ] Scelta e messa in opera dell'hosting del servizio (self-hosted Docker Compose vs cloud
       free-tier, vedi `roadmap.md`) — oggi il servizio esiste solo come codice locale, non deployato

@@ -35,11 +35,13 @@ Il backend (`services/flight-search/`) usa l'*adapter pattern*: ogni fonte dati 
 implementa l'interfaccia `FlightSourceAdapter` (`app/adapters/base.py`) e normalizza i propri
 risultati nello schema comune `FlightOffer` (`app/schemas.py`). L'endpoint `/api/flights/search`
 non conosce i dettagli di nessuna fonte specifica, solo il contratto comune; un adapter che
-fallisce non blocca gli altri (`app/main.py`). Il valore pratico del pattern si è già visto con
-due fonti reali di forma completamente diversa: `FastFlightsAdapter` fa scraping di una pagina
-HTML/JS di Google, `AmadeusAdapter` chiama un'API REST ufficiale con OAuth2 — il comparatore non
-distingue i due casi. Resta da aggiungere Kiwi Tequila per multi-città/self-transfer (roadmap,
-Fase 1).
+fallisce non blocca gli altri (`app/main.py`). Il valore pratico del pattern si è già visto due
+volte: un adapter Amadeus (API REST ufficiale con OAuth2) è stato scritto e poi rimosso di netto
+quando è emerso che Amadeus chiude il proprio portale self-service il 17 luglio 2026 (ADR-006,
+`memory/decisions.md`), senza dover toccare `FastFlightsAdapter` né il comparatore — è rimasta
+la prova che una fonte può sparire senza propagare danni altrove. La fonte che l'ha sostituita,
+`KiwiAdapter`, usa una API key semplice invece di OAuth2: anche questa differenza di forma resta
+invisibile al comparatore.
 
 ## Sicurezza applicativa
 

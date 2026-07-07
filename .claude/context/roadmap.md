@@ -25,17 +25,27 @@ partenza del progetto: uso privato di coppia, a costo zero, senza dipendere da s
 
 La sequenza di fasi, in ordine di dipendenza:
 
-1. *Motore di ricerca voli* — in corso, scaffold iniziale in `services/flight-search/`. Fonte
-   primaria scelta: reverse-engineering diretto di Google Flights (via librerie come `fli` di
-   punitarani o `fast-flights` di AWeirdDev, nessuna chiave richiesta), da affiancare in una fase
-   successiva a Amadeus Flight Offers Search (API self-service ufficiale, free tier reale) come
-   fonte di validazione prezzi e a Kiwi Tequila per ricerche multi-città e self-transfer. Schema
-   di normalizzazione comune: `FlightOffer`.
-2. *Motore di ricerca alloggi* — non iniziato. Fonte primaria: Amadeus Hotel Search/List API
-   (stesso account OAuth del motore voli). Fonte secondaria: `pyairbnb` di johnbalvin per Airbnb
+1. *Motore di ricerca voli* — in corso, `services/flight-search/`. Fonte primaria:
+   reverse-engineering diretto di Google Flights (`fast-flights` di AWeirdDev, nessuna chiave
+   richiesta), verificata live e funzionante. Fonte secondaria: **Kiwi Tequila**, non più Amadeus
+   (vedi nota sotto), per ricerche multi-città e self-transfer, registrazione gratuita immediata
+   senza OAuth. Schema di normalizzazione comune: `FlightOffer`.
+2. *Motore di ricerca alloggi* — non iniziato. La fonte primaria originariamente prevista,
+   Amadeus Hotel Search/List API, non è più disponibile per lo stesso motivo del punto 1: va
+   ri-cercata una fonte alternativa prima di iniziare questa fase, non deducibile dalla ricerca
+   originale così com'è. Fonte secondaria confermata: `pyairbnb` di johnbalvin per Airbnb
    (nessuna API ufficiale esiste; è reverse-engineering della GraphQL interna, rischio *ToS*[^3]
    più alto delle altre fonti, da usare senza login con account personale). Schema di
    normalizzazione comune: `StayOffer`.
+
+**Nota — Amadeus for Developers non è più una fonte disponibile.** Il portale self-service
+(quello gratuito, senza approvazione business, su cui si basava sia il punto 1 sia il punto 2)
+viene chiuso da Amadeus il 17 luglio 2026: nuove registrazioni già sospese, chiavi esistenti
+disattivate a quella data. Verificato con fonti indipendenti (PhocusWire, Tragento), non solo
+dall'annuncio sul sito. Un adapter Amadeus per i voli era stato scritto e poi rimosso in
+`services/flight-search/` quando è emersa questa notizia; non ritentare la stessa via per hotel
+o voli finché non cambia lo stato del portale Enterprise (a pagamento, richiede account manager,
+fuori scope per un progetto privato).
 3. *Layer comparatore* — non iniziato. Endpoint unico che interroga i provider disponibili in
    parallelo, aggrega, deduplica e ordina i risultati; cache con TTL breve per non interrogare i
    prezzi ad ogni refresh.

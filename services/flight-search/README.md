@@ -10,9 +10,17 @@ Un endpoint `POST /api/flights/search` che accetta origine, destinazione, data d
 data di ritorno opzionale, numero di adulti e classe, e restituisce una lista di `FlightOffer`
 normalizzati (`app/schemas.py`), interrogando in sequenza due adapter. `FastFlightsAdapter`
 (`app/adapters/fast_flights_adapter.py`) usa la libreria `fast-flights` (repository
-`AWeirdDev/flights`) per interrogare Google Flights senza chiave. `AmadeusAdapter`
-(`app/adapters/amadeus_adapter.py`) usa l'API ufficiale Amadeus for Developers (Flight Offers
-Search, self-service, free tier) per confrontare con prezzi da un canale non basato su scraping.
+`AWeirdDev/flights`) per interrogare Google Flights senza chiave. `KiwiAdapter`
+(`app/adapters/kiwi_adapter.py`) usa Kiwi.com Tequila API (registrazione gratuita, API key
+semplice senza OAuth) per confrontare con prezzi da un canale diverso, utile anche per
+multi-città/self-transfer in una fase successiva.
+
+**Nota**: la seconda fonte era originariamente Amadeus Flight Offers Search (API ufficiale). È
+stata scritta, verificata contro un esempio di risposta reale, e poi **rimossa** quando è emerso
+che Amadeus chiude il proprio portale self-service il 17 luglio 2026 (fonti indipendenti:
+PhocusWire, Tragento). Dettagli e motivazione in `roadmap.md` e ADR-006
+(`.claude/memory/decisions.md`). Non ripartire da Amadeus per questa o altre fonti dati finché
+quello stato non cambia.
 
 ## Stato di verifica
 
@@ -50,29 +58,31 @@ curl -X POST http://localhost:8001/api/flights/search \
   -d '{"origin":"FCO","destination":"CDG","departure_date":"2026-09-15","adults":1}'
 ```
 
-**AmadeusAdapter, stato diverso da FastFlightsAdapter: non ancora verificato live.** La forma
-della risposta (`itineraries`, `segments`, `price.grandTotal`) è verificata contro un esempio
-reale ufficiale (`amadeus4dev/amadeus-code-examples`, file
-`flight_offers_search/v2/get/response.json`), e la logica di parsing è stata testata offline
-alimentandola direttamente con quel file — non contro una ricerca live, perché servono
-credenziali reali che non erano disponibili in questa sessione. Senza `AMADEUS_CLIENT_ID` e
-`AMADEUS_CLIENT_SECRET` in un `.env` locale (vedi `.env.example`), l'adapter si disattiva da solo
-e restituisce lista vuota, senza rompere l'endpoint (verificato: la ricerca continua a funzionare
-con la sola fonte `fast_flights`). Per attivarlo e verificarlo davvero: registrarsi su
-https://developers.amadeus.com/my-apps (gratuito), creare un'app, copiare API Key e API Secret
-in `services/flight-search/.env` come `AMADEUS_CLIENT_ID` e `AMADEUS_CLIENT_SECRET`, poi ripetere
-la chiamata `curl` sopra e controllare che compaiano offerte con `"source":"amadeus"`.
+**KiwiAdapter, verifica più debole delle altre due fonti tentate finora — non ancora verificato
+live.** Base URL e header di autenticazione (`apikey`, minuscolo) sono confermati con una
+richiesta HTTP reale non autenticata fatta in questa sessione (risposta 403 con messaggio
+esplicito "'apikey' header is required"). I nomi dei campi della risposta (`price`,
+`route[].local_departure/local_arrival/airline`, `duration.total` in secondi) sono invece
+ricostruiti incrociando più fonti di terzi, perché la documentazione ufficiale
+(tequila.kiwi.com/portal) è su una pagina interamente client-side non leggibile in questa
+sessione. Senza `KIWI_TEQUILA_API_KEY` in un `.env` locale (vedi `.env.example`), l'adapter si
+disattiva da solo e restituisce lista vuota, senza rompere l'endpoint (verificato: la ricerca
+continua a funzionare con la sola fonte `fast_flights`). Per attivarlo e verificarlo davvero:
+registrarsi su https://tequila.kiwi.com/portal/login/register (gratuito, nessun OAuth), copiare
+la API key in `services/flight-search/.env` come `KIWI_TEQUILA_API_KEY`, poi ripetere la chiamata
+`curl` sopra e controllare che compaiano offerte con `"source":"kiwi"` — se invece l'endpoint
+risponde 502 o le offerte Kiwi non compaiono mai, il sospetto principale è che i nomi dei campi
+ricostruiti non corrispondano alla risposta reale: correggerli leggendo l'errore nei log
+dell'adapter (`kiwi: offerta scartata, forma dati inattesa (...)`).
 
-Nota sui voli andata e ritorno: Amadeus restituisce un itinerario per direzione (andata e
-ritorno separati), ma `FlightOffer` è uno schema piatto con un solo departure/arrival. L'adapter
-espone oggi solo l'itinerario di andata anche per ricerche round-trip: una semplificazione
-consapevole, non un bug, segnata come miglioramento futuro.
+Limitazione nota, deliberata: `KiwiAdapter` gestisce solo ricerche one-way, `request.return_date`
+viene ignorato. Un ritorno esplicito richiede verificare i parametri Kiwi per il round-trip, non
+fatto in questo avvio.
 
 ## Cosa manca — vedi roadmap.md per il piano completo
 
-Adapter Kiwi Tequila (multi-città, self-transfer) non è ancora implementato. Il layer comparatore
-che interroga più fonti in parallelo (oggi sequenziale) e deduplica non esiste ancora. Non c'è
-cache: ogni chiamata a `/api/flights/search` esegue ricerche live su entrambe le fonti attive.
-Non è stata ancora presa una decisione su dove deployare questo servizio (self-hosted Docker
-Compose vs cloud free-tier, sezione "Direzione" di `roadmap.md`); oggi gira solo in locale con
-`uvicorn`.
+Il layer comparatore che interroga più fonti in parallelo (oggi sequenziale) e deduplica non
+esiste ancora. Non c'è cache: ogni chiamata a `/api/flights/search` esegue ricerche live su
+entrambe le fonti attive. Non è stata ancora presa una decisione su dove deployare questo
+servizio (self-hosted Docker Compose vs cloud free-tier, sezione "Direzione" di `roadmap.md`);
+oggi gira solo in locale con `uvicorn`.

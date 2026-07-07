@@ -114,3 +114,31 @@ del solo output incollato dall'utente, che `origin/main` riflette la storia risc
 vecchia stringa della chiave non ricorre più in nessun punto della storia remota tranne
 nell'unico commit finale che la reintroduce (atteso e corretto). Backup pre-riscrittura conservato
 in locale (`git bundle`, fuori dal repository), non versionato.
+
+## ADR-006 — Abbandonato Amadeus come fonte dati, sostituito da Kiwi Tequila
+
+Data: 2026-07-07
+Stato: accettata, supera implicitamente la scelta di Amadeus in ADR (nessuna precedente formale,
+ma Amadeus era la fonte pianificata fin dalla ricerca originale sintetizzata in `roadmap.md`)
+Contesto: durante la registrazione per ottenere credenziali reali per l'adapter Amadeus Flight
+Offers Search (già scritto e verificato contro un esempio di risposta ufficiale, ma mai contro
+l'API live), è emerso che il sito Amadeus for Developers mostra un avviso di chiusura del
+portale self-service al 17 luglio 2026. Verificato con fonti indipendenti (PhocusWire, Tragento),
+non solo dall'annuncio sul sito: nuove registrazioni già sospese, chiavi esistenti disattivate
+alla data di chiusura. Resta attivo solo il portale Enterprise, a pagamento e con approvazione
+tramite account manager — fuori scope per un progetto privato a costo zero.
+Decisione: rimosso interamente `amadeus_adapter.py` (non lasciato come riferimento morto) e
+tutte le sue tracce in `main.py`/`.env.example`. Scritto `kiwi_adapter.py` come sostituto,
+verso Kiwi.com Tequila API — già la seconda scelta della ricerca originale, con il vantaggio
+pratico di richiedere solo una API key (nessun OAuth2) e una registrazione senza revisione.
+Motivazione: investire ulteriore lavoro di verifica (credenziali, test live) su una piattaforma
+in chiusura imminente non avrebbe alcun ritorno; il pattern adapter (`FlightSourceAdapter`) ha
+reso la sostituzione priva di conseguenze per `FastFlightsAdapter` o per il comparatore in
+`main.py`, che non hanno dovuto cambiare.
+Conseguenze: la Fase 2 della roadmap (motore di ricerca alloggi) perde la propria fonte primaria
+pianificata (Amadeus Hotel Search/List API, stesso portale in chiusura) e resta senza una fonte
+"ufficiale" sostitutiva individuata — segnalato come domanda aperta in `roadmap.md`, non risolto
+da questa decisione. L'adapter Kiwi ha una verifica più debole di quella Amadeus al momento della
+rimozione (nomi dei campi della risposta ricostruiti da fonti di terze parti, non da un esempio
+ufficiale): la prima ricerca live con una chiave reale resta un passo di verifica ancora dovuto,
+non completato da questa sessione.

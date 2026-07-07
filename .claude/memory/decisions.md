@@ -80,3 +80,37 @@ Conseguenze: eventuali modifiche future alle regole (es. restringerle con Fireba
 vanno fatte editando `firestore.rules` e rilanciando lo stesso comando di deploy, non dalla
 Console — la Console resta comunque utilizzabile per ispezionare le regole attive, solo non è più
 la fonte di verità del loro contenuto.
+
+## ADR-005 — Incidente: apiKey Firebase esposta pubblicamente, rimedio con restrizione + bonifica storia
+
+Data: 2026-07-07
+Stato: accettata
+Contesto: GitHub Secret Scanning ha segnalato un "Google API Key" in `trips/cilento-2026/trip.config.js`
+(la `FIREBASE_CONFIG.apiKey` reale, introdotta nel commit poi rinominato `8f3d1c3` dopo la
+riscrittura). Il repository `alesop95/holiday-template` è pubblico (verificato via API GitHub, non
+assunto). Sebbene una `apiKey` Firebase non sia un segreto nel senso classico — l'accesso ai dati è
+governato dalle Firestore Security Rules, non dalla segretezza della chiave (vedi
+`design-and-security.md`) — il rischio reale di una chiave Google esposta e non ristretta è l'abuso
+su altre API del progetto Cloud, non l'accesso ai dati Firestore.
+Decisione: due azioni indipendenti, non una sola. Primo, la chiave è stata ristretta su Google
+Cloud Console (progetto `viaggio-new`): referrer HTTP limitati a `viaggio-new.web.app` e
+`viaggio-new.firebaseapp.com`, API accessibili ridotte da 25 a 4 (Cloud Firestore API, Identity
+Toolkit API, Token Service API, Firebase Installations API) — questo è il rimedio che neutralizza
+il rischio reale. Secondo, la storia Git è stata riscritta con `git filter-repo --replace-text`
+(dopo un backup completo via `git bundle`) per rimuovere le ripetizioni della stringa dai commit
+precedenti, poi la chiave (stessa stringa, ora ristretta) è stata reintrodotta in un nuovo commit
+perché l'app deve comunque poterla leggere per funzionare, e forzato il push (`git push --force`,
+eseguito dall'utente, non dall'agente, come da vincolo del progetto sulle operazioni git manuali).
+Motivazione: riscrivere solo la storia, senza restringere la chiave su Cloud Console, non avrebbe
+ridotto il rischio reale (la chiave sarebbe comunque rimasta nel commit corrente, necessariamente);
+restringere la chiave senza bonificare la storia avrebbe lasciato ripetuta la stessa stringa in piu'
+commit passati, superfluo ma non necessario dopo la restrizione. Fatte entrambe perché l'utente ha
+chiesto esplicitamente sia la pulizia della storia sia la restrizione, e sono complementari, non
+alternative.
+Conseguenze: ogni clone locale del repository precedente al force-push ha una storia ora
+incompatibile (i vecchi hash dei commit dal punto della riscrittura in poi non esistono più); non
+risultano altri clone noti. Verificato dopo il force-push, con un fetch indipendente e non fidandosi
+del solo output incollato dall'utente, che `origin/main` riflette la storia riscritta e che la
+vecchia stringa della chiave non ricorre più in nessun punto della storia remota tranne
+nell'unico commit finale che la reintroduce (atteso e corretto). Backup pre-riscrittura conservato
+in locale (`git bundle`, fuori dal repository), non versionato.

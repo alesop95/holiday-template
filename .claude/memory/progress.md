@@ -1,5 +1,34 @@
 # Work-log
 
+> Append-only, in ordine cronologico inverso (la voce più recente in alto). Ogni passo
+> significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
+> toccati, motivo e commit di riferimento.
+
+## 2026-07-07 — Incidente apiKey esposta: restrizione Cloud Console + bonifica storia Git
+
+Commit: `6ffbe1a64d861066b4f5847fccf2a7d4714eae77` (forzato su `origin/main`, verificato con fetch
+indipendente, non dal solo output incollato dall'utente).
+File toccati: nessun file di prodotto (solo storia Git riscritta), più
+`.claude/context/design-and-security.md` (nuova sezione sulla restrizione della chiave) e
+`.claude/memory/decisions.md` (ADR-005).
+Motivo: GitHub Secret Scanning ha segnalato la `apiKey` Firebase reale in
+`trips/cilento-2026/trip.config.js`, introdotta nel commit `9338942`/`8f3d1c3`. Verificato (non
+assunto) che il repository è pubblico. Distinto chiaramente per l'utente il rischio reale (abuso
+della chiave su altre API del progetto Cloud, non accesso ai dati Firestore, già protetti dalle
+Security Rules indipendentemente dalla segretezza della chiave) dal rimedio percepito
+(riscrivere la storia). Eseguite entrambe le azioni richieste esplicitamente dall'utente: (1)
+restrizione della chiave su Google Cloud Console — referrer HTTP limitati ai due domini di hosting,
+API ridotte da 25 a 4 (corretto in corso d'opera un errore dell'utente: aveva selezionato "Cloud
+Datastore API" invece di "Cloud Firestore API"); (2) bonifica della storia con
+`git filter-repo --replace-text` dopo backup completo (`git bundle`), poi reintroduzione della
+stessa chiave (ora ristretta) in un nuovo commit, perché l'app deve comunque poterla leggere.
+Force-push esplicitamente eseguito dall'utente, non dall'agente. Un primo tentativo di verifica
+post-force-push aveva rilevato che il push non era ancora arrivato a `origin/main` (l'utente aveva
+frainteso "fatto tutto" come comprensivo del push): corretto chiedendo di rilanciare il comando,
+poi riverificato con un secondo fetch indipendente prima di dichiarare l'incidente chiuso.
+Verifica residua: nessuna nota; incidente chiuso e verificato end-to-end (Cloud Console, storia
+Git remota, app live ricaricata con successo dall'utente).
+
 ## 2026-07-06 — Fix cache Hosting, verifica reale del backend flight-search
 
 Commit: non ancora committato (HEAD resta fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff).

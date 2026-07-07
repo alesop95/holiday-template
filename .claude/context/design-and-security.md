@@ -47,6 +47,15 @@ non distribuito pubblicamente) più le *Firestore Security Rules* dichiarate in 
 sorgente JavaScript lato client e non è un segreto nel senso tradizionale (dettaglio in
 `README.md`, sezione 12).
 
+**Restrizioni sulla chiave Firebase**: la `apiKey` è comunque limitata su Google Cloud Console
+(progetto `viaggio-new` > API e servizi > Credenziali > "Browser key (auto created by Firebase)"),
+non per segretezza ma per contenere il vero rischio di una chiave Google esposta: l'abuso su altre
+API dello stesso progetto Cloud. Restrizioni applicate: referrer HTTP limitati a
+`viaggio-new.web.app` e `viaggio-new.firebaseapp.com`, e API accessibili ristrette a quattro
+(Cloud Firestore API, Identity Toolkit API, Token Service API, Firebase Installations API) invece
+delle venticinque abilitate di default sul progetto. Contesto e incidente che ha portato a questa
+scelta in ADR-005 (`memory/decisions.md`).
+
 **Regole Firestore permanenti, non a scadenza**: `firestore.rules` è distribuito con
 `firebase deploy --only firestore:rules` da un `firebase.json` di radice dedicato a questo scopo
 (distinto dai `firebase.json` di hosting dentro ogni `trips/<nome>/`, che riguardano solo la

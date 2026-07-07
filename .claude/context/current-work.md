@@ -67,7 +67,12 @@ Definition of done:
       Result→Flights→SingleFlight, non un oggetto Flight piatto), e serve un bypass del muro
       di consenso GDPR di Google (cookie `SOCS`) da rete europea. Dettagli in
       `services/flight-search/README.md`.
-- [ ] Adapter Amadeus Flight Offers Search come seconda fonte
+- [x] Adapter Amadeus Flight Offers Search come seconda fonte — scritto e collegato in `main.py`,
+      logica di parsing verificata contro un esempio di risposta reale ufficiale
+      (`amadeus4dev/amadeus-code-examples`), ma **non eseguito contro l'API live**: servono
+      credenziali reali (`AMADEUS_CLIENT_ID`/`AMADEUS_CLIENT_SECRET`) che l'utente non ha ancora
+      generato su developers.amadeus.com. Degrada correttamente a lista vuota senza credenziali
+      (verificato: l'endpoint continua a funzionare con la sola fonte `fast_flights`).
 - [ ] Adapter Kiwi Tequila per multi-città/self-transfer
 - [ ] Cache delle ricerche (TTL breve)
 - [ ] Scelta e messa in opera dell'hosting del servizio (self-hosted Docker Compose vs cloud
@@ -77,6 +82,9 @@ Domande aperte: dove e come deployare questo servizio non è stato deciso in que
 un item della roadmap, non bloccante per lo sviluppo locale del servizio stesso. Il bypass del
 consenso GDPR (cookie `SOCS` hardcoded) non è garantito stabile nel tempo: se Google cambia
 l'interstitial, l'adapter tornerà a restituire zero risultati finché non si aggiorna il cookie.
+L'adapter Amadeus resta da verificare con una ricerca live non appena l'utente genera le
+credenziali: la sola verifica di parsing contro un esempio statico non equivale a una chiamata
+reale (a differenza di `fast_flights`, verificato live in questa sessione).
 
 ## Riconciliazione
 

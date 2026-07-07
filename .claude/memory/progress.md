@@ -4,6 +4,29 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-07 — Adapter Amadeus Flight Offers Search, seconda fonte del comparatore voli
+
+Commit: non ancora committato.
+File toccati: `services/flight-search/app/adapters/amadeus_adapter.py` (nuovo), `app/main.py`
+(collegato il nuovo adapter, aggiunto `load_dotenv()`), `requirements.txt` (`httpx`,
+`python-dotenv` promossi da dipendenza indiretta/di test a dipendenza diretta),
+`requirements-dev.txt` (rimosso, ridondante ora che `httpx` è in `requirements.txt`), README del
+servizio, `current-work.md`, `design-and-security.md`.
+Motivo: continuare la Fase 1 della roadmap con la seconda fonte voli pianificata (API ufficiale,
+a differenza di `fast_flights` che fa scraping). Verificata la forma reale della risposta
+dell'API (endpoint OAuth2, struttura `itineraries`/`segments`/`price.grandTotal`, durate in
+ISO 8601) leggendo un esempio di risposta ufficiale dal repository
+`amadeus4dev/amadeus-code-examples`, non da una sintesi di terzi. La logica di parsing è stata
+testata alimentandola direttamente con quel file di esempio (risultato corretto: compagnia
+risolta dal dizionario, durata e prezzo formattati bene). Non è stato possibile eseguire una
+ricerca live contro l'API reale, perché richiede credenziali (`AMADEUS_CLIENT_ID`/`SECRET`) che
+l'utente non ha ancora generato: differenza esplicita rispetto a `fast_flights`, verificato live
+nella sessione precedente. Verificato che l'endpoint `/api/flights/search` degrada correttamente
+quando le credenziali Amadeus mancano (l'adapter si disattiva restituendo lista vuota, l'altra
+fonte continua a funzionare, status 200).
+Verifica residua: ricerca live con credenziali reali, non appena l'utente le genera su
+developers.amadeus.com.
+
 ## 2026-07-07 — Incidente apiKey esposta: restrizione Cloud Console + bonifica storia Git
 
 Commit: `6ffbe1a64d861066b4f5847fccf2a7d4714eae77` (forzato su `origin/main`, verificato con fetch

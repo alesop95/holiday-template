@@ -8,9 +8,11 @@ della Fase 1: espone un solo adapter funzionante e nessuna cache.
 
 Un endpoint `POST /api/flights/search` che accetta origine, destinazione, data di partenza,
 data di ritorno opzionale, numero di adulti e classe, e restituisce una lista di `FlightOffer`
-normalizzati (`app/schemas.py`). L'unico adapter attivo, `FastFlightsAdapter`
-(`app/adapters/fast_flights_adapter.py`), usa la libreria `fast-flights` (repository
-`AWeirdDev/flights`) per interrogare Google Flights senza chiave.
+normalizzati (`app/schemas.py`), interrogando in sequenza due adapter. `FastFlightsAdapter`
+(`app/adapters/fast_flights_adapter.py`) usa la libreria `fast-flights` (repository
+`AWeirdDev/flights`) per interrogare Google Flights senza chiave. `AmadeusAdapter`
+(`app/adapters/amadeus_adapter.py`) usa l'API ufficiale Amadeus for Developers (Flight Offers
+Search, self-service, free tier) per confrontare con prezzi da un canale non basato su scraping.
 
 ## Stato di verifica
 
@@ -40,9 +42,6 @@ itinerari restituiti da Google hanno una forma dati che il parser della libreria
 e tiene gli altri, invece di far fallire l'intera ricerca: è una caratteristica strutturale di
 un adapter basato su scraping, non un bug isolato da correggere una volta per tutte.
 
-Per eseguire i test che richiedono `TestClient` (non necessario per far girare il servizio,
-solo per verificarlo da script): `pip install -r requirements-dev.txt`.
-
 ```bash
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8001
@@ -51,12 +50,29 @@ curl -X POST http://localhost:8001/api/flights/search \
   -d '{"origin":"FCO","destination":"CDG","departure_date":"2026-09-15","adults":1}'
 ```
 
+**AmadeusAdapter, stato diverso da FastFlightsAdapter: non ancora verificato live.** La forma
+della risposta (`itineraries`, `segments`, `price.grandTotal`) è verificata contro un esempio
+reale ufficiale (`amadeus4dev/amadeus-code-examples`, file
+`flight_offers_search/v2/get/response.json`), e la logica di parsing è stata testata offline
+alimentandola direttamente con quel file — non contro una ricerca live, perché servono
+credenziali reali che non erano disponibili in questa sessione. Senza `AMADEUS_CLIENT_ID` e
+`AMADEUS_CLIENT_SECRET` in un `.env` locale (vedi `.env.example`), l'adapter si disattiva da solo
+e restituisce lista vuota, senza rompere l'endpoint (verificato: la ricerca continua a funzionare
+con la sola fonte `fast_flights`). Per attivarlo e verificarlo davvero: registrarsi su
+https://developers.amadeus.com/my-apps (gratuito), creare un'app, copiare API Key e API Secret
+in `services/flight-search/.env` come `AMADEUS_CLIENT_ID` e `AMADEUS_CLIENT_SECRET`, poi ripetere
+la chiamata `curl` sopra e controllare che compaiano offerte con `"source":"amadeus"`.
+
+Nota sui voli andata e ritorno: Amadeus restituisce un itinerario per direzione (andata e
+ritorno separati), ma `FlightOffer` è uno schema piatto con un solo departure/arrival. L'adapter
+espone oggi solo l'itinerario di andata anche per ricerche round-trip: una semplificazione
+consapevole, non un bug, segnata come miglioramento futuro.
+
 ## Cosa manca — vedi roadmap.md per il piano completo
 
-Adapter Amadeus Flight Offers Search (fonte di validazione prezzi, API ufficiale, free tier
-reale) e adapter Kiwi Tequila (multi-città, self-transfer) non sono ancora implementati: il
-layer comparatore che interroga più fonti in parallelo e deduplica è pensato per orchestrarli
-tutti dietro allo stesso schema `FlightOffer`, ma oggi orchestra solo `fast_flights`. Non c'è
-cache: ogni chiamata a `/api/flights/search` esegue una ricerca live. Non è stata ancora presa
-una decisione su dove deployare questo servizio (self-hosted Docker Compose vs cloud free-tier,
-sezione "Direzione" di `roadmap.md`); oggi gira solo in locale con `uvicorn`.
+Adapter Kiwi Tequila (multi-città, self-transfer) non è ancora implementato. Il layer comparatore
+che interroga più fonti in parallelo (oggi sequenziale) e deduplica non esiste ancora. Non c'è
+cache: ogni chiamata a `/api/flights/search` esegue ricerche live su entrambe le fonti attive.
+Non è stata ancora presa una decisione su dove deployare questo servizio (self-hosted Docker
+Compose vs cloud free-tier, sezione "Direzione" di `roadmap.md`); oggi gira solo in locale con
+`uvicorn`.

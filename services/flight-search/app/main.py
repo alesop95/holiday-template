@@ -5,16 +5,27 @@ Avvio di sviluppo:
     uvicorn app.main:app --reload --port 8001
 """
 
+import os
 from typing import List
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
+from .adapters.amadeus_adapter import AmadeusAdapter
 from .adapters.fast_flights_adapter import FastFlightsAdapter
 from .schemas import FlightOffer, FlightSearchRequest
 
+load_dotenv()  # legge .env locale (gitignored); assente in produzione se non creato
+
 app = FastAPI(title="flight-search", version="0.1.0")
 
-ADAPTERS = [FastFlightsAdapter()]
+ADAPTERS = [
+    FastFlightsAdapter(),
+    AmadeusAdapter(
+        client_id=os.environ.get("AMADEUS_CLIENT_ID"),
+        client_secret=os.environ.get("AMADEUS_CLIENT_SECRET"),
+    ),
+]
 
 
 @app.get("/health")

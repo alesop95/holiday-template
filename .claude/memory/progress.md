@@ -4,6 +4,23 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-07 — Suite di test per entrambi i servizi backend, dev-testing.md popolata
+
+Commit: non ancora committato.
+File toccati: nuovi `services/flight-search/tests/` (4 file, 21 test), `services/stay-search/tests/`
+(3 file, 10 test), `requirements-test.txt` in entrambi i servizi. `.claude/context/dev-testing.md`
+popolata da scaffold vuoto (era l'unica scheda ancora completamente da scrivere). Aggiornato
+`current-work.md`.
+Motivo: dopo aver rifinito flight-search e avviato stay-search, colmato un vuoto segnalato più
+volte in questa sessione (`dev-testing.md` sempre "nessun test nel repository"). Suite scritta
+con lo stesso principio di onestà tenuto per il codice applicativo: i payload usati nei test
+riproducono le forme di risposta reali verificate durante lo sviluppo (Kiwi, pyairbnb con e senza
+sconto), non forme inventate; nessuna chiamata di rete reale nei test (tutto mockato via
+`monkeypatch`), per tenere la suite veloce e deterministica. Eseguiti entrambi: 31 test totali,
+tutti passanti, in meno di un secondo complessivo.
+Verifica residua: nessuna — è la prima parte di questa sessione senza una domanda aperta di
+verifica lasciata in sospeso.
+
 ## 2026-07-07 — Comparatore voli rifinito (parallelo, cache, ordinamento) + avvio stay-search
 
 Commit: non ancora committato.

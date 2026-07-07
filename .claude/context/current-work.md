@@ -87,6 +87,9 @@ Definition of done:
       Redis segnato come futuro se il servizio scala oltre un singolo processo.
 - [x] Query in parallelo invece che sequenziali (`ThreadPoolExecutor` in `main.py`) e ordinamento
       dei risultati per prezzo crescente — verificati insieme alla cache.
+- [x] Suite di test (`tests/`, pytest), 21 test, tutti passanti — cache, adapter (con payload
+      dalla forma reale verificata), endpoint (aggregazione, fault tolerance, cache hit).
+      Dettagli in `.claude/context/dev-testing.md`.
 - [ ] Scelta e messa in opera dell'hosting del servizio (self-hosted Docker Compose vs cloud
       free-tier, vedi `roadmap.md`) — oggi il servizio esiste solo come codice locale, non deployato
 
@@ -121,6 +124,9 @@ Definition of done:
 - [ ] Seconda fonte alloggi: nessuna individuata. Amadeus Hotel API condivide la chiusura del
       portale descritta sopra; Booking.com Demand API resta partner-only. Domanda aperta, non
       una svista: richiede una ricerca dedicata prima di poter procedere.
+- [x] Suite di test (`tests/`, pytest), 10 test, tutti passanti — geocodifica, adapter (con
+      payload dalla forma reale verificata, con e senza sconto), endpoint. Stesso pattern di
+      `flight-search`, dettagli in `.claude/context/dev-testing.md`.
 - [ ] Cache delle ricerche (oggi assente; `flight-search` ha già un pattern riusabile in
       `app/cache.py` se si vuole la stessa soluzione)
 - [ ] Scelta e messa in opera dell'hosting — stessa domanda aperta di `flight-search`, non decisa

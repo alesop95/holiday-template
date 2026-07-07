@@ -6,6 +6,7 @@ covers-paths:
   - public/**
   - trips/**
   - services/flight-search/**
+  - services/stay-search/**
 last-verified-commit: fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff
 ---
 
@@ -25,10 +26,17 @@ statico su Firebase Hosting, entrambi sul piano gratuito *Spark*. Un solo proget
 (`viaggio-new`) serve tutti i viaggi; i dati sono separati per viaggio via `TRIP_ID` (dettagli in
 `README.md`, sezioni 4 e 6).
 
-Il *backend* (`services/flight-search/`), introdotto in questa sessione come avvio della Fase 1
-della roadmap funzionalità, è Python + FastAPI, gestore pacchetti pip con `requirements.txt`
-(nessun ambiente virtuale ancora fissato nel repository). Non è collegato al frontend: oggi è un
-servizio a sé, eseguibile in locale con `uvicorn`, senza deployment configurato.
+Il *backend* è composto da due servizi indipendenti, entrambi Python + FastAPI, gestore pacchetti
+pip con un proprio `requirements.txt` ciascuno (nessun ambiente virtuale fissato nel repository,
+`.venv/` è gitignored). Nessuno dei due è collegato al frontend né all'altro: sono servizi a sé,
+eseguibili in locale con `uvicorn` su porte diverse (8001 e 8002), senza deployment configurato.
+`services/flight-search/` (Fase 1 della roadmap) interroga Google Flights (scraping) e Kiwi
+Tequila (API key) per i voli. `services/stay-search/` (Fase 2) interroga Airbnb (scraping) per
+gli alloggi, con geocodifica del nome località via Nominatim. Entrambi condividono lo stesso
+adapter pattern (interfaccia comune per fonte, normalizzazione verso uno schema condiviso,
+un adapter che fallisce non blocca gli altri), duplicato tra i due servizi invece che
+fattorizzato in una libreria comune: scelta deliberata per tenere i due servizi indipendenti e
+deployabili separatamente, coerente con il fatto che potrebbero finire su infrastrutture diverse.
 
 ## Alternative deliberatamente escluse
 
@@ -59,11 +67,15 @@ che lo contiene. `trips/<nome>/firebase.json` punta `"public"` alla cartella cor
 perché `index.html` e `trip.config.js` vivono direttamente dentro `trips/<nome>/`, non in una
 sottocartella ulteriore.
 
-`services/flight-search/app/main.py` espone l'endpoint FastAPI `/api/flights/search`, che delega
-la ricerca a una lista di adapter (`app/adapters/`) tutti conformi all'interfaccia
-`FlightSourceAdapter` (`app/adapters/base.py`) e normalizzati verso lo schema `FlightOffer`
-(`app/schemas.py`). Un adapter che fallisce non blocca gli altri: gli errori si accumulano e
-vengono restituiti solo se nessun adapter ha prodotto risultati.
+`services/flight-search/app/main.py` espone l'endpoint FastAPI `/api/flights/search`, che
+interroga in parallelo (`ThreadPoolExecutor`) una lista di adapter (`app/adapters/`) tutti
+conformi all'interfaccia `FlightSourceAdapter` (`app/adapters/base.py`) e normalizzati verso lo
+schema `FlightOffer` (`app/schemas.py`), poi ordina per prezzo. Un adapter che fallisce non
+blocca gli altri. Le risposte sono cache-ate in memoria con TTL di 5 minuti (`app/cache.py`).
+
+`services/stay-search/app/main.py` espone `/api/stays/search`, stesso pattern ma senza cache né
+parallelismo (un solo adapter attivo oggi, `PyairbnbAdapter`). `app/geocoding.py` traduce il nome
+di una località in un bounding box via Nominatim prima di interrogare Airbnb.
 
 ## Riferimenti a snippet
 
@@ -74,5 +86,10 @@ percorsi namespaced sotto `trips/{TRIP_ID}`.
 sincronizzazione realtime tra i due dispositivi.
 
 `services/flight-search/app/adapters/fast_flights_adapter.py:FastFlightsAdapter.search` — unico
-adapter di ricerca voli oggi funzionante, verso la libreria `fast-flights` (stato di verifica
+adapter di ricerca voli verificato live, verso la libreria `fast-flights` (stato di verifica
 descritto in `services/flight-search/README.md`).
+
+`services/stay-search/app/adapters/pyairbnb_adapter.py:PyairbnbAdapter.search` — bypassa due bug
+reali della libreria `pyairbnb` 2.2.1 scoperti in sessione (chiave di risposta annidata ignorata
+dalle funzioni pubbliche, campo prezzo totale sempre a zero); dettagli nel docstring del file e
+in `services/stay-search/README.md`.

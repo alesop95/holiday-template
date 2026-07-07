@@ -25,17 +25,19 @@ partenza del progetto: uso privato di coppia, a costo zero, senza dipendere da s
 
 La sequenza di fasi, in ordine di dipendenza:
 
-1. *Motore di ricerca voli* — in corso, `services/flight-search/`. Fonte primaria:
+1. *Motore di ricerca voli* — `services/flight-search/`, avanzato. Fonte primaria:
    reverse-engineering diretto di Google Flights (`fast-flights` di AWeirdDev, nessuna chiave
    richiesta), verificata live e funzionante. Fonte secondaria: **Kiwi Tequila**, non più Amadeus
    (vedi nota sotto), per ricerche multi-città e self-transfer, registrazione gratuita immediata
-   senza OAuth. Schema di normalizzazione comune: `FlightOffer`.
-2. *Motore di ricerca alloggi* — non iniziato. La fonte primaria originariamente prevista,
-   Amadeus Hotel Search/List API, non è più disponibile per lo stesso motivo del punto 1: va
-   ri-cercata una fonte alternativa prima di iniziare questa fase, non deducibile dalla ricerca
-   originale così com'è. Fonte secondaria confermata: `pyairbnb` di johnbalvin per Airbnb
-   (nessuna API ufficiale esiste; è reverse-engineering della GraphQL interna, rischio *ToS*[^3]
-   più alto delle altre fonti, da usare senza login con account personale). Schema di
+   senza OAuth, scritta ma non ancora verificata live. Query in parallelo, cache in-memory con
+   TTL breve, ordinamento per prezzo: fatti. Schema di normalizzazione comune: `FlightOffer`.
+2. *Motore di ricerca alloggi* — `services/stay-search/`, avviato. La fonte primaria
+   originariamente prevista, Amadeus Hotel Search/List API, non è più disponibile per lo stesso
+   motivo del punto 1: resta una fonte "ufficiale" da individuare, non risolta. Fonte attiva:
+   `pyairbnb` di johnbalvin per Airbnb (nessuna API ufficiale esiste; è reverse-engineering della
+   GraphQL interna, rischio *ToS*[^3] più alto delle altre fonti, usata senza login con account
+   personale), verificata live e funzionante — inclusa la geocodifica del nome località via
+   Nominatim, cosicché la ricerca accetta un nome di città invece di coordinate grezze. Schema di
    normalizzazione comune: `StayOffer`.
 
 **Nota — Amadeus for Developers non è più una fonte disponibile.** Il portale self-service

@@ -4,6 +4,32 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-07 — Comparatore voli rifinito (parallelo, cache, ordinamento) + avvio stay-search
+
+Commit: non ancora committato.
+File toccati: `services/flight-search/app/main.py` (query in parallelo via `ThreadPoolExecutor`,
+ordinamento per prezzo), nuovo `services/flight-search/app/cache.py` (`TTLCache` in-memory, 300s).
+Nuovo servizio `services/stay-search/` completo: `app/main.py`, `app/schemas.py`,
+`app/geocoding.py`, `app/adapters/{base,pyairbnb_adapter}.py`, `requirements.txt`, `README.md`.
+Aggiornati `roadmap.md`, `current-work.md`, `STACK.md`, `design-and-security.md`.
+Motivo: su richiesta esplicita dell'utente di continuare a sviluppare codice applicativo mentre
+i passi manuali (registrazione Kiwi) restano in sospeso per essere fatti tutti insieme più tardi.
+Rifinita la Fase 1 (voli): verificato con una ricerca reale che il parallelismo funziona (prima
+chiamata ~1.3s, seconda identica servita dalla cache in ~0.0s) e che l'ordinamento per prezzo è
+corretto. Avviata la Fase 2 (alloggi) con lo stesso adapter pattern: prima fonte `pyairbnb`
+(Airbnb, nessuna chiave), con geocodifica del nome località via Nominatim (gratuita, bounding box
+preso direttamente dalla risposta invece di calcolato a mano). Verificato con una ricerca live
+reale ("Marina di Camerota", 15-20 settembre 2026): 40 alloggi reali. Nel farlo, scoperti e
+aggirati due bug reali della libreria `pyairbnb` 2.2.1 non documentati altrove: le funzioni
+pubbliche di ricerca (`search_first_page`/`search_all`) passano internamente una chiave di primo
+livello inesistente alla funzione di normalizzazione (bypassato chiamando le funzioni interne
+`api.get`/`search.get`/`standardize.from_search` direttamente) e il campo `price.total` è sempre
+0 (il prezzo reale è nell'ultimo elemento di `price.break_down`, verificato su esempi reali con e
+senza sconto).
+Verifica residua: nessuna seconda fonte alloggi individuata (Amadeus Hotel condivide la chiusura
+del portale, Booking.com resta partner-only) — nuova domanda aperta in `current-work.md` e
+`roadmap.md`. Nessuna cache per `stay-search` (pattern riusabile già scritto per flight-search).
+
 ## 2026-07-07 — Amadeus abbandonato (portale in chiusura), sostituito da adapter Kiwi Tequila
 
 Commit: non ancora committato.

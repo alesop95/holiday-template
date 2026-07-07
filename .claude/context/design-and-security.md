@@ -8,6 +8,7 @@ covers-paths:
   - firestore.rules
   - firebase.json
   - services/flight-search/**
+  - services/stay-search/**
 last-verified-commit: fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff
 ---
 
@@ -42,6 +43,14 @@ quando è emerso che Amadeus chiude il proprio portale self-service il 17 luglio
 la prova che una fonte può sparire senza propagare danni altrove. La fonte che l'ha sostituita,
 `KiwiAdapter`, usa una API key semplice invece di OAuth2: anche questa differenza di forma resta
 invisibile al comparatore.
+
+`services/stay-search/` replica lo stesso pattern (`StaySourceAdapter`, `StayOffer`) per gli
+alloggi, invece di essere fattorizzato in una libreria condivisa tra i due servizi backend: sono
+mantenuti indipendenti perché potrebbero finire deployati separatamente (dettaglio in
+`STACK.md`). Il suo unico adapter oggi, `PyairbnbAdapter`, fa reverse-engineering della GraphQL
+interna di Airbnb (nessuna API ufficiale esiste): stesso rischio *ToS* già accettato per uso
+privato a basso volume in `roadmap.md`, mitigato allo stesso modo (nessun login con account
+personale, sole richieste pubbliche anonime).
 
 ## Sicurezza applicativa
 

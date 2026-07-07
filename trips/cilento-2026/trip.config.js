@@ -34,7 +34,7 @@ export const TRIP_ID = "cilento-2026";
 // Console > Impostazioni progetto > Le tue app > SDK setup and configuration.
 
 export const FIREBASE_CONFIG = {
-  apiKey:            "REPLACE_ME_ROTATED",
+  apiKey:            "AIzaSyBMKlxbgQ4wmgwGzhvme0yH7_7xh-l14N8",
   authDomain:        "viaggio-new.firebaseapp.com",
   projectId:         "viaggio-new",
   storageBucket:     "viaggio-new.firebasestorage.app",

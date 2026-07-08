@@ -4,6 +4,70 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-08 — Primo test in browser della scheda "Pianifica": diagnosi mixed content, decisa Render come hosting (ADR-008)
+
+Commit: non ancora committato.
+File toccati: nuovo `render.yaml` (radice, Render Blueprint per i quattro servizi). Aggiornati
+`deployment.md` (nuova sezione "Backend su Render"), `roadmap.md` (domanda di hosting risolta in
+decisione), `current-work.md` (DoD di hosting nei quattro servizi, diagnosi dell'errore nella
+feature "Pianifica"), `dev-testing.md`, `memory/decisions.md` (nuovo ADR-008),
+`services/{flight-search,stay-search,poi-search,trip-planner}/README.md` (sezione "Cosa manca":
+hosting deciso, e corrette due affermazioni ormai false su cache assente in flight-search e
+stay-search, notate di passaggio mentre si editava la stessa riga).
+Motivo: l'utente ha fatto il primo test reale in browser della scheda "Pianifica" descritta nella
+voce precedente (deploy su `viaggio-new.web.app`, quattro servizi backend attivi in locale) e ha
+mandato due screenshot con l'errore `Failed to fetch` verso `http://localhost:8004`. Letti gli
+screenshot dalla cartella Screenpresso (`manual-screenshots.md`): confermato che è un blocco di
+*mixed content* del browser (pagina HTTPS che chiama un'origine HTTP in chiaro), non un problema
+di CORS (verificato separatamente con una preflight reale, funzionante) né di servizi spenti
+(rispondevano a `curl` nello stesso momento del test). Uno screenshot allegato (`screenshot_03.png`)
+non era pertinente a questo progetto (uno schema di rete switch/VLAN): segnalato all'utente e
+ignorato.
+Nello stesso messaggio l'utente ha chiesto dove ospitare il backend una volta che l'app deve
+essere raggiungibile da fuori, per ogni viaggio futuro, citando un proprio account Render già
+collegato a GitHub. Deciso Render (ADR-008): risolve il blocco di mixed content alla radice
+(backend e frontend finiscono entrambi su HTTPS) ed era già la scelta di fallback della ricerca
+originale in `roadmap.md`. Verificati contro la documentazione ufficiale Render (non a memoria,
+via `WebFetch` su render.com/docs), prima di scrivere `render.yaml`: la variabile d'ambiente
+`PORT` che Render assegna automaticamente (default 10000, bind su `0.0.0.0`), il campo `rootDir`
+per servizi in una sotto-cartella di un monorepo, e il valore `plan: free`. Lasciati
+esplicitamente non compilati nel Blueprint (`sync: false`) i tre URL a valle di `trip-planner`
+e la chiave Kiwi, perché la sintassi Blueprint per comporre automaticamente un URL pubblico
+HTTPS da un riferimento `fromService` non è stata verificata con sufficiente certezza da poterla
+scrivere senza rischio di un valore inventato — vanno incollati a mano dopo il primo deploy.
+Non ancora eseguito: la creazione effettiva dei quattro servizi su Render (passo manuale,
+deliberatamente rimandato secondo l'istruzione dell'utente di completare prima tutto il codice
+possibile). Il test visivo della scheda "Pianifica" resta bloccato fino a quel deploy.
+
+## 2026-07-08 — Scheda "Pianifica": collega il comparatore all'itinerario dal frontend, CORS sui quattro servizi
+
+Commit: non ancora committato (HEAD al momento di scrivere: acebe30d, che include già il
+trip-planner della voce sotto — confermato allineato a `origin/main` via `git fetch` prima di
+iniziare, non assunto dall'utente).
+File toccati: `public/index.html` (nav, pannello "Pianifica", CSS, stato `S.planning`/
+`S.planResults`, `renderPlanResults`/`renderPlanSaved`, `searchPlan`/`savePlanItem`/
+`removePlanItem`, seed e listener realtime di `state/planning`), propagato byte-per-byte in
+`trips/cilento-2026/index.html`; `trips/cilento-2026/trip.config.js` (nuovo export
+`TRIP_PLANNER_URL`); `services/{flight-search,stay-search,poi-search,trip-planner}/app/main.py`
+(`CORSMiddleware`, `allow_origins=["*"]`). Aggiornati `roadmap.md`, `current-work.md`, `STACK.md`,
+`design-and-security.md`, `dev-testing.md`, `memory/decisions.md` (nuovo ADR-007).
+Motivo: proseguendo lo sviluppo di puro codice su richiesta esplicita, chiuso il pezzo di data
+model Trip → Days → Places che era stato segnalato come il prossimo passo naturale ma inizialmente
+scartato perché sembrava richiedere Firestore Admin SDK lato backend (un passo a credenziali). La
+soluzione trovata evita quella credenziale: il salvataggio di un risultato di ricerca su un giorno
+passa dall'SDK Firebase client già inizializzato nella shell, non dal backend (ADR-007) — i
+quattro servizi restano stateless e senza segreti come prima.
+Verificato dal vivo: i quattro servizi avviati con `uvicorn` reale (porte 8001-8004, fermati alla
+fine); preflight CORS reale con un'origine finta da browser conferma
+`access-control-allow-origin: *`; una richiesta reale a `/api/trip-plan` con lo stesso payload che
+manda il nuovo form (FCO→NAP, Marina di Camerota, 2026-08-10/14) ha restituito 4 voli/2 alloggi/4
+POI reali, con una forma confrontata campo per campo contro quella letta da `renderPlanResults`
+(non assunta). I 46 test esistenti dei quattro servizi rieseguiti dopo l'aggiunta di CORS: tutti
+ancora passanti, nessuna regressione.
+Non verificato: il flusso di salvataggio/rimozione su Firestore (`writePlanDay`, `renderPlanSaved`)
+non è mai stato aperto in un browser reale — richiede un riscontro visivo dell'utente (regola
+`manual-screenshots.md`), segnalato come voce aperta in `current-work.md`.
+
 ## 2026-07-08 — Nuovo servizio trip-planner: comparatore unico voli+alloggi+POI (Fase 3 chiusa)
 
 Commit: non ancora committato.

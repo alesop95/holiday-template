@@ -1,0 +1,57 @@
+# Render Blueprint: i quattro servizi backend come Web Service Python separati.
+#
+# Un solo backend condiviso serve tutti i viaggi (stesso principio del progetto Firebase unico,
+# ADR-003 in .claude/memory/decisions.md): nessun servizio conosce un TRIP_ID, quindi non serve
+# una coppia di servizi per viaggio. Deployare una volta sola, poi puntare TRIP_PLANNER_URL dello
+# stesso valore in ogni trips/<nome>/trip.config.js.
+#
+# Uso: Render Dashboard > New > Blueprint, collegare questo repository. Render legge questo file
+# dalla radice e propone la creazione dei quattro servizi sotto. Dettagli e limiti del piano free
+# in .claude/context/deployment.md e ADR-008 (.claude/memory/decisions.md).
+#
+# KIWI_TEQUILA_API_KEY e i tre *_URL di trip-planner non hanno un valore qui (sync: false): vanno
+# impostati a mano nel pannello Render dopo il primo deploy, quando gli URL pubblici dei tre
+# servizi a valle sono noti (dettaglio nel commento sotto ogni voce).
+
+services:
+  - type: web
+    name: flight-search
+    runtime: python
+    rootDir: services/flight-search
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: KIWI_TEQUILA_API_KEY
+        sync: false   # opzionale: senza, l'adapter Kiwi si disattiva da solo (vedi README del servizio)
+
+  - type: web
+    name: stay-search
+    runtime: python
+    rootDir: services/stay-search
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+  - type: web
+    name: poi-search
+    runtime: python
+    rootDir: services/poi-search
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+  - type: web
+    name: trip-planner
+    runtime: python
+    rootDir: services/trip-planner
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: FLIGHT_SEARCH_URL
+        sync: false   # dopo il deploy di flight-search: https://flight-search-xxxx.onrender.com
+      - key: STAY_SEARCH_URL
+        sync: false   # dopo il deploy di stay-search: https://stay-search-xxxx.onrender.com
+      - key: POI_SEARCH_URL
+        sync: false   # dopo il deploy di poi-search: https://poi-search-xxxx.onrender.com

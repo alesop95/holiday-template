@@ -36,12 +36,13 @@ Firestore Rules (la sicurezza dei dati, condivisa da tutti i viaggi) è di radic
 repository, non da una cartella `trips/<nome>/`. Motivazione e alternativa scartata in ADR-004
 (`memory/decisions.md`).
 
-Il backend `services/flight-search/` non fa parte di questo deployment Firebase: è un servizio
-FastAPI a sé, oggi eseguibile solo in locale (`uvicorn`), senza alcun hosting configurato. Dove e
-come deployarlo è un item aperto della roadmap (Fase 1), deliberatamente non integrato come
-Firebase Cloud Function: il progetto rimane sul piano Spark proprio perché non usa Cloud Functions,
-che richiedono il piano *Blaze* (a consumo, con carta di credito collegata) anche se l'uso
-resterebbe nel quota gratuita.
+I quattro servizi backend (`services/{flight-search,stay-search,poi-search,trip-planner}/`) non
+fanno parte di questo deployment Firebase: sono servizi FastAPI a sé, deliberatamente non
+integrati come Firebase Cloud Function (il progetto rimane sul piano Spark proprio perché non usa
+Cloud Functions, che richiedono il piano *Blaze* a consumo anche se l'uso resterebbe nella quota
+gratuita). Hosting scelto: **Render** (ADR-008, `memory/decisions.md`), un solo deploy condiviso
+da tutti i viaggi (nessuno dei quattro servizi conosce un `TRIP_ID`), non ancora eseguito in questa
+sessione — resta un passo manuale. Dettagli sotto, sezione "Backend su Render".
 
 ## Comandi
 
@@ -64,6 +65,33 @@ delle versioni servite navigabile dalla Console (*Hosting > Versioni precedenti*
 ripristinare manualmente una release precedente. Le Firestore Rules non hanno uno storico gestito
 da questo progetto: la versione precedente si recupera solo dalla cronologia Git di
 `firestore.rules`.
+
+## Backend su Render
+
+`render.yaml` (radice del repository) è un *Render Blueprint*[^5]: descrive i quattro servizi come
+Web Service Python indipendenti (`rootDir` per puntare ciascuno alla propria cartella sotto
+`services/`, `buildCommand: pip install -r requirements.txt`, `startCommand: uvicorn app.main:app
+--host 0.0.0.0 --port $PORT`, `plan: free`). Render assegna la variabile `PORT` automaticamente
+(default 10000): il servizio deve bindarsi a `0.0.0.0` su quella porta, non su una porta fissa
+come nello sviluppo locale (8001-8004) — verificato contro la documentazione ufficiale Render, non
+assunto.
+
+Passi di attivazione (manuali, non ancora eseguiti in questa sessione): su Render Dashboard, *New
+> Blueprint*, collegare il repository GitHub `alesop95/holiday-template`. Render legge
+`render.yaml` e propone la creazione dei quattro servizi. Dopo il primo deploy di
+`flight-search`/`stay-search`/`poi-search`, Render assegna a ciascuno un URL pubblico
+(`https://<nome-servizio>-xxxx.onrender.com`): questi tre URL vanno incollati a mano nelle
+variabili d'ambiente di `trip-planner` su Render (`FLIGHT_SEARCH_URL`, `STAY_SEARCH_URL`,
+`POI_SEARCH_URL`, marcate `sync: false` nel Blueprint apposta per questo). Infine, l'URL pubblico
+di `trip-planner` va incollato in `TRIP_PLANNER_URL` (`trip.config.js`) di ogni viaggio, sostituendo
+il default locale `http://localhost:8004`, e ridistribuito con `firebase deploy` da ciascuna
+cartella `trips/<nome>/`.
+
+Limite noto del piano free, non ancora mitigato: un servizio inattivo per circa 15 minuti va in
+pausa e impiega circa 50 secondi a ripartire alla richiesta successiva (*cold start*); per una
+ricerca che coinvolge tutti e quattro il caso peggiore dopo un periodo di inattività è dell'ordine
+di 100 secondi (`trip-planner` si sveglia per primo, poi gli altri tre in parallelo). Dettagli e
+motivazione della scelta in ADR-008 (`memory/decisions.md`).
 
 ## Variabili d'ambiente e segreti
 
@@ -101,3 +129,8 @@ del modello a `firebase.json` singolo che `my-wedding-day` usa correttamente per
 d'uso. Un punto in comune tra i due progetti, non una differenza: entrambi distribuiscono
 `firestore.rules` tramite CLI da un `firebase.json` tracciato, invece di affidarsi alle regole
 generate dalla Console — `my-wedding-day` aveva già questo file prima che lo si introducesse qui.
+
+[^5]: **Render Blueprint** — file `render.yaml` che descrive dichiarativamente uno o più servizi
+Render (Web Service, database, ecc.); collegando un repository che lo contiene, Render propone di
+creare tutti i servizi descritti in un solo passaggio invece di configurarli uno per uno da
+interfaccia.

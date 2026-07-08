@@ -53,8 +53,7 @@ ragionamento della ricerca originale.
 
 ## Cosa manca — vedi roadmap.md per il piano completo
 
-Nessuna cache (ogni ricerca rifà la geocodifica e la query Airbnb da zero, a differenza di
-`flight-search` che ha già una cache in-memory con TTL). Nessuna seconda fonte (Booking.com è
-partner-only, non percorribile; Amadeus Hotel API condivide la chiusura del portale self-service
-descritta in `roadmap.md` e ADR-006). Non è stata ancora presa una decisione su dove deployare
-questo servizio, stessa domanda aperta di `flight-search`.
+Nessuna seconda fonte (Booking.com è partner-only, non percorribile; Amadeus Hotel API condivide
+la chiusura del portale self-service descritta in `roadmap.md` e ADR-006). Hosting deciso: Render
+(ADR-008, `.claude/memory/decisions.md`), `render.yaml` alla radice del repository; creazione
+effettiva del servizio su Render non ancora eseguita.

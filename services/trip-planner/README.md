@@ -46,7 +46,13 @@ curl -X POST http://localhost:8004/api/trip-plan \
 Nessuna deduplicazione tra fonti (non applicabile qui: le tre categorie voli/alloggi/POI non si
 sovrappongono mai, a differenza di due fonti voli diverse dentro `flight-search`). Nessuna stima
 di costo totale del viaggio che sommi un volo + un alloggio scelti: oggi restituisce liste
-separate, la selezione e il calcolo restano manuali. Stessa domanda aperta di hosting degli altri
-tre servizi, più una in aggiunta: questo servizio dipende dalla raggiungibilità degli altri tre,
-quindi qualunque decisione di hosting deve tenerne conto (stessa rete/stesso host, o URL pubblici
-raggiungibili tra loro).
+separate, la selezione e il calcolo restano manuali. Il salvataggio di un risultato scelto su un
+giorno dell'itinerario passa dalla scheda "Pianifica" della shell frontend, non da questo
+servizio (ADR-007, `.claude/memory/decisions.md`) — non verificato in un browser reale finché
+questo servizio non è raggiungibile in HTTPS, vedi sotto.
+
+Hosting deciso: Render (ADR-008, `.claude/memory/decisions.md`), `render.yaml` alla radice del
+repository. Questo servizio dipende dalla raggiungibilità pubblica degli altri tre: dopo il loro
+primo deploy su Render, i rispettivi URL pubblici vanno incollati a mano nelle variabili
+d'ambiente di questo servizio (`FLIGHT_SEARCH_URL`, `STAY_SEARCH_URL`, `POI_SEARCH_URL`, marcate
+`sync: false` nel Blueprint apposta per questo). Creazione effettiva su Render non ancora eseguita.

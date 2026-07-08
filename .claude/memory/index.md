@@ -57,12 +57,25 @@ chiusa, non dimenticata). `services/poi-search/` (Fase 4, itinerary builder) —
 tolleranza ai guasti. **Amadeus abbandonato** (ADR-006): il portale self-service chiude il 17
 luglio 2026, adapter scritto e poi rimosso per intero, non ritentare.
 
-Nessuno dei quattro backend è deployato da nessuna parte né collegato al frontend: girano solo
-in locale con `uvicorn` (porte 8001-8004). Questa è la prossima decisione strutturale in sospeso,
-resa più stringente dall'esistenza di `trip-planner` (dipende dalla raggiungibilità reciproca
-degli altri tre).
+Nessuno dei quattro backend è deployato da nessuna parte: girano solo in locale con `uvicorn`
+(porte 8001-8004). Questa è la prossima decisione strutturale in sospeso, resa più stringente
+dall'esistenza di `trip-planner` (dipende dalla raggiungibilità reciproca degli altri tre).
+
+**Collegamento frontend-backend, primo pezzo (2026-07-08)**: la shell guadagna una scheda
+"Pianifica" che chiama `trip-planner` via `fetch` e salva un risultato scelto su un giorno
+specifico direttamente su Firestore dal browser, senza dare al backend un Admin SDK (ADR-007,
+`memory/decisions.md`) — CORS aperto sui quattro servizi per permettere la chiamata da browser.
+Verificato dal vivo lato rete (CORS, forma della risposta contro il rendering reale). **Primo test
+in browser reale fallito** con `Failed to fetch`: diagnosi confermata (screenshot dell'utente) è
+un blocco di *mixed content* del browser, la shell HTTPS non può chiamare un backend
+`http://localhost`. Deciso di conseguenza l'hosting dei quattro backend su **Render** (ADR-008),
+`render.yaml` alla radice, che risolve il blocco mettendo anche il backend su HTTPS — creazione
+effettiva dei servizi su Render non ancora eseguita (passo manuale). Il test visivo del
+salvataggio su Firestore resta sospeso fino a quel deploy, dettaglio in `current-work.md`.
 
 Prossima azione dichiarata dall'utente: finire tutto lo sviluppo di puro codice possibile prima
-di tornare ai passi manuali (completare la registrazione Kiwi Tequila, poi la scelta e messa in
-opera dell'hosting dei quattro backend). Committare il lavoro descritto in questa voce se non
-ancora fatto al momento della lettura (controllare `git status` prima di assumere).
+di tornare ai passi manuali, che ora sono tre: completare la registrazione Kiwi Tequila, creare
+i quattro servizi su Render da `render.yaml` (Dashboard Render > New > Blueprint) e collegarne gli
+URL pubblici, e infine il riscontro visivo in browser della scheda "Pianifica". Committare il
+lavoro descritto in questa voce se non ancora fatto al momento della lettura (controllare
+`git status` prima di assumere).

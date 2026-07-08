@@ -42,6 +42,9 @@ curl -X POST http://localhost:8003/api/poi/search \
 ## Cosa manca — vedi roadmap.md per il piano completo
 
 Nessun routing/ottimizzazione dell'ordine di visita (OpenTripPlanner o GraphHopper, entrambi
-self-hosted, non introdotti in questa sessione). Nessuna integrazione con l'itinerario esistente
-di un viaggio (`trips/<nome>/trip.config.js`): oggi è un servizio di sola ricerca, scollegato dal
-frontend, stessa domanda aperta di hosting degli altri due servizi backend.
+self-hosted, non introdotti in questa sessione). Un primo collegamento all'itinerario esiste ora
+tramite `services/trip-planner/` e la scheda "Pianifica" della shell, che salva un POI scelto su
+un giorno specifico (ADR-007, `.claude/memory/decisions.md`) — non verificato in un browser reale
+finché il backend non è raggiungibile in HTTPS (vedi sotto). Hosting deciso: Render (ADR-008),
+`render.yaml` alla radice del repository; creazione effettiva del servizio su Render non ancora
+eseguita.

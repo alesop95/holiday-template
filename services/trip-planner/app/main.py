@@ -18,12 +18,24 @@ from typing import Optional, Tuple
 import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .schemas import TripPlan, TripPlanRequest
 
 load_dotenv()
 
 app = FastAPI(title="trip-planner", version="0.1.0")
+
+# Nessuna autenticazione né dato sensibile in nessuno dei quattro servizi (vedi
+# design-and-security.md): origine aperta a tutti per permettere alla shell frontend
+# (aperta da file:// o da un server statico locale, origine imprevedibile) di chiamare
+# questo servizio durante lo sviluppo.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 FLIGHT_SEARCH_URL = os.environ.get("FLIGHT_SEARCH_URL", "http://localhost:8001")
 STAY_SEARCH_URL = os.environ.get("STAY_SEARCH_URL", "http://localhost:8002")

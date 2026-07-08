@@ -18,7 +18,16 @@ last-verified-commit: fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff
 ## Test runner e comandi
 
 Il frontend (`public/`, `trips/<nome>/`) non ha test automatici: è Vanilla JS senza build step,
-verificato finora solo manualmente in browser (screenshot dell'utente durante lo sviluppo).
+verificato finora solo manualmente in browser (screenshot dell'utente durante lo sviluppo). La
+scheda "Pianifica" (chiamata a `trip-planner`, salvataggio risultati su Firestore) è stata
+verificata solo a metà: la chiamata di rete e la forma della risposta sono verificate dal vivo con
+una richiesta HTTP diretta identica a quella che manda il form (stesso payload, stessi campi letti
+dal rendering), ma il primo test in un browser reale (screenshot dell'utente) ha mostrato
+`Failed to fetch` — la shell su HTTPS (`viaggio-new.web.app`) non può chiamare un backend
+`http://localhost` per il blocco *mixed content* dei browser, non un problema di CORS o di
+servizi spenti (entrambi verificati funzionanti separatamente). Il flusso di
+salvataggio/rimozione su Firestore resta perciò non verificato in browser finché il backend non è
+raggiungibile in HTTPS (Render, ADR-008); dettaglio in `current-work.md`.
 
 I quattro servizi backend usano `pytest`, ciascuno con la propria suite in `tests/` e il proprio
 virtualenv (`.venv/`, gitignored). Comandi, identici per tutti e quattro:

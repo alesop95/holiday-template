@@ -81,8 +81,9 @@ fatto in questo avvio.
 
 ## Cosa manca — vedi roadmap.md per il piano completo
 
-Il layer comparatore che interroga più fonti in parallelo (oggi sequenziale) e deduplica non
-esiste ancora. Non c'è cache: ogni chiamata a `/api/flights/search` esegue ricerche live su
-entrambe le fonti attive. Non è stata ancora presa una decisione su dove deployare questo
-servizio (self-hosted Docker Compose vs cloud free-tier, sezione "Direzione" di `roadmap.md`);
-oggi gira solo in locale con `uvicorn`.
+Il layer comparatore che interroga più fonti in parallelo e combina i tre servizi di ricerca è
+`services/trip-planner/`, non questo servizio (che già interroga in parallelo le proprie due
+fonti voli con `ThreadPoolExecutor`, e ha una cache in-memory con TTL, `app/cache.py`). Hosting
+deciso: Render (ADR-008, `.claude/memory/decisions.md`), `render.yaml` alla radice del
+repository; creazione effettiva del servizio su Render non ancora eseguita, oggi gira solo in
+locale con `uvicorn`.

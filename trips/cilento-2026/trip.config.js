@@ -42,6 +42,16 @@ export const FIREBASE_CONFIG = {
   appId:             "1:15558495838:web:e59d6320eff09870b96ecf"
 };
 
+// ─── COMPARATORE (backend Python, locale) ──────────────────────────────────────
+// URL del servizio trip-planner (services/trip-planner/), che orchestra flight-search,
+// stay-search e poi-search. Nessuno dei quattro servizi e' deployato: girano solo in
+// locale con uvicorn (vedi services/*/README.md), quindi questo valore ha senso solo
+// durante lo sviluppo, con i quattro servizi avviati sulla stessa macchina del browser.
+// La scheda "Pianifica" in index.html degrada a un messaggio d'errore se il servizio
+// non risponde, senza bloccare il resto dell'app.
+
+export const TRIP_PLANNER_URL = "http://localhost:8004";
+
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 // Contenuto della sezione di testa dell'applicazione.
 

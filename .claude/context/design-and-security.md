@@ -68,7 +68,11 @@ d'ambiente `FLIGHT_SEARCH_URL`/`STAY_SEARCH_URL`/`POI_SEARCH_URL`).
 Nessun segreto o dato personale coinvolto in nessuno dei quattro servizi backend: nessuno
 richiede login, nessuno gestisce dati dell'utente oltre i parametri della singola ricerca, non
 persistiti da nessuna parte (la cache in-memory di ogni servizio si svuota al riavvio del
-processo).
+processo). Nessuno dei quattro scrive su Firestore: il collegamento tra un risultato di ricerca e
+un giorno dell'itinerario è responsabilità della shell frontend, non del backend (ADR-007,
+`memory/decisions.md`) — la scelta che ha permesso di costruire questo pezzo di funzionalità senza
+introdurre una service account key per il Firebase Admin SDK, una credenziale reale che avrebbe
+richiesto un passo manuale su Google Cloud Console.
 
 ## Sicurezza applicativa
 
@@ -103,7 +107,18 @@ progetto Firebase condiviso). Chiunque conosca l'URL pubblico dell'app può legg
 dati di qualunque viaggio, passato o futuro, non solo di quello in corso. Per il caso d'uso
 (due persone, URL non distribuito) il rischio è accettato deliberatamente; un irrigidimento
 futuro (Firebase Authentication con vincolo ad account Google specifici) richiederebbe aggiungere
-l'SDK di autenticazione e una logica di login, oggi assente.
+l'SDK di autenticazione e una logica di login, oggi assente. Il nuovo documento
+`trips/{TRIP_ID}/state/planning` (risultati di ricerca salvati su un giorno, scheda "Pianifica")
+ricade sotto la stessa regola permissiva, senza bisogno di una regola dedicata: non introduce una
+superficie di rischio diversa da quella già accettata per checklist e note.
+
+**CORS dei quattro servizi backend**: `CORSMiddleware` con `allow_origins=["*"]` su tutti e
+quattro (`flight-search`, `stay-search`, `poi-search`, `trip-planner`), aggiunto per permettere
+alla scheda "Pianifica" della shell di chiamarli da browser. Un'origine aperta sarebbe un problema
+se questi servizi gestissero cookie di sessione, autenticazione o dati sensibili: non è questo il
+caso (vedi sopra), quindi l'apertura totale non amplia il rischio reale. Se in futuro uno di
+questi servizi guadagnasse autenticazione o stato per-utente, questa impostazione andrebbe
+ristretta a un'origine esplicita nello stesso momento.
 
 **Gestione dei segreti**: nessun segreto oggi nel frontend (l'unico valore sensibile,
 `FIREBASE_CONFIG.apiKey`, non è trattato come segreto per le ragioni sopra). Il backend

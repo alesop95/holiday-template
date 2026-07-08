@@ -26,7 +26,11 @@ nessun bundler, nessun gestore pacchetti: gli SDK Firebase e Leaflet si caricano
 assoluti dentro `index.html`. Persistenza e sincronizzazione realtime su Cloud Firestore, hosting
 statico su Firebase Hosting, entrambi sul piano gratuito *Spark*. Un solo progetto Firebase
 (`viaggio-new`) serve tutti i viaggi; i dati sono separati per viaggio via `TRIP_ID` (dettagli in
-`README.md`, sezioni 4 e 6).
+`README.md`, sezioni 4 e 6). La scheda "Pianifica" della shell aggiunge un secondo canale di rete,
+indipendente da Firebase: una chiamata `fetch` diretta verso `trip-planner` (URL in
+`TRIP_PLANNER_URL`, `trip.config.js`), il cui unico scopo è mostrare risultati di ricerca; il
+salvataggio di un risultato su un giorno torna a passare dall'SDK Firebase client, non dal
+backend (ADR-007, `memory/decisions.md`).
 
 Il *backend* è composto da quattro servizi indipendenti, tutti Python + FastAPI, gestore
 pacchetti pip con un proprio `requirements.txt` ciascuno (nessun ambiente virtuale fissato nel
@@ -48,7 +52,11 @@ duplicato tra i servizi invece che fattorizzato in una libreria comune: scelta d
 tenerli indipendenti e deployabili separatamente, coerente con il fatto che potrebbero finire su
 infrastrutture diverse. Tutti e quattro hanno una suite di test `pytest` in `tests/`, nessuna
 chiamata di rete reale nei test (mockate via `monkeypatch` con payload dalla forma reale
-verificata durante lo sviluppo, incluse le chiamate HTTP tra servizi in `trip-planner`).
+verificata durante lo sviluppo, incluse le chiamate HTTP tra servizi in `trip-planner`). Tutti e
+quattro montano `CORSMiddleware` con origine aperta (`allow_origins=["*"]`): nessuno gestisce
+autenticazione o dati sensibili (`design-and-security.md`), e l'apertura serve a permettere alla
+shell frontend, aperta da un'origine imprevedibile (`file://` o un server statico locale), di
+chiamarli durante lo sviluppo.
 
 ## Alternative deliberatamente escluse
 

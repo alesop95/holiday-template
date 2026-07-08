@@ -64,10 +64,13 @@ fuori scope per un progetto privato).
    chiave, mentre OpenTripMap sì (un passo manuale in più per lo stesso tipo di dato, dei tag
    `tourism`/`historic` di OpenStreetMap), verificata live e funzionante (Marina di Camerota:
    Grotta Azzurra, Belvedere di Cala Fortuna, spiagge — nomi in parte già presenti
-   nell'itinerario scritto a mano di Cilento, buon segnale di qualità). Ancora da fare: il data
-   model Trip → Days → Places/Reservations che collega i POI trovati a un itinerario reale, e il
-   routing/ottimizzazione del percorso giornaliero (OpenTripPlanner o GraphHopper, entrambi
-   self-hostabili in Docker, non iniziati).
+   nell'itinerario scritto a mano di Cilento, buon segnale di qualità). Il primo pezzo del data
+   model Trip → Days → Places è ora scritto: la scheda "Pianifica" della shell chiama
+   `trip-planner` e salva un risultato scelto su un giorno specifico direttamente su Firestore dal
+   browser, senza Admin SDK nel backend (ADR-007) — verificato live lato backend (CORS, forma
+   della risposta), non ancora verificato in un browser reale lato Firestore (dettaglio in
+   `current-work.md`). Resta non iniziato il routing/ottimizzazione del percorso giornaliero
+   (OpenTripPlanner o GraphHopper, entrambi self-hostabili in Docker).
 5. *Rifinitura* — non iniziato. Export dell'itinerario, price alert opzionali, gestione multivaluta.
 
 Non conviene inseguire integrazioni ufficiali con Skyscanner o Booking.com: entrambe le API sono
@@ -75,18 +78,23 @@ partner-only, richiedono revisione business e non sono percorribili per un proge
 iniziale.
 
 Sullo stack di hosting per i servizi backend introdotti da queste fasi (a differenza del frontend
-statico attuale, che resta su Firebase), la ricerca raccomanda **self-hosting su un dispositivo
-sempre acceso** (mini PC, NAS, Raspberry Pi) con Docker Compose — FastAPI, Postgres, Redis, e
-OpenTripPlanner/GraphHopper nello stesso compose, accesso remoto via Tailscale — perché è l'unica
-combinazione che resta a costo zero indipendentemente dal tempo e dal volume d'uso, a differenza dei
-free tier dei PaaS[^4] cloud (Fly.io e Railway hanno già eliminato i propri free tier permanenti;
-Render e Supabase li mantengono ma con spin-down o pausa dopo inattività). L'alternativa cloud
-free-tier (Vercel + Render + Supabase, con un ping periodico via GitHub Actions per evitare la
-pausa di Supabase) resta una via di fallback valida se non si dispone di un dispositivo proprio
-sempre acceso. Per un'eventuale app mobile, la raccomandazione è una *PWA* installabile invece di
-un'app nativa separata, per restare a costo zero senza account developer a pagamento; solo se in
-futuro servissero notifiche push native o accesso a sensori conviene valutare React Native + Expo
-(free tier EAS sufficiente per un uso personale).
+statico attuale, che resta su Firebase), la ricerca originale raccomandava **self-hosting su un
+dispositivo sempre acceso** (mini PC, NAS, Raspberry Pi) con Docker Compose come combinazione a
+costo zero indipendente dal tempo/volume d'uso, con il cloud free-tier (Vercel + Render +
+Supabase) come fallback. **Decisione presa (ADR-008, `memory/decisions.md`)**: Render, non il
+self-hosting — l'utente ha già un account Render collegato a GitHub, e la scelta risolve anche un
+problema emerso nel primo test della scheda "Pianifica" (`current-work.md`): la shell su HTTPS non
+può chiamare un backend `http://localhost` per via del blocco *mixed content* dei browser, mentre
+un backend Render è già HTTPS. `render.yaml` (radice del repository) descrive i quattro servizi
+come Web Service Python; creazione effettiva su Render non ancora eseguita (passo manuale). Limite
+noto del piano free: pausa dopo ~15 minuti di inattività, ~50 secondi di cold start alla richiesta
+successiva (fino a ~100 secondi per una ricerca che li coinvolge tutti e quattro in sequenza di
+risveglio) — giudicato accettabile dall'utente per il pattern d'uso reale (ricerca occasionale
+durante la pianificazione, non accesso continuo), nessun meccanismo di keep-alive introdotto
+deliberatamente per non aggiungere infrastruttura non necessaria. Per un'eventuale app mobile, la raccomandazione è una *PWA* installabile
+invece di un'app nativa separata, per restare a costo zero senza account developer a pagamento;
+solo se in futuro servissero notifiche push native o accesso a sensori conviene valutare React
+Native + Expo (free tier EAS sufficiente per un uso personale).
 
 ## Idee e ipotesi da verificare
 

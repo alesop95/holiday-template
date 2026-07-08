@@ -12,6 +12,7 @@ from typing import List
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from .adapters.fast_flights_adapter import FastFlightsAdapter
 from .adapters.kiwi_adapter import KiwiAdapter
@@ -21,6 +22,15 @@ from .schemas import FlightOffer, FlightSearchRequest
 load_dotenv()  # legge .env locale (gitignored); assente in produzione se non creato
 
 app = FastAPI(title="flight-search", version="0.1.0")
+
+# Nessuna autenticazione né dato sensibile (vedi design-and-security.md): origine aperta
+# per permettere alla shell frontend di chiamare questo servizio durante lo sviluppo.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 ADAPTERS = [
     FastFlightsAdapter(),

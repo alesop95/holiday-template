@@ -142,3 +142,78 @@ da questa decisione. L'adapter Kiwi ha una verifica più debole di quella Amadeu
 rimozione (nomi dei campi della risposta ricostruiti da fonti di terze parti, non da un esempio
 ufficiale): la prima ricerca live con una chiave reale resta un passo di verifica ancora dovuto,
 non completato da questa sessione.
+
+## ADR-007 — Risultati del comparatore salvati dal frontend via SDK client, non dal backend via Admin SDK
+
+Data: 2026-07-08
+Stato: accettata
+Contesto: collegare i risultati di `trip-planner` (voli, alloggi, POI) a un giorno specifico
+dell'itinerario richiede una scrittura su Firestore. La via ovvia — dare a `trip-planner` un
+endpoint di salvataggio che scrive lui stesso su Firestore — richiede il Firebase Admin SDK, che
+a sua volta richiede una service account key: una credenziale reale da generare su Google Cloud
+Console e distribuire al servizio, cioè uno dei passi manuali che l'utente ha chiesto di rimandare
+a favore dello sviluppo di puro codice.
+Decisione: nessuno dei quattro servizi backend scrive su Firestore. La shell (`public/index.html`)
+guadagna una scheda "Pianifica" che chiama `trip-planner` via `fetch` semplice (nessun SDK
+coinvolto in quella chiamata) e, quando l'utente sceglie di salvare un risultato su un giorno,
+scrive direttamente su Firestore con l'SDK client già inizializzato in `init()` — lo stesso canale
+usato da checklist e note. Nuovo documento `trips/{TRIP_ID}/state/planning`, struttura
+`{ byDay: { "<dayId>": { flights: [...], stays: [...], pois: [...] } } }`, scritto con
+`setDoc(..., {merge:true})` sullo stesso pattern già in uso per `writeNote`.
+Motivazione: la separazione già esistente tra i quattro backend (stateless, senza segreti, senza
+dato personale, vedi `design-and-security.md`) resta intatta senza introdurre credenziali nuove;
+il costo è che il salvataggio funziona solo quando la shell gira nello stesso contesto browser che
+può raggiungere sia `trip-planner` (rete locale) sia Firestore (rete pubblica), non da qualunque
+client del backend.
+Conseguenze: CORS aperto (`allow_origins=["*"]`) aggiunto a tutti e quattro i servizi, altrimenti
+il browser blocca la risposta della chiamata da un'origine diversa (la shell aperta da file:// o
+da un server statico locale) — scelta coerente con l'assenza di autenticazione e di dati sensibili
+già documentata, non un indebolimento della sicurezza reale. Se in futuro il salvataggio dovesse
+avvenire da un contesto senza SDK client (es. un job schedulato lato server), servirà comunque
+introdurre l'Admin SDK a quel punto: questa decisione rimanda quel passo, non lo esclude.
+
+## ADR-008 — Hosting dei quattro servizi backend su Render, un solo deploy condiviso per tutti i viaggi
+
+Data: 2026-07-08
+Stato: proposta (Blueprint scritto e verificato contro la documentazione ufficiale Render; la
+creazione effettiva dei servizi su Render, un account già esistente dell'utente collegato a
+GitHub, resta un passo manuale non ancora eseguito in questa sessione)
+Contesto: il primo test in browser della scheda "Pianifica" (screenshot dell'utente) ha mostrato
+`Failed to fetch` verso `http://localhost:8004`: la shell gira su HTTPS (`viaggio-new.web.app`,
+referrer autorizzato dell'apiKey Firebase per ADR-005) e il browser blocca come *mixed content*
+una richiesta attiva verso un'origine HTTP in chiaro, indipendentemente da come risponde il
+servizio di destinazione. Nessuna delle alternative di solo sviluppo locale è pulita: allargare la
+restrizione referrer dell'apiKey a `localhost` è un cambio di postura di sicurezza per un test, e
+un certificato HTTPS locale autofirmato aggiunge un pezzo di infrastruttura usa-e-getta. L'utente
+ha inoltre posto la domanda di hosting reale nello stesso momento, con un account Render già
+esistente collegato a GitHub.
+Decisione: i quattro servizi backend (`flight-search`, `stay-search`, `poi-search`,
+`trip-planner`) si deployano su Render come Web Service Python separati, descritti in un unico
+`render.yaml` (Render Blueprint) alla radice del repository. Un solo deploy serve tutti i viaggi,
+presenti e futuri: nessuno dei quattro servizi conosce un `TRIP_ID` o dipende da un viaggio
+specifico (sono ricerca/orchestrazione pure), lo stesso principio già adottato per il progetto
+Firebase unico (ADR-003). `TRIP_PLANNER_URL` in `trip.config.js` passa dal default locale
+(`http://localhost:8004`) all'URL pubblico HTTPS di `trip-planner` su Render, stesso valore
+ripetuto identico in ogni `trips/<nome>/trip.config.js` futuro, sullo stesso modello già in uso
+per `FIREBASE_CONFIG`.
+Motivazione: risolve il blocco di mixed content alla radice, perché sia la shell sia il backend
+finiscono sotto HTTPS, senza toccare la restrizione referrer dell'apiKey né introdurre
+infrastruttura locale usa-e-getta. Render era già la scelta di fallback raccomandata dalla ricerca
+originale (`roadmap.md`, sezione "Direzione") per chi non dispone di un dispositivo sempre acceso;
+l'utente ha già l'account, quindi non introduce un nuovo attrito operativo.
+Conseguenze accettate esplicitamente dall'utente, non mitigate: il piano free di Render mette in
+pausa un servizio dopo circa 15 minuti di inattività, con un cold start di circa 50 secondi alla
+richiesta successiva; per una ricerca che coinvolge tutti e quattro (`trip-planner` deve prima
+svegliarsi lui stesso, poi gli altri tre si svegliano in parallelo) il caso peggiore dopo un
+periodo di inattività è dell'ordine di 100 secondi per la prima ricerca. Giudicato accettabile per
+il pattern d'uso reale della scheda "Pianifica" (ricerca occasionale durante la pianificazione di
+un viaggio, non un servizio ad accesso continuo): non introdotto alcun meccanismo per tenere i
+servizi svegli (es. un ping periodico via GitHub Actions, comunque valutato nella ricerca originale
+in `roadmap.md`), scelta deliberata per non aggiungere infrastruttura non necessaria al caso d'uso.
+Gli URL pubblici dei tre servizi a valle di `trip-planner` (`FLIGHT_SEARCH_URL`,
+`STAY_SEARCH_URL`, `POI_SEARCH_URL`) vanno impostati a mano nel pannello Render dopo il primo
+deploy di ciascuno, perché la sintassi esatta della variabile Blueprint `fromService` per
+comporre un URL completo con schema HTTPS a partire dal solo host/porta privato non è stata
+verificata con sufficiente certezza contro la documentazione ufficiale per essere scritta nel
+Blueprint senza rischio di un valore inventato; il file `render.yaml` marca quei tre valori
+`sync: false` apposta.

@@ -90,8 +90,9 @@ Definition of done:
 - [x] Suite di test (`tests/`, pytest), 21 test, tutti passanti — cache, adapter (con payload
       dalla forma reale verificata), endpoint (aggregazione, fault tolerance, cache hit).
       Dettagli in `.claude/context/dev-testing.md`.
-- [ ] Scelta e messa in opera dell'hosting del servizio (self-hosted Docker Compose vs cloud
-      free-tier, vedi `roadmap.md`) — oggi il servizio esiste solo come codice locale, non deployato
+- [ ] Hosting: **deciso Render** (ADR-008), `render.yaml` scritto e verificato contro la
+      documentazione ufficiale — creazione effettiva dei servizi su Render non ancora eseguita
+      (passo manuale, vedi `deployment.md`)
 
 Domande aperte: dove e come deployare questo servizio non è stato deciso in questa sessione — resta
 un item della roadmap, non bloccante per lo sviluppo locale del servizio stesso. Il bypass del
@@ -134,7 +135,7 @@ Definition of done:
 - [x] Suite di test (`tests/`, pytest), 11 test, tutti passanti — geocodifica, adapter (con
       payload dalla forma reale verificata, con e senza sconto), endpoint, cache. Stesso pattern
       di `flight-search`, dettagli in `.claude/context/dev-testing.md`.
-- [ ] Scelta e messa in opera dell'hosting — stessa domanda aperta di `flight-search`, non decisa
+- [ ] Hosting: deciso Render insieme agli altri tre servizi (ADR-008) — non ancora eseguito
 
 Domande aperte: nessuna sulla seconda fonte (ricercata e conclusa: nessuna praticabile per ora,
 vedi DoD sopra). Il rischio ToS di `pyairbnb` (nessuna API ufficiale, reverse-engineering della
@@ -169,7 +170,7 @@ Definition of done:
       "itinerary builder" vero e proprio.
 - [ ] Routing/ottimizzazione del percorso giornaliero (OpenTripPlanner o GraphHopper self-hosted)
       — non iniziato, richiede una decisione infrastrutturale (Docker) non ancora presa.
-- [ ] Scelta e messa in opera dell'hosting — stessa domanda aperta degli altri due servizi
+- [ ] Hosting: deciso Render insieme agli altri tre servizi (ADR-008) — non ancora eseguito
 
 Domande aperte: nessuna sulla fonte POI (Overpass scelta esplicitamente al posto di OpenTripMap
 perché non richiede chiave, vedi `roadmap.md`). Resta aperta la stessa domanda di hosting degli
@@ -198,12 +199,59 @@ Definition of done:
 - [x] Suite di test (`tests/`, pytest), 4 test, tutti passanti — combinazione delle tre risposte,
       degradazione con un servizio giù, payload inviati a ciascun servizio a valle corretti.
 - [ ] Nessuna stima di costo totale che sommi un volo + un alloggio scelti — oggi liste separate.
-- [ ] Scelta e messa in opera dell'hosting — stessa domanda degli altri tre, con una complicazione
-      in più: questo servizio dipende dalla raggiungibilità reciproca degli altri tre.
+- [ ] Hosting: deciso Render (ADR-008) — con una complicazione in più di cui `render.yaml` tiene
+      conto: questo servizio dipende dalla raggiungibilità pubblica degli altri tre, i cui URL
+      Render vanno incollati a mano nelle sue variabili d'ambiente dopo il loro primo deploy.
 
 Domande aperte: nessuna specifica a questa feature, oltre alla domanda di hosting già comune
 agli altri tre servizi (qui più stringente, perché questo servizio non funziona affatto se gli
 altri non sono raggiungibili).
+
+## Feature: scheda "Pianifica" — collega il comparatore all'itinerario (parte del data model di Fase 4) — avviata
+
+Cosa fa: nuova scheda nella shell canonica (`public/index.html`, propagata in
+`trips/cilento-2026/index.html`) con un form che chiama `trip-planner` (`fetch` verso
+`TRIP_PLANNER_URL`, nuovo export di `trip.config.js`, default `http://localhost:8004`) e mostra
+voli/alloggi/POI reali con un pulsante "Salva" per giorno. Il salvataggio scrive direttamente su
+Firestore dal browser (nessun Admin SDK nel backend, vedi ADR-007), nuovo documento
+`trips/{TRIP_ID}/state/planning` sincronizzato in realtime come checklist e note. Chiude parte
+del gap "data model Trip → Days → Places" segnalato nella feature POI sopra, senza toccare il
+routing/ottimizzazione del percorso (ancora non iniziato).
+
+File modificati: `public/index.html` (nav, pannello, CSS, `renderPlanResults`/`renderPlanSaved`/
+`searchPlan`/`savePlanItem`/`removePlanItem`, seed e listener realtime di `state/planning`),
+propagato in `trips/cilento-2026/index.html`; `trips/cilento-2026/trip.config.js` (nuovo export
+`TRIP_PLANNER_URL`); `services/{flight-search,stay-search,poi-search,trip-planner}/app/main.py`
+(CORS aperto, necessario perché il browser blocchi altrimenti la risposta).
+
+Definition of done:
+
+- [x] Form di ricerca e chiamata reale a `trip-planner` — verificato live: i quattro servizi
+      avviati con `uvicorn` reale, una richiesta HTTP diretta con lo stesso payload che manda il
+      form (FCO→NAP, Marina di Camerota) ha restituito 4 voli/2 alloggi/4 POI reali, in una forma
+      che corrisponde esattamente ai campi letti da `renderPlanResults` (non assunta, controllata
+      campo per campo contro la risposta vera).
+- [x] CORS verificato live — preflight `OPTIONS` reale contro `trip-planner` con un'origine
+      finta da browser (`http://localhost:5500`) restituisce `access-control-allow-origin: *`.
+- [x] Primo test in browser reale (screenshot dell'utente, 2026-07-08): la ricerca fallisce con
+      `Failed to fetch` verso `http://localhost:8004`. Diagnosi confermata, non solo ipotizzata:
+      la shell gira su HTTPS (`viaggio-new.web.app`) e il browser blocca come *mixed content* una
+      chiamata attiva verso un'origine HTTP in chiaro, a prescindere da come risponde il servizio
+      — non un problema di CORS (verificato separatamente, funzionante) né di servizi spenti
+      (erano attivi e rispondevano a `curl` nello stesso momento).
+- [ ] **Il flusso di salvataggio/rimozione su Firestore resta non verificato in un browser
+      reale**, bloccato dal problema sopra: senza un backend raggiungibile in HTTPS, la ricerca
+      non produce mai risultati da salvare. Sbloccato dal deploy del backend su Render (ADR-008,
+      `deployment.md`): una volta che `TRIP_PLANNER_URL` punta a un URL Render HTTPS invece di
+      `localhost`, il test visivo (ricerca, salvataggio su un giorno, controllo su
+      "Salvati nell'itinerario" e sull'altro dispositivo) torna eseguibile.
+- [ ] Nessuna stima di costo aggregato tra un volo e un alloggio salvati sullo stesso giorno.
+- [ ] Routing/ottimizzazione del percorso giornaliero — non iniziato, resta un item separato.
+
+Domande aperte: se il flusso di salvataggio si rivela corretto al riscontro visivo dopo il deploy
+Render, resta da decidere se mostrare gli elementi salvati anche dentro la scheda "Itinerario"
+(accanto a note e segna-come-fatto) invece che solo nella scheda "Pianifica" — non deciso in
+questa sessione.
 
 ## Riconciliazione
 

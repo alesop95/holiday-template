@@ -8,12 +8,22 @@ Avvio di sviluppo:
 from typing import List
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from .adapters.overpass_adapter import OverpassAdapter
 from .cache import TTLCache
 from .schemas import PoiSearchRequest, PointOfInterest
 
 app = FastAPI(title="poi-search", version="0.1.0")
+
+# Nessuna autenticazione né dato sensibile (vedi design-and-security.md): origine aperta
+# per permettere alla shell frontend di chiamare questo servizio durante lo sviluppo.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 ADAPTERS = [OverpassAdapter()]
 

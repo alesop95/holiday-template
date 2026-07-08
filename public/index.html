@@ -198,6 +198,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-msg.err{color:var(--terra);}
 .plan-group{margin-bottom:1.4rem;}
 .plan-group-ttl{font-family:'Poppins',sans-serif;font-size:1.02rem;font-weight:600;color:var(--sea);margin-bottom:8px;}
+.plan-filters{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:10px;}
+.plan-filters select{padding:6px 9px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);background:var(--white);}
+.plan-filters label{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;}
 .plan-item{background:var(--white);border-radius:12px;padding:12px 14px;box-shadow:0 2px 10px var(--sh);margin-bottom:8px;}
 .plan-item-hd{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;}
 .plan-item-nm{font-weight:600;font-size:13.5px;color:var(--text);}
@@ -344,7 +347,8 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https:
 import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLANNER_URL }  from './trip.config.js';
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
-const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false, costs:null };
+const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc' };
+const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false, costs:null, planFilters:{...PLAN_FILTERS_DEFAULT} };
 let db;
 
 // ── Punto di ingresso ─────────────────────────────────────────────────────────
@@ -636,17 +640,67 @@ function escHtml(s) {
 function renderPlanResults() {
   const p = S.planResults; const el = document.getElementById('plan-results'); if (!p || !el) return;
   const dayOpts = S.days.map(d => `<option value="${d.id}">${escHtml(d.label)} · ${escHtml(d.title)}</option>`).join('');
+  const pf = S.planFilters;
+  // Ogni item porta con se' l'indice originale in S.planResults: filtrare/ordinare non deve mai
+  // rompere savePlanItem, che legge S.planResults[chiave][idx] per indice, non per riferimento.
+  const withIndex = arr => arr.map((item, origIndex) => ({ item, origIndex }));
+
+  let flights = withIndex(p.flights || []);
+  if (pf.flightsDirectOnly) flights = flights.filter(x => x.item.stops === 0);
+  flights.sort((a,b) => (pf.flightsSort === 'price-desc' ? -1 : 1) * (parsePrice(a.item.price) - parsePrice(b.item.price)));
+
+  let stays = withIndex(p.stays || []).filter(x => (x.item.rating || 0) >= pf.staysMinRating);
+  stays.sort((a,b) => {
+    if (pf.staysSort === 'rating-desc') return (b.item.rating || 0) - (a.item.rating || 0);
+    if (pf.staysSort === 'price-desc') return parsePrice(b.item.total_price) - parsePrice(a.item.total_price);
+    return parsePrice(a.item.total_price) - parsePrice(b.item.total_price);
+  });
+
+  const poiCategories = [...new Set((p.points_of_interest || []).map(o => o.category))].sort();
+  let pois = withIndex(p.points_of_interest || []);
+  if (pf.poiCategory) pois = pois.filter(x => x.item.category === pf.poiCategory);
+  pois.sort((a,b) => pf.poiSort === 'name-desc' ? b.item.name.localeCompare(a.item.name) : a.item.name.localeCompare(b.item.name));
+
   const groups = [
-    { key:'flights', label:'Voli', items:p.flights||[], view:f=>({nm:escHtml(f.airline),price:escHtml(f.price),sub:`${escHtml(f.departure)} → ${escHtml(f.arrival)} · ${escHtml(f.duration)} · ${f.stops===0?'diretto':escHtml(f.stops)+' scalo/i'}${f.is_best?' · consigliato':''}`,link:''}) },
-    { key:'stays', label:'Alloggi', items:p.stays||[], view:s=>({nm:escHtml(s.name),price:escHtml(s.total_price),sub:`${escHtml(s.listing_type||'Alloggio')}${s.rating>0?' · '+escHtml(s.rating)+' ('+escHtml(s.review_count)+' recensioni)':' · senza recensioni'}`,link:s.url||''}) },
-    { key:'pois', label:'Punti di interesse', items:p.points_of_interest||[], view:o=>({nm:escHtml(o.name),price:'',sub:escHtml(o.category),link:''}) },
+    { key:'flights', label:'Voli', originalCount:(p.flights||[]).length, pairs:flights,
+      view:f=>({nm:escHtml(f.airline),price:escHtml(f.price),sub:`${escHtml(f.departure)} → ${escHtml(f.arrival)} · ${escHtml(f.duration)} · ${f.stops===0?'diretto':escHtml(f.stops)+' scalo/i'}${f.is_best?' · consigliato':''}`,link:''}),
+      controls:`<div class="plan-filters">
+        <label><input type="checkbox" ${pf.flightsDirectOnly?'checked':''} onchange="setPlanFilter('flightsDirectOnly',this.checked)"> Solo diretti</label>
+        <select onchange="setPlanFilter('flightsSort',this.value)">
+          <option value="price-asc" ${pf.flightsSort==='price-asc'?'selected':''}>Prezzo crescente</option>
+          <option value="price-desc" ${pf.flightsSort==='price-desc'?'selected':''}>Prezzo decrescente</option>
+        </select></div>` },
+    { key:'stays', label:'Alloggi', originalCount:(p.stays||[]).length, pairs:stays,
+      view:s=>({nm:escHtml(s.name),price:escHtml(s.total_price),sub:`${escHtml(s.listing_type||'Alloggio')}${s.rating>0?' · '+escHtml(s.rating)+' ('+escHtml(s.review_count)+' recensioni)':' · senza recensioni'}`,link:s.url||''}),
+      controls:`<div class="plan-filters">
+        <select onchange="setPlanFilter('staysMinRating',parseFloat(this.value))">
+          <option value="0" ${pf.staysMinRating===0?'selected':''}>Qualsiasi valutazione</option>
+          <option value="3" ${pf.staysMinRating===3?'selected':''}>3+ stelle</option>
+          <option value="4" ${pf.staysMinRating===4?'selected':''}>4+ stelle</option>
+          <option value="4.5" ${pf.staysMinRating===4.5?'selected':''}>4.5+ stelle</option>
+        </select>
+        <select onchange="setPlanFilter('staysSort',this.value)">
+          <option value="price-asc" ${pf.staysSort==='price-asc'?'selected':''}>Prezzo crescente</option>
+          <option value="price-desc" ${pf.staysSort==='price-desc'?'selected':''}>Prezzo decrescente</option>
+          <option value="rating-desc" ${pf.staysSort==='rating-desc'?'selected':''}>Valutazione più alta</option>
+        </select></div>` },
+    { key:'pois', label:'Punti di interesse', originalCount:(p.points_of_interest||[]).length, pairs:pois,
+      view:o=>({nm:escHtml(o.name),price:'',sub:escHtml(o.category),link:''}),
+      controls: poiCategories.length > 1 ? `<div class="plan-filters">
+        <select onchange="setPlanFilter('poiCategory',this.value)">
+          <option value="">Tutte le categorie</option>
+          ${poiCategories.map(c => `<option value="${escHtml(c)}" ${pf.poiCategory===c?'selected':''}>${escHtml(c)}</option>`).join('')}
+        </select></div>` : '' },
   ];
+
   const html = groups.map(g => {
-    if (!g.items.length) return '';
-    return `<div class="plan-group"><div class="plan-group-ttl">${g.label} (${g.items.length})</div>
-      ${g.items.map((it,i) => { const v = g.view(it);
+    if (!g.originalCount) return '';
+    const countLbl = g.pairs.length !== g.originalCount ? `${g.pairs.length} di ${g.originalCount}` : `${g.originalCount}`;
+    if (!g.pairs.length) return `<div class="plan-group"><div class="plan-group-ttl">${g.label} (${countLbl})</div>${g.controls}<p class="costs-hint">Nessun risultato con i filtri scelti.</p></div>`;
+    return `<div class="plan-group"><div class="plan-group-ttl">${g.label} (${countLbl})</div>${g.controls}
+      ${g.pairs.map(({item, origIndex}) => { const v = g.view(item);
         return `<div class="plan-item"><div class="plan-item-hd"><div class="plan-item-nm">${v.nm}</div>${v.price?`<div class="plan-item-price">${v.price}</div>`:''}</div><div class="plan-item-sub">${v.sub}</div>${v.link?`<a class="plan-item-link" href="${escHtml(v.link)}" target="_blank" rel="noopener noreferrer">Vedi e prenota su Airbnb →</a>`:''}
-        <div class="plan-item-save"><span class="plan-item-save-lbl">Aggiungi al giorno</span><select>${dayOpts}</select><button class="plan-save-btn" onclick="savePlanItem('${g.key}',${i},this)">Salva</button></div></div>`;
+        <div class="plan-item-save"><span class="plan-item-save-lbl">Aggiungi al giorno</span><select>${dayOpts}</select><button class="plan-save-btn" onclick="savePlanItem('${g.key}',${origIndex},this)">Salva</button></div></div>`;
       }).join('')}</div>`;
   }).join('');
   el.innerHTML = html || '<p style="color:var(--muted);font-size:13px;">Nessun risultato per questa ricerca.</p>';
@@ -855,6 +909,7 @@ window.searchPlan = async () => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const plan = await res.json();
     S.planResults = plan;
+    S.planFilters = { ...PLAN_FILTERS_DEFAULT };  // ogni nuova ricerca riparte pulita, niente filtri della ricerca precedente
     msgEl.innerHTML = (plan.errors && plan.errors.length) ? `<div class="plan-msg err">Parziale: ${plan.errors.join(' · ')}</div>` : '';
     renderPlanResults();
   } catch (e) {
@@ -863,6 +918,8 @@ window.searchPlan = async () => {
     btn.disabled = false; btn.textContent = 'Cerca';
   }
 };
+
+window.setPlanFilter = (key, value) => { S.planFilters[key] = value; renderPlanResults(); };
 
 window.savePlanItem = (kind, idx, btn) => {
   const item = S.planResults[PLAN_API_KEY[kind]][idx];

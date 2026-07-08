@@ -289,6 +289,16 @@ Render, resta da decidere se mostrare gli elementi salvati anche dentro la sched
 (accanto a note e segna-come-fatto) invece che solo nella scheda "Pianifica" — non deciso in
 questa sessione.
 
+**Filtri e ordinamento aggiunti** (terza delle quattro richieste grandi): voli (solo diretti,
+prezzo crescente/decrescente), alloggi (valutazione minima, prezzo o valutazione), POI (categoria,
+sempre ordinati per nome). Tutto client-side su `S.planResults` già scaricato, nessuna nuova
+chiamata al backend. Punto delicato risolto: filtrare/ordinare non deve rompere `savePlanItem`,
+che identifica l'oggetto da salvare per indice nell'array originale — ogni item porta con sé
+l'indice originale (`{item, origIndex}`) anche dopo filtro/sort, verificato con dati di esempio in
+uno script Node a parte (nessun test automatico esiste per il frontend). I filtri si azzerano a
+ogni nuova ricerca (`PLAN_FILTERS_DEFAULT`), per non applicare per errore un filtro della ricerca
+precedente a una nuova. Non ancora verificato in browser.
+
 ## Feature: sito Firebase Hosting dedicato per viaggio (ADR-009) — avviata
 
 Cosa fa: risolve un gap reale segnalato dall'utente, non un'ipotesi: senza un sito Hosting dedicato

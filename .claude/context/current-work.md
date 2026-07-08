@@ -310,14 +310,13 @@ Definition of done:
       `https://holiday-template-*.web.app/*` viene rifiutato dalla Console con "Dominio sito web
       non valido" — il carattere jolly sostituisce un'intera etichetta di sottodominio, non una
       porzione. Corretto in `design-and-security.md`, `README.md`, header di `trip.config.js`.
-- [ ] **Manca ancora la riga equivalente `.firebaseapp.com`** per lo stesso sito
-      (`https://holiday-template-cilento-2026.firebaseapp.com/*`): nello screenshot dell'utente
-      risultava assente, segnalato, in attesa di conferma che sia stata aggiunta e salvata.
-- [ ] `viaggio-new.web.app`/`viaggio-new.firebaseapp.com` restano nella lista referrer: da
-      valutare se rimuoverli ora che nessun viaggio pubblica più lì, o lasciarli come URL di
-      cortesia — non deciso in questa sessione.
+- [x] Riga `.firebaseapp.com` aggiunta e confermata via screenshot.
+- [x] Referrer del vecchio URL condiviso (`viaggio-new.web.app`/`.firebaseapp.com`) rimossi su
+      richiesta esplicita dell'utente, confermato via screenshot: la lista referrer contiene ora
+      solo le due righe di `holiday-template-cilento-2026`. Feature ADR-009 chiusa end-to-end:
+      configurazione, migrazione, restrizione referrer, tutto verificato dal vivo o via screenshot.
 
-Domande aperte: se togliere o no i due referrer del vecchio URL condiviso ora inutilizzato.
+Domande aperte: nessuna residua su questa feature.
 
 ## Feature: titolo/badge/tag del viaggio editabili dall'app (TRIP_META non più statico) — avviata
 

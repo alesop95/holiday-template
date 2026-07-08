@@ -4,6 +4,38 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-07 — Cache per stay-search, ricerca fonte alloggi chiusa, nuovo servizio poi-search
+
+Commit: non ancora committato.
+File toccati: nuovo `services/stay-search/app/cache.py` e modifiche a `app/main.py`/`tests/test_main.py`
+per usarlo. Nuovo servizio `services/poi-search/` completo: `app/{main,schemas,cache,geocoding}.py`,
+`app/adapters/{base,overpass_adapter}.py`, `tests/` (3 file, 10 test), `requirements.txt`,
+`requirements-test.txt`, `README.md`. Aggiornati `roadmap.md`, `current-work.md`, `STACK.md`,
+`design-and-security.md`, `dev-testing.md`.
+Motivo: su richiesta esplicita dell'utente di continuare lo sviluppo e "migliorare fino in
+fondo" prima di tornare ai passi manuali. Aggiunta la cache mancante a `stay-search` (TTL 600s,
+più lungo di flight-search perché la disponibilità alloggi cambia più lentamente); nel farlo,
+sistemato un problema di isolamento nei test esistenti (stessa chiave di richiesta condivisa tra
+due test, che con la cache avrebbe fatto leakage di risultati da un test all'altro). Cercata
+esplicitamente una seconda fonte alloggi (Booking.com): nessuna libreria HTTP-diretta keyless
+trovata, solo scraper community basati su browser headless — conclusione documentata come
+ricerca chiusa, non domanda dimenticata.
+Avviata la Fase 4 (itinerary builder) con `services/poi-search/`: adapter verso Overpass API
+(OpenStreetMap), nessuna chiave, scelta esplicitamente al posto di OpenTripMap (che ne
+richiederebbe una) per lo stesso tipo di dato. Verificato con query dirette da riga di comando
+prima di scrivere codice, poi con una ricerca live via `TestClient` per "Marina di Camerota": 7
+POI reali, alcuni già presenti nell'itinerario scritto a mano di Cilento (Grotta Azzurra), buon
+segnale indipendente di qualità dei dati. Scoperti in sessione e gestiti: il server richiede un
+header `User-Agent` esplicito (altrimenti 406), e molti elementi (specialmente `historic`) non
+hanno un tag `name` e vanno scartati.
+Suite di test scritta con lo stesso principio delle precedenti (payload dalla forma reale
+verificata, nessuna chiamata di rete nei test): 10 nuovi test per poi-search, tutti passanti.
+Totale test nel repository dopo questa sessione: 42 (21+11+10), eseguiti tutti insieme come
+verifica finale.
+Verifica residua: il data model che collega i POI trovati a un itinerario vero (Trip → Days →
+Places) non è stato progettato; resta la domanda di hosting, comune a tutti e tre i servizi
+backend, ancora non decisa.
+
 ## 2026-07-07 — Suite di test per entrambi i servizi backend, dev-testing.md popolata
 
 Commit: non ancora committato.

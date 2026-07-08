@@ -24,7 +24,7 @@ di questo file o della chat. Non fidarsi di hash citati altrove precedenti al 20
 | STACK.md | fb591e5 | popolata, committata (hash pre-riscrittura storia, contenuto valido) |
 | design-and-security.md | fb591e5 | popolata, committata (hash pre-riscrittura storia, contenuto valido) |
 | deployment.md | fb591e5 | popolata, committata (hash pre-riscrittura storia, contenuto valido) |
-| dev-testing.md | 98e4395 | popolata in sessione (2026-07-07), non ancora committata |
+| dev-testing.md | 98e4395 | aggiornata in sessione (2026-07-07), non ancora committata |
 | current-work.md | 98e4395 | aggiornata in sessione (2026-07-07), non ancora committata |
 | roadmap.md | 98e4395 | aggiornata in sessione (2026-07-07), non ancora committata |
 
@@ -42,19 +42,24 @@ repository pubblico; risolto con restrizione della chiave su Google Cloud Consol
 + 4 API invece di 25) e bonifica della storia Git (`git filter-repo`, force-push), entrambe
 verificate indipendentemente, non assunte dall'output dell'utente.
 
-**Backend, due servizi indipendenti, entrambi Python/FastAPI**: `services/flight-search/` (Fase
-1) — `fast_flights` (Google Flights scraping) verificato live e funzionante; `Kiwi Tequila`
-scritto come seconda fonte ma non ancora verificato live (manca la chiave, registrazione in
-corso); query in parallelo, cache TTL, ordinamento per prezzo; 21 test, tutti passanti.
-`services/stay-search/` (Fase 2) — `pyairbnb` (Airbnb scraping) verificato live e funzionante,
-con geocodifica via Nominatim; 10 test, tutti passanti; nessuna seconda fonte alloggi individuata
-(domanda aperta). **Amadeus abbandonato** (ADR-006): il portale self-service chiude il 17 luglio
-2026, adapter scritto e poi rimosso per intero, non ritentare.
+**Backend, tre servizi indipendenti, tutti Python/FastAPI**, stesso adapter pattern e stessa
+cache in-memory con TTL (durata diversa per servizio), 42 test totali tra i tre, tutti passanti,
+nessuna chiamata di rete reale nei test: `services/flight-search/` (Fase 1) — `fast_flights`
+(Google Flights scraping) verificato live e funzionante; `Kiwi Tequila` scritto come seconda
+fonte ma non ancora verificato live (manca la chiave, registrazione in corso). `services/stay-search/`
+(Fase 2) — `pyairbnb` (Airbnb scraping) verificato live e funzionante, con geocodifica via
+Nominatim; nessuna seconda fonte alloggi praticabile trovata (ricerca chiusa, non domanda
+dimenticata: Booking.com non ha alternative keyless equivalenti a `pyairbnb`). `services/poi-search/`
+(Fase 4, itinerary builder) — Overpass API (OpenStreetMap) verificato live e funzionante, con
+geocodifica via Nominatim; manca ancora il data model che collega i POI a un itinerario vero.
+**Amadeus abbandonato** (ADR-006): il portale self-service chiude il 17 luglio 2026, adapter
+scritto e poi rimosso per intero, non ritentare.
 
-Nessuno dei due backend è collegato al frontend né deployato da nessuna parte: girano solo in
-locale con `uvicorn`. Questa è la prossima decisione strutturale in sospeso, non ancora presa.
+Nessuno dei tre backend è collegato al frontend né deployato da nessuna parte: girano solo in
+locale con `uvicorn` (porte 8001, 8002, 8003). Questa è la prossima decisione strutturale in
+sospeso, non ancora presa.
 
 Prossima azione dichiarata dall'utente: finire tutto lo sviluppo di puro codice possibile prima
 di tornare ai passi manuali (registrazione Kiwi Tequila, poi eventualmente la scelta e messa in
-opera dell'hosting dei due backend). Committare il lavoro descritto in questa voce se non ancora
+opera dell'hosting dei tre backend). Committare il lavoro descritto in questa voce se non ancora
 fatto al momento della lettura (controllare `git status` prima di assumere).

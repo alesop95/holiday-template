@@ -7,6 +7,7 @@ covers-paths:
   - trips/**
   - services/flight-search/**
   - services/stay-search/**
+  - services/poi-search/**
 last-verified-commit: fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff
 ---
 
@@ -26,17 +27,23 @@ statico su Firebase Hosting, entrambi sul piano gratuito *Spark*. Un solo proget
 (`viaggio-new`) serve tutti i viaggi; i dati sono separati per viaggio via `TRIP_ID` (dettagli in
 `README.md`, sezioni 4 e 6).
 
-Il *backend* è composto da due servizi indipendenti, entrambi Python + FastAPI, gestore pacchetti
+Il *backend* è composto da tre servizi indipendenti, tutti Python + FastAPI, gestore pacchetti
 pip con un proprio `requirements.txt` ciascuno (nessun ambiente virtuale fissato nel repository,
-`.venv/` è gitignored). Nessuno dei due è collegato al frontend né all'altro: sono servizi a sé,
-eseguibili in locale con `uvicorn` su porte diverse (8001 e 8002), senza deployment configurato.
-`services/flight-search/` (Fase 1 della roadmap) interroga Google Flights (scraping) e Kiwi
+`.venv/` è gitignored). Nessuno dei tre è collegato al frontend né agli altri due: sono servizi a
+sé, eseguibili in locale con `uvicorn` su porte diverse (8001, 8002, 8003), senza deployment
+configurato. `services/flight-search/` (Fase 1) interroga Google Flights (scraping) e Kiwi
 Tequila (API key) per i voli. `services/stay-search/` (Fase 2) interroga Airbnb (scraping) per
-gli alloggi, con geocodifica del nome località via Nominatim. Entrambi condividono lo stesso
-adapter pattern (interfaccia comune per fonte, normalizzazione verso uno schema condiviso,
-un adapter che fallisce non blocca gli altri), duplicato tra i due servizi invece che
-fattorizzato in una libreria comune: scelta deliberata per tenere i due servizi indipendenti e
-deployabili separatamente, coerente con il fatto che potrebbero finire su infrastrutture diverse.
+gli alloggi. `services/poi-search/` (Fase 4, itinerary builder) interroga Overpass API
+(OpenStreetMap) per punti di interesse. Gli ultimi due usano geocodifica del nome località via
+Nominatim (`app/geocoding.py`, stesso file duplicato in entrambi). Tutti e tre condividono lo
+stesso adapter pattern (interfaccia comune per fonte, normalizzazione verso uno schema condiviso,
+un adapter che fallisce non blocca gli altri) e la stessa cache in-memory con TTL
+(`app/cache.py`, TTL diverso per servizio: 5 minuti per i voli, 10 per gli alloggi, un'ora per i
+POI, proporzionale a quanto velocemente cambia il dato), tutti duplicati tra i tre servizi invece
+che fattorizzati in una libreria comune: scelta deliberata per tenerli indipendenti e deployabili
+separatamente, coerente con il fatto che potrebbero finire su infrastrutture diverse. Tutti e tre
+hanno una suite di test `pytest` in `tests/`, nessuna chiamata di rete reale nei test (mockate via
+`monkeypatch` con payload dalla forma reale verificata durante lo sviluppo).
 
 ## Alternative deliberatamente escluse
 
@@ -73,9 +80,14 @@ conformi all'interfaccia `FlightSourceAdapter` (`app/adapters/base.py`) e normal
 schema `FlightOffer` (`app/schemas.py`), poi ordina per prezzo. Un adapter che fallisce non
 blocca gli altri. Le risposte sono cache-ate in memoria con TTL di 5 minuti (`app/cache.py`).
 
-`services/stay-search/app/main.py` espone `/api/stays/search`, stesso pattern ma senza cache né
-parallelismo (un solo adapter attivo oggi, `PyairbnbAdapter`). `app/geocoding.py` traduce il nome
-di una località in un bounding box via Nominatim prima di interrogare Airbnb.
+`services/stay-search/app/main.py` espone `/api/stays/search`, stesso pattern ma senza
+parallelismo (un solo adapter attivo oggi, `PyairbnbAdapter`; la cache c'è). `app/geocoding.py`
+traduce il nome di una località in un bounding box via Nominatim prima di interrogare Airbnb.
+
+`services/poi-search/app/main.py` espone `/api/poi/search`, stesso pattern di `stay-search`
+(un solo adapter, `OverpassAdapter`, stessa geocodifica via Nominatim). L'adapter filtra gli
+elementi OSM senza tag `name` e quelli con `tourism` di tipo alloggio (competenza di
+`stay-search`, non di questo servizio).
 
 ## Riferimenti a snippet
 
@@ -93,3 +105,7 @@ descritto in `services/flight-search/README.md`).
 reali della libreria `pyairbnb` 2.2.1 scoperti in sessione (chiave di risposta annidata ignorata
 dalle funzioni pubbliche, campo prezzo totale sempre a zero); dettagli nel docstring del file e
 in `services/stay-search/README.md`.
+
+`services/poi-search/app/adapters/overpass_adapter.py:OverpassAdapter.search` — richiede un
+header `User-Agent` esplicito (altrimenti 406 dal server, scoperto in sessione), scarta gli
+elementi OSM senza nome; dettagli in `services/poi-search/README.md`.

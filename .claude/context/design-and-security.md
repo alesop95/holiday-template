@@ -45,12 +45,19 @@ la prova che una fonte può sparire senza propagare danni altrove. La fonte che 
 invisibile al comparatore.
 
 `services/stay-search/` replica lo stesso pattern (`StaySourceAdapter`, `StayOffer`) per gli
-alloggi, invece di essere fattorizzato in una libreria condivisa tra i due servizi backend: sono
+alloggi, invece di essere fattorizzato in una libreria condivisa tra i servizi backend: sono
 mantenuti indipendenti perché potrebbero finire deployati separatamente (dettaglio in
 `STACK.md`). Il suo unico adapter oggi, `PyairbnbAdapter`, fa reverse-engineering della GraphQL
 interna di Airbnb (nessuna API ufficiale esiste): stesso rischio *ToS* già accettato per uso
 privato a basso volume in `roadmap.md`, mitigato allo stesso modo (nessun login con account
 personale, sole richieste pubbliche anonime).
+
+`services/poi-search/` replica lo stesso pattern per i punti di interesse (`PoiSourceAdapter`,
+`PointOfInterest`). Nessun rischio ToS qui: Overpass API espone dati OpenStreetMap
+esplicitamente pubblici, senza reverse-engineering di endpoint privati. Nessun segreto o dato
+personale coinvolto in nessuno dei tre servizi backend: nessuno richiede login, nessuno gestisce
+dati dell'utente oltre i parametri della singola ricerca, non persistiti da nessuna parte (la
+cache in-memory di ogni servizio si svuota al riavvio del processo).
 
 ## Sicurezza applicativa
 

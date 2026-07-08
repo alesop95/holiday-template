@@ -121,23 +121,64 @@ Definition of done:
       (bypassato chiamando le funzioni interne direttamente), e il campo `price.total` è sempre
       0 (il prezzo reale è nell'ultimo elemento di `price.break_down`). Dettagli in
       `services/stay-search/README.md`.
-- [ ] Seconda fonte alloggi: nessuna individuata. Amadeus Hotel API condivide la chiusura del
-      portale descritta sopra; Booking.com Demand API resta partner-only. Domanda aperta, non
-      una svista: richiede una ricerca dedicata prima di poter procedere.
-- [x] Suite di test (`tests/`, pytest), 10 test, tutti passanti — geocodifica, adapter (con
-      payload dalla forma reale verificata, con e senza sconto), endpoint. Stesso pattern di
-      `flight-search`, dettagli in `.claude/context/dev-testing.md`.
-- [ ] Cache delle ricerche (oggi assente; `flight-search` ha già un pattern riusabile in
-      `app/cache.py` se si vuole la stessa soluzione)
+- [x] ~~Seconda fonte alloggi~~ — ricercata esplicitamente, conclusione: nessuna praticabile per
+      ora. Amadeus Hotel API condivide la chiusura del portale (ADR-006); Booking.com Demand API
+      resta partner-only; l'unica alternativa keyless trovata per Booking.com sono scraper
+      community basati su Playwright/browser headless (nessuna libreria pip semplice come
+      `pyairbnb`), più fragili e pesanti per il beneficio atteso — non implementati per scelta,
+      non per mancanza di tempo. Riaprire se in futuro emerge una libreria HTTP-diretta
+      equivalente a `pyairbnb` per Booking.com.
+- [x] Cache delle ricerche — `app/cache.py`, stesso `TTLCache` di `flight-search` ma TTL più
+      lungo (600s: disponibilità alloggi cambia più lentamente dei prezzi voli nell'arco della
+      giornata). Verificato con test dedicato.
+- [x] Suite di test (`tests/`, pytest), 11 test, tutti passanti — geocodifica, adapter (con
+      payload dalla forma reale verificata, con e senza sconto), endpoint, cache. Stesso pattern
+      di `flight-search`, dettagli in `.claude/context/dev-testing.md`.
 - [ ] Scelta e messa in opera dell'hosting — stessa domanda aperta di `flight-search`, non decisa
 
-Domande aperte: quale seconda fonte alloggi usare, non risolta in questa sessione. Il rischio ToS
-di `pyairbnb` (nessuna API ufficiale, reverse-engineering della GraphQL Airbnb) è più alto delle
-fonti voli usate finora, accettato per uso privato a basso volume secondo il ragionamento già
-in `roadmap.md`, non un rischio nuovo introdotto qui.
+Domande aperte: nessuna sulla seconda fonte (ricercata e conclusa: nessuna praticabile per ora,
+vedi DoD sopra). Il rischio ToS di `pyairbnb` (nessuna API ufficiale, reverse-engineering della
+GraphQL Airbnb) è più alto delle fonti voli usate finora, accettato per uso privato a basso
+volume secondo il ragionamento già in `roadmap.md`, non un rischio nuovo introdotto qui.
+
+## Feature: motore di ricerca punti di interesse (Fase 4 della roadmap, itinerary builder) — avviata
+
+Cosa fa: introduce il terzo servizio backend, `services/poi-search/`, stesso adapter pattern
+degli altri due. Un adapter attivo (`OverpassAdapter`, verso Overpass API/OpenStreetMap), schema
+`PointOfInterest` normalizzato, stessa geocodifica via Nominatim di `stay-search` (duplicata, non
+condivisa, per la stessa ragione architetturale già in `STACK.md`).
+
+File da creare: vedi `roadmap.md` per il piano completo; il dettaglio è nel README del servizio,
+`services/poi-search/README.md`.
+
+Definition of done:
+
+- [x] Scaffold FastAPI con un adapter funzionante e un endpoint di ricerca, verificato con
+      esecuzione reale (query dirette a Overpass da riga di comando, poi ricerca live via
+      `TestClient` per "Marina di Camerota": 7 POI reali, alcuni già presenti nell'itinerario
+      scritto a mano di Cilento). Scoperti in sessione: il server risponde 406 senza un header
+      `User-Agent` esplicito (impostato); molti elementi `historic` non hanno un tag `name`
+      (scartati, un POI senza nome non è suggeribile); i valori di alloggio del tag `tourism`
+      vengono esclusi perché competenza di `stay-search`, non di questo servizio.
+- [x] Cache delle ricerche — stesso `TTLCache`, TTL di un'ora (i POI cambiano più raramente di
+      prezzi voli/alloggi).
+- [x] Suite di test (`tests/`, pytest), 10 test, tutti passanti — geocodifica, adapter (filtro
+      elementi senza nome/di tipo alloggio, rispetto del limite), endpoint, cache.
+- [ ] Data model Trip → Days → Places/Reservations che collega i POI trovati a un itinerario
+      reale — non iniziato, è il pezzo che manca per passare da "motore di ricerca POI" a
+      "itinerary builder" vero e proprio.
+- [ ] Routing/ottimizzazione del percorso giornaliero (OpenTripPlanner o GraphHopper self-hosted)
+      — non iniziato, richiede una decisione infrastrutturale (Docker) non ancora presa.
+- [ ] Scelta e messa in opera dell'hosting — stessa domanda aperta degli altri due servizi
+
+Domande aperte: nessuna sulla fonte POI (Overpass scelta esplicitamente al posto di OpenTripMap
+perché non richiede chiave, vedi `roadmap.md`). Resta aperta la stessa domanda di hosting degli
+altri due servizi backend, e il data model dell'itinerario non è stato progettato in questa
+sessione.
 
 ## Riconciliazione
 
-Ultima verifica: 2026-07-07, non ancora committata (ultimo commit reale su `origin/main`:
-`cfb97ca`, "Aggiungi adapter Amadeus come seconda fonte voli" — superato dal lavoro di questa
-sessione, che rimuove Amadeus e aggiunge Kiwi e `stay-search`).
+Ultima verifica: 2026-07-07. Ultimo commit reale su `origin/main` al momento di scrivere:
+`98e4395` ("Aggiungi servizio stay-search"). Il lavoro descritto sopra su test (flight-search,
+stay-search) e sul nuovo servizio `poi-search` è successivo e non ancora committato — controllare
+`git status` prima di assumere lo stato esatto.

@@ -31,14 +31,16 @@ La sequenza di fasi, in ordine di dipendenza:
    (vedi nota sotto), per ricerche multi-città e self-transfer, registrazione gratuita immediata
    senza OAuth, scritta ma non ancora verificata live. Query in parallelo, cache in-memory con
    TTL breve, ordinamento per prezzo: fatti. Schema di normalizzazione comune: `FlightOffer`.
-2. *Motore di ricerca alloggi* — `services/stay-search/`, avviato. La fonte primaria
-   originariamente prevista, Amadeus Hotel Search/List API, non è più disponibile per lo stesso
-   motivo del punto 1: resta una fonte "ufficiale" da individuare, non risolta. Fonte attiva:
-   `pyairbnb` di johnbalvin per Airbnb (nessuna API ufficiale esiste; è reverse-engineering della
-   GraphQL interna, rischio *ToS*[^3] più alto delle altre fonti, usata senza login con account
-   personale), verificata live e funzionante — inclusa la geocodifica del nome località via
-   Nominatim, cosicché la ricerca accetta un nome di città invece di coordinate grezze. Schema di
-   normalizzazione comune: `StayOffer`.
+2. *Motore di ricerca alloggi* — `services/stay-search/`, avanzato, una sola fonte per scelta
+   informata. La fonte primaria originariamente prevista, Amadeus Hotel Search/List API, non è
+   più disponibile per lo stesso motivo del punto 1. Fonte attiva: `pyairbnb` di johnbalvin per
+   Airbnb (nessuna API ufficiale esiste; è reverse-engineering della GraphQL interna, rischio
+   *ToS*[^3] più alto delle altre fonti, usata senza login con account personale), verificata
+   live e funzionante, con cache e geocodifica del nome località via Nominatim. Una seconda fonte
+   (Booking.com) è stata cercata esplicitamente e scartata: nessuna libreria HTTP-diretta
+   keyless equivalente a `pyairbnb` esiste, solo scraper community basati su browser headless
+   (Playwright), valutati troppo fragili/pesanti per il beneficio. Schema di normalizzazione
+   comune: `StayOffer`.
 
 **Nota — Amadeus for Developers non è più una fonte disponibile.** Il portale self-service
 (quello gratuito, senza approvazione business, su cui si basava sia il punto 1 sia il punto 2)
@@ -48,13 +50,20 @@ dall'annuncio sul sito. Un adapter Amadeus per i voli era stato scritto e poi ri
 `services/flight-search/` quando è emersa questa notizia; non ritentare la stessa via per hotel
 o voli finché non cambia lo stato del portale Enterprise (a pagamento, richiede account manager,
 fuori scope per un progetto privato).
-3. *Layer comparatore* — non iniziato. Endpoint unico che interroga i provider disponibili in
-   parallelo, aggrega, deduplica e ordina i risultati; cache con TTL breve per non interrogare i
-   prezzi ad ogni refresh.
-4. *Itinerary builder* — non iniziato. Data model Trip → Days → Places/Reservations. Fonti POI:
-   OpenTripMap (free tier) e Overpass API (OpenStreetMap, gratuita ma con rate limit sui server
-   pubblici condivisi). Routing e ottimizzazione del percorso giornaliero: OpenTripPlanner o
-   GraphHopper, entrambi self-hostabili in Docker.
+3. *Layer comparatore* — parziale, per servizio, non come endpoint unico cross-servizio. Ogni
+   servizio backend interroga i propri provider in parallelo (dove ce n'è più di uno) o comunque
+   con fault tolerance (un provider che fallisce non blocca gli altri), aggrega e ordina per
+   prezzo, con cache TTL: fatto dentro `flight-search` e `stay-search`. Manca ancora un endpoint
+   che unisca voli+alloggi+POI in un'unica vista di costo/itinerario: non iniziato.
+4. *Itinerary builder* — avviato con `services/poi-search/`. Fonte POI: **Overpass API**
+   (OpenStreetMap) soltanto, non OpenTripMap — scelta deliberata: Overpass non richiede alcuna
+   chiave, mentre OpenTripMap sì (un passo manuale in più per lo stesso tipo di dato, dei tag
+   `tourism`/`historic` di OpenStreetMap), verificata live e funzionante (Marina di Camerota:
+   Grotta Azzurra, Belvedere di Cala Fortuna, spiagge — nomi in parte già presenti
+   nell'itinerario scritto a mano di Cilento, buon segnale di qualità). Ancora da fare: il data
+   model Trip → Days → Places/Reservations che collega i POI trovati a un itinerario reale, e il
+   routing/ottimizzazione del percorso giornaliero (OpenTripPlanner o GraphHopper, entrambi
+   self-hostabili in Docker, non iniziati).
 5. *Rifinitura* — non iniziato. Export dell'itinerario, price alert opzionali, gestione multivaluta.
 
 Non conviene inseguire integrazioni ufficiali con Skyscanner o Booking.com: entrambe le API sono

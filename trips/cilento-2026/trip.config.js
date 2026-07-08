@@ -42,15 +42,17 @@ export const FIREBASE_CONFIG = {
   appId:             "1:15558495838:web:e59d6320eff09870b96ecf"
 };
 
-// ─── COMPARATORE (backend Python, locale) ──────────────────────────────────────
+// ─── COMPARATORE (backend Python, Render) ──────────────────────────────────────
 // URL del servizio trip-planner (services/trip-planner/), che orchestra flight-search,
-// stay-search e poi-search. Nessuno dei quattro servizi e' deployato: girano solo in
-// locale con uvicorn (vedi services/*/README.md), quindi questo valore ha senso solo
-// durante lo sviluppo, con i quattro servizi avviati sulla stessa macchina del browser.
-// La scheda "Pianifica" in index.html degrada a un messaggio d'errore se il servizio
-// non risponde, senza bloccare il resto dell'app.
+// stay-search e poi-search. Deployato su Render (ADR-008, un solo backend condiviso da
+// tutti i viaggi: stesso valore da ripetere identico in ogni trips/<nome>/trip.config.js
+// futuro, sullo stesso modello di FIREBASE_CONFIG). Il piano free va in pausa dopo
+// inattivita': la prima ricerca dopo una pausa puo' richiedere fino a un centinaio di
+// secondi (cold start), verificato dal vivo, non solo dichiarato da Render. La scheda
+// "Pianifica" in index.html degrada a un messaggio d'errore se il servizio non risponde,
+// senza bloccare il resto dell'app.
 
-export const TRIP_PLANNER_URL = "http://localhost:8004";
+export const TRIP_PLANNER_URL = "https://trip-planner-l2dh.onrender.com";
 
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 // Contenuto della sezione di testa dell'applicazione.

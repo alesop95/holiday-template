@@ -163,6 +163,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-item-price{font-size:13.5px;font-weight:700;color:var(--sea);white-space:nowrap;}
 .plan-item-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;}
 .plan-item-save{display:flex;gap:7px;margin-top:9px;align-items:center;}
+.plan-item-save-lbl{font-size:11px;color:var(--muted);white-space:nowrap;}
 .plan-item-save select{flex:1;padding:7px 9px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);}
 .plan-save-btn{padding:7px 13px;border:none;border-radius:100px;background:var(--sand2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
 .plan-save-btn.saved{background:#E3F7EE;color:#1DAD70;}
@@ -266,10 +267,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
     </div>
   </div>
   <div id="pianifica" class="panel">
-    <div class="sec-head"><h2>Cerca e Confronta</h2><p>Voli, alloggi e punti di interesse dal comparatore. Richiede i quattro servizi backend avviati in locale (services/*/README.md); non incide sull'itinerario finché non salvi un risultato su un giorno.</p></div>
+    <div class="sec-head"><h2>Cerca e Confronta</h2><p>Voli, alloggi e punti di interesse dal comparatore. Gli aeroporti sono facoltativi: lasciali vuoti per un viaggio in auto o comunque senza volo, la ricerca copre solo alloggi e punti di interesse. Non incide sull'itinerario finché non salvi un risultato su un giorno.</p></div>
     <div class="plan-form">
-      <div class="plan-field"><label>Aeroporto partenza</label><input id="pf-origin" maxlength="3" placeholder="FCO"></div>
-      <div class="plan-field"><label>Aeroporto arrivo</label><input id="pf-dest-air" maxlength="3" placeholder="NRT"></div>
+      <div class="plan-field"><label>Aeroporto partenza (opzionale)</label><input id="pf-origin" maxlength="3" placeholder="Vuoto se non voli"></div>
+      <div class="plan-field"><label>Aeroporto arrivo (opzionale)</label><input id="pf-dest-air" maxlength="3" placeholder="Vuoto se non voli"></div>
       <div class="plan-field full"><label>Città / zona (alloggi e POI)</label><input id="pf-dest-loc" placeholder="Es. Marina di Camerota"></div>
       <div class="plan-field"><label>Andata</label><input id="pf-dep" type="date"></div>
       <div class="plan-field"><label>Ritorno</label><input id="pf-ret" type="date"></div>
@@ -485,7 +486,7 @@ function renderPlanResults() {
     return `<div class="plan-group"><div class="plan-group-ttl">${g.label} (${g.items.length})</div>
       ${g.items.map((it,i) => { const v = g.view(it);
         return `<div class="plan-item"><div class="plan-item-hd"><div class="plan-item-nm">${v.nm}</div>${v.price?`<div class="plan-item-price">${v.price}</div>`:''}</div><div class="plan-item-sub">${v.sub}</div>
-        <div class="plan-item-save"><select>${dayOpts}</select><button class="plan-save-btn" onclick="savePlanItem('${g.key}',${i},this)">Salva</button></div></div>`;
+        <div class="plan-item-save"><span class="plan-item-save-lbl">Aggiungi al giorno</span><select>${dayOpts}</select><button class="plan-save-btn" onclick="savePlanItem('${g.key}',${i},this)">Salva</button></div></div>`;
       }).join('')}</div>`;
   }).join('');
   el.innerHTML = html || '<p style="color:var(--muted);font-size:13px;">Nessun risultato per questa ricerca.</p>';
@@ -561,21 +562,28 @@ window.searchPlan = async () => {
   const adults = parseInt(document.getElementById('pf-adults').value,10) || 1;
   const budget = parseInt(document.getElementById('pf-budget').value,10) || 0;
 
-  if (origin.length!==3 || destAir.length!==3 || !destLoc || !dep || !ret) {
-    msgEl.innerHTML = '<div class="plan-msg err">Compila aeroporti (3 lettere), città, andata e ritorno.</div>';
+  if (!destLoc || !dep || !ret) {
+    msgEl.innerHTML = '<div class="plan-msg err">Compila almeno città, andata e ritorno.</div>';
+    return;
+  }
+  const wantsFlight = origin.length>0 || destAir.length>0;
+  if (wantsFlight && (origin.length!==3 || destAir.length!==3)) {
+    msgEl.innerHTML = '<div class="plan-msg err">Aeroporti: 3 lettere in entrambi i campi, oppure lasciali vuoti per non cercare voli.</div>';
     return;
   }
   btn.disabled = true; btn.textContent = 'Ricerca in corso...';
-  msgEl.innerHTML = '<div class="plan-msg">Interrogo voli, alloggi e punti di interesse...</div>';
+  msgEl.innerHTML = '<div class="plan-msg">Interrogo alloggi e punti di interesse' + (wantsFlight?' e voli':'') + '...</div>';
   document.getElementById('plan-results').innerHTML = '';
   try {
+    const payload = {
+      destination_location: destLoc, departure_date: dep, return_date: ret,
+      adults, price_max_stay: budget, poi_limit: 20,
+    };
+    if (wantsFlight) { payload.origin_airport = origin; payload.destination_airport = destAir; }
     const res = await fetch(`${TRIP_PLANNER_URL}/api/trip-plan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        origin_airport: origin, destination_airport: destAir, destination_location: destLoc,
-        departure_date: dep, return_date: ret, adults, price_max_stay: budget, poi_limit: 20,
-      }),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const plan = await res.json();

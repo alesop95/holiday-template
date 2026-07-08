@@ -94,9 +94,9 @@ timeout fisso di 30 secondi che `trip-planner` usava per ogni chiamata a valle e
 `poi-search`); dettaglio in `current-work.md`. Un nuovo test end-to-end dopo la correzione resta
 da fare.
 
-Passo ancora da fare: `TRIP_PLANNER_URL` in `trips/cilento-2026/trip.config.js` punta ancora a
-`http://localhost:8004` e va aggiornato all'URL pubblico Render di `trip-planner`, poi
-ridistribuito con `firebase deploy` dalla cartella del viaggio.
+`TRIP_PLANNER_URL` in `trips/cilento-2026/trip.config.js` è stato aggiornato all'URL pubblico
+Render di `trip-planner`. Passo ancora da fare: ridistribuire con `firebase deploy` dalla cartella
+del viaggio (manuale) prima che il test visivo della scheda "Pianifica" in browser sia possibile.
 
 Limite noto del piano free, accettato esplicitamente dall'utente per il pattern d'uso reale
 (ricerca occasionale, non accesso continuo): un servizio inattivo per circa 15 minuti va in pausa

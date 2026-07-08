@@ -93,6 +93,32 @@ def test_build_trip_plan_degrades_gracefully_when_one_service_is_down(monkeypatc
     assert "poi" in plan["errors"][0]
 
 
+def test_build_trip_plan_skips_flights_when_airports_omitted(monkeypatch):
+    """Un viaggio in auto non ha aeroporti: niente chiamata a flight-search, nessun errore per
+    quello, non fa parte per niente della gather()."""
+    car_trip_body = {
+        "destination_location": "Marina di Camerota",
+        "departure_date": "2026-09-15",
+        "return_date": "2026-09-20",
+        "adults": 2,
+    }
+    fake_client = _FakeAsyncClient({
+        "stays": _FakeResponse(200, [{"source": "airbnb", "total_price": "300 EUR"}]),
+        "poi": _FakeResponse(200, [{"source": "overpass", "name": "Torre dell'Isola"}]),
+    })
+    monkeypatch.setattr(main_module.httpx, "AsyncClient", lambda: fake_client)
+
+    client = TestClient(app)
+    response = client.post("/api/trip-plan", json=car_trip_body)
+
+    assert response.status_code == 200
+    plan = response.json()
+    assert plan["flights"] == []
+    assert plan["errors"] == []  # niente errore "flights: ..." per una ricerca mai fatta
+    assert len(plan["stays"]) == 1
+    assert len(plan["points_of_interest"]) == 1
+
+
 def test_build_trip_plan_sends_correct_payloads_to_each_service(monkeypatch):
     captured = {}
 

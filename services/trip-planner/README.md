@@ -6,13 +6,20 @@ Fase 3 di `.claude/context/roadmap.md`.
 
 ## Cosa c'è
 
-Un endpoint `POST /api/trip-plan` che accetta i parametri necessari a tutti e tre i servizi a
-valle (aeroporti per i voli, nome località per alloggi e POI, date, adulti) e chiama i tre in
+Un endpoint `POST /api/trip-plan` che accetta i parametri necessari ai servizi a valle (nome
+località per alloggi e POI, date, adulti, aeroporti opzionali per i voli) e li chiama in
 parallelo (`asyncio.gather`, non `ThreadPoolExecutor` come `flight-search`: qui il lavoro è I/O
 puro verso altri servizi HTTP, non librerie sincrone bloccanti, quindi `asyncio` nativo è la
 scelta più diretta). Restituisce `{flights, stays, points_of_interest, errors}`: se un servizio a
 valle non risponde, il piano torna comunque con gli altri due e un errore specifico per quello
 mancante, non un fallimento totale.
+
+`origin_airport`/`destination_airport` sono opzionali: se mancano entrambi (un viaggio in auto o
+comunque senza volo, non tutti i viaggi del progetto ne prevedono uno), `flight-search` non viene
+nemmeno interrogato — niente chiamata, niente voce in `errors`, `flights` torna una lista vuota.
+Bug di concezione scoperto dal primo uso reale della scheda "Pianifica" (erano `Field(...)`
+obbligatori): un itinerario esplicitamente in auto come Cilento non doveva richiedere un aeroporto
+per poter cercare alloggi e punti di interesse.
 
 Le tre chiamate presuppongono che i servizi girino già, su URL configurabili via `.env`
 (`FLIGHT_SEARCH_URL`, `STAY_SEARCH_URL`, `POI_SEARCH_URL`, default `localhost:8001/8002/8003`).

@@ -4,6 +4,27 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-08 — Aeroporti opzionali in trip-planner: la scheda "Pianifica" non deve richiedere un volo per viaggi in auto
+
+Commit: non ancora committato.
+File toccati: `services/trip-planner/app/schemas.py` (`origin_airport`/`destination_airport` da
+obbligatori a `Optional[str]`), `services/trip-planner/app/main.py` (`build_trip_plan` chiama
+`flight-search` solo se entrambi i campi sono presenti), `services/trip-planner/tests/test_main.py`
+(nuovo test, 47 totali), `services/trip-planner/README.md`, `public/index.html` (propagato in
+`trips/cilento-2026/index.html`: campi aeroporto etichettati "opzionale", validazione che li
+richiede entrambi solo se ne è compilato uno, payload che li omette del tutto se assenti, e
+un'etichetta "Aggiungi al giorno" accanto al menu a tendina dei risultati, prima senza spiegazione).
+Motivo: primo uso reale della scheda da parte dell'utente su Render, dopo il fix dei timeout.
+Segnalati due problemi: prezzi "stellari" per un volo FCO→NRT (in realtà corretti: NRT è Tokyo
+Narita, un volo intercontinentale, non un errore) e soprattutto l'osservazione che il form
+richiedeva sempre un volo anche per un viaggio come Cilento, esplicitamente in auto — un errore di
+concezione del form, non un bug di rete. Corretto rendendo gli aeroporti opzionali end-to-end
+(schema, orchestrazione, form), coerente con l'obiettivo dichiarato in `roadmap.md` di servire
+anche itinerari di sola terra, non solo viaggi in aereo.
+Non ancora fatto: il push di questa correzione, il redeploy automatico su Render che ne consegue,
+e il test visivo in browser della scheda "Pianifica" (in attesa anche del `firebase deploy` del
+punto precedente).
+
 ## 2026-07-08 — Deploy reale su Render dei quattro servizi, bug di timeout scoperto e corretto dal primo test end-to-end
 
 Commit: non ancora committato.

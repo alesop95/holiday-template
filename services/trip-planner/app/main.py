@@ -62,13 +62,6 @@ def health() -> dict:
 
 @app.post("/api/trip-plan", response_model=TripPlan)
 async def build_trip_plan(request: TripPlanRequest) -> TripPlan:
-    flight_payload = {
-        "origin": request.origin_airport,
-        "destination": request.destination_airport,
-        "departure_date": request.departure_date,
-        "return_date": request.return_date,
-        "adults": request.adults,
-    }
     stay_payload = {
         "location": request.destination_location,
         "check_in": request.departure_date,
@@ -79,11 +72,22 @@ async def build_trip_plan(request: TripPlanRequest) -> TripPlan:
     poi_payload = {"location": request.destination_location, "limit": request.poi_limit}
 
     async with httpx.AsyncClient() as client:
-        results = await asyncio.gather(
-            _fetch(client, "flights", f"{FLIGHT_SEARCH_URL}/api/flights/search", flight_payload),
+        fetches = [
             _fetch(client, "stays", f"{STAY_SEARCH_URL}/api/stays/search", stay_payload),
             _fetch(client, "poi", f"{POI_SEARCH_URL}/api/poi/search", poi_payload),
-        )
+        ]
+        # Volo cercato solo se il viaggio ne prevede uno: un itinerario in auto non ha aeroporti.
+        if request.origin_airport and request.destination_airport:
+            flight_payload = {
+                "origin": request.origin_airport,
+                "destination": request.destination_airport,
+                "departure_date": request.departure_date,
+                "return_date": request.return_date,
+                "adults": request.adults,
+            }
+            fetches.append(_fetch(client, "flights", f"{FLIGHT_SEARCH_URL}/api/flights/search", flight_payload))
+
+        results = await asyncio.gather(*fetches)
 
     plan = TripPlan()
     for name, data, error in results:

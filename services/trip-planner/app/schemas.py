@@ -7,14 +7,18 @@ in services/flight-search, services/stay-search, services/poi-search, e questo s
 elabora i campi, li inoltra soltanto.
 """
 
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
 
 class TripPlanRequest(BaseModel):
-    origin_airport: str = Field(..., min_length=3, max_length=3, description="Aeroporto di partenza, es. 'FCO'")
-    destination_airport: str = Field(..., min_length=3, max_length=3, description="Aeroporto di arrivo, es. 'NRT'")
+    # Opzionali: non tutti i viaggi presuppongono un volo (es. un itinerario in auto). Se uno dei
+    # due manca, build_trip_plan salta la ricerca voli invece di richiederla come se fosse sempre
+    # necessaria — un vincolo che non rispecchia il caso d'uso reale del progetto (vedi
+    # roadmap.md, pensato anche per viaggi di sola terra).
+    origin_airport: Optional[str] = Field(None, min_length=3, max_length=3, description="Aeroporto di partenza, es. 'FCO'; omesso se il viaggio non prevede un volo")
+    destination_airport: Optional[str] = Field(None, min_length=3, max_length=3, description="Aeroporto di arrivo, es. 'NRT'; omesso se il viaggio non prevede un volo")
     destination_location: str = Field(..., description="Nome della città/area per alloggi e POI, es. 'Tokyo'")
     departure_date: str = Field(..., description="Data di partenza/check-in, formato YYYY-MM-DD")
     return_date: str = Field(..., description="Data di ritorno/check-out, formato YYYY-MM-DD")

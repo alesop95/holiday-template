@@ -252,12 +252,26 @@ Definition of done:
       30s che `poi-search` stesso usava verso Overpass (spiega la lista POI vuota invece di un
       errore esplicito). Alzati entrambi a un margine più ampio (90s in `trip-planner`, 60s/50s in
       `poi-search`/query Overpass). 46 test rieseguiti dopo la modifica, nessuna regressione.
-- [ ] **Nuovo test end-to-end su Render dopo la correzione dei timeout — non ancora rifatto** in
-      questa sessione: da ripetere prima di considerare chiuso il collegamento backend.
-- [ ] `TRIP_PLANNER_URL` in `trips/cilento-2026/trip.config.js` punta ancora a
-      `http://localhost:8004`: va aggiornato all'URL pubblico di `trip-planner` su Render
-      (`https://trip-planner-l2dh.onrender.com`) e ridistribuito con `firebase deploy` prima che
-      il test visivo della scheda "Pianifica" in browser sia possibile.
+- [x] Nuovo test end-to-end su Render dopo la correzione dei timeout: riuscito. Un primo tentativo
+      subito dopo il redeploy ha ancora mostrato 502 su due servizi (non ancora svegli: perfino
+      `/health` non rispondeva entro 30s), ma non era un problema del fix — un secondo tentativo,
+      dopo che i quattro servizi erano caldi, ha restituito 1 volo, 2 alloggi, 4 POI, zero errori,
+      in meno di 3 secondi. Il cold start del piano free può superare i 30-50 secondi dichiarati
+      da Render nella propria UI: confermato dal vivo, non solo dalla documentazione.
+- [x] `TRIP_PLANNER_URL` in `trips/cilento-2026/trip.config.js` aggiornato a
+      `https://trip-planner-l2dh.onrender.com`.
+- [ ] Ridistribuire con `firebase deploy` (dalla cartella `trips/cilento-2026/`, passo manuale)
+      prima che il test visivo della scheda "Pianifica" in browser sia possibile.
+- [x] **Secondo bug scoperto dal primo uso reale in browser**: aeroporti obbligatori nel form e
+      nello schema `TripPlanRequest`, anche per un viaggio come Cilento che è esplicitamente in
+      auto e non prevede alcun volo. Corretto: `origin_airport`/`destination_airport` diventano
+      opzionali in `TripPlanRequest` (`services/trip-planner/app/schemas.py`), `build_trip_plan`
+      salta del tutto la chiamata a `flight-search` se mancano entrambi (niente voce in `errors`
+      per una ricerca mai fatta); il form richiede entrambi i campi solo se ne è compilato uno,
+      altrimenti li tratta come volutamente assenti. Aggiunto un quinto test (47 totali) che
+      verifica che `flight-search` non venga proprio interrogato in questo caso. Anche l'etichetta
+      del menu a tendina "Salva su giorno" era poco chiara: aggiunta la scritta "Aggiungi al
+      giorno" accanto al menu.
 - [ ] Nessuna stima di costo aggregato tra un volo e un alloggio salvati sullo stesso giorno.
 - [ ] Routing/ottimizzazione del percorso giornaliero — non iniziato, resta un item separato.
 

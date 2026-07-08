@@ -50,11 +50,15 @@ dall'annuncio sul sito. Un adapter Amadeus per i voli era stato scritto e poi ri
 `services/flight-search/` quando è emersa questa notizia; non ritentare la stessa via per hotel
 o voli finché non cambia lo stato del portale Enterprise (a pagamento, richiede account manager,
 fuori scope per un progetto privato).
-3. *Layer comparatore* — parziale, per servizio, non come endpoint unico cross-servizio. Ogni
-   servizio backend interroga i propri provider in parallelo (dove ce n'è più di uno) o comunque
-   con fault tolerance (un provider che fallisce non blocca gli altri), aggrega e ordina per
-   prezzo, con cache TTL: fatto dentro `flight-search` e `stay-search`. Manca ancora un endpoint
-   che unisca voli+alloggi+POI in un'unica vista di costo/itinerario: non iniziato.
+3. *Layer comparatore* — fatto a due livelli. Dentro ogni servizio: query in parallelo dove c'è
+   più di un provider, fault tolerance (un provider che fallisce non blocca gli altri),
+   aggregazione, ordinamento per prezzo, cache TTL (`flight-search`, `stay-search`, `poi-search`).
+   Tra i servizi: nuovo `services/trip-planner/`, un endpoint unico (`/api/trip-plan`) che chiama
+   i tre servizi in parallelo (`asyncio.gather`) e restituisce un'unica risposta
+   `{flights, stays, points_of_interest, errors}`, verificato live con i quattro servizi in
+   esecuzione reale insieme e con un test esplicito di tolleranza ai guasti (un servizio a valle
+   spento non fa fallire l'intero piano). Manca ancora una stima di costo totale che sommi un
+   volo + un alloggio scelti dall'utente: oggi restituisce liste separate, non un totale.
 4. *Itinerary builder* — avviato con `services/poi-search/`. Fonte POI: **Overpass API**
    (OpenStreetMap) soltanto, non OpenTripMap — scelta deliberata: Overpass non richiede alcuna
    chiave, mentre OpenTripMap sì (un passo manuale in più per lo stesso tipo di dato, dei tag

@@ -4,6 +4,34 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-08 — Nuovo servizio trip-planner: comparatore unico voli+alloggi+POI (Fase 3 chiusa)
+
+Commit: non ancora committato.
+File toccati: nuovo `services/trip-planner/` completo: `app/{main,schemas}.py`, `tests/test_main.py`
+(4 test), `requirements.txt`, `requirements-test.txt`, `.env.example`, `README.md`. Aggiornati
+`roadmap.md`, `current-work.md`, `STACK.md`, `design-and-security.md`, `dev-testing.md`.
+Motivo: su richiesta di continuare lo sviluppo, chiuso il pezzo mancante della Fase 3 (layer
+comparatore): un endpoint unico che combina i tre servizi di ricerca già costruiti. A differenza
+degli altri tre servizi, questo non ha adapter propri: orchestra via HTTP con
+`httpx.AsyncClient` dentro `asyncio.gather` (scelto asyncio nativo invece del `ThreadPoolExecutor`
+di flight-search, perché qui il lavoro è I/O puro verso altri servizi, non librerie sincrone
+bloccanti). Nella prima stesura del codice, individuato e corretto un bug proprio prima ancora di
+testarlo: le tre chiamate erano scritte come `await` in sequenza dentro una list comprehension,
+non concorrenti — corretto con `asyncio.gather`.
+Verificato con il livello di rigore più alto finora: avviati tutti e quattro i servizi con
+`uvicorn` reale su porte separate (8001-8004, ripulendo anche un processo orfano rimasto attivo
+da un test di sessioni precedenti su una di quelle porte), poi una vera richiesta HTTP end-to-end
+per FCO→CDG/Parigi: 7 voli, 40 alloggi, 4 POI reali, zero errori. Verificata anche la tolleranza
+ai guasti fermando `poi-search` a metà: la risposta è tornata 200 con voli e alloggi intatti e un
+errore specifico, non un fallimento totale — esattamente il comportamento progettato.
+Suite di test scritta con lo stesso principio delle precedenti, con una tecnica nuova per questo
+servizio (nessun adapter da mockare): sostituito `httpx.AsyncClient` con una classe finta che
+implementa lo stesso protocollo async context manager. 4 test, tutti passanti. Totale test nel
+repository dopo questa sessione: 46 (21+11+10+4).
+Verifica residua: nessuna stima di costo totale che sommi un volo + un alloggio scelti (oggi
+liste separate); la domanda di hosting, comune agli altri tre servizi, ora ha una complicazione
+in più (`trip-planner` dipende dalla raggiungibilità reciproca degli altri tre).
+
 ## 2026-07-07 — Cache per stay-search, ricerca fonte alloggi chiusa, nuovo servizio poi-search
 
 Commit: non ancora committato.

@@ -9,6 +9,8 @@ covers-paths:
   - firebase.json
   - services/flight-search/**
   - services/stay-search/**
+  - services/poi-search/**
+  - services/trip-planner/**
 last-verified-commit: fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff
 ---
 
@@ -54,10 +56,19 @@ personale, sole richieste pubbliche anonime).
 
 `services/poi-search/` replica lo stesso pattern per i punti di interesse (`PoiSourceAdapter`,
 `PointOfInterest`). Nessun rischio ToS qui: Overpass API espone dati OpenStreetMap
-esplicitamente pubblici, senza reverse-engineering di endpoint privati. Nessun segreto o dato
-personale coinvolto in nessuno dei tre servizi backend: nessuno richiede login, nessuno gestisce
-dati dell'utente oltre i parametri della singola ricerca, non persistiti da nessuna parte (la
-cache in-memory di ogni servizio si svuota al riavvio del processo).
+esplicitamente pubblici, senza reverse-engineering di endpoint privati.
+
+`services/trip-planner/` non ha adapter propri: orchestra gli altri tre via chiamate HTTP dirette
+(non passa dall'adapter pattern, perché non normalizza nulla). È il primo punto del backend in
+cui un servizio dipende dalla raggiungibilità di rete di altri servizi, non solo di API esterne —
+rilevante per qualunque decisione futura di hosting (se un servizio finisse dietro autenticazione
+o su una rete privata, `trip-planner` andrebbe configurato di conseguenza tramite le variabili
+d'ambiente `FLIGHT_SEARCH_URL`/`STAY_SEARCH_URL`/`POI_SEARCH_URL`).
+
+Nessun segreto o dato personale coinvolto in nessuno dei quattro servizi backend: nessuno
+richiede login, nessuno gestisce dati dell'utente oltre i parametri della singola ricerca, non
+persistiti da nessuna parte (la cache in-memory di ogni servizio si svuota al riavvio del
+processo).
 
 ## Sicurezza applicativa
 

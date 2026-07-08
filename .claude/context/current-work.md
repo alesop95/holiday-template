@@ -176,9 +176,38 @@ perché non richiede chiave, vedi `roadmap.md`). Resta aperta la stessa domanda 
 altri due servizi backend, e il data model dell'itinerario non è stato progettato in questa
 sessione.
 
+## Feature: comparatore unico voli+alloggi+POI (Fase 3 della roadmap, layer comparatore) — chiusa
+
+Cosa fa: nuovo servizio `services/trip-planner/`, l'unico dei quattro senza adapter propri —
+chiama via HTTP `flight-search`, `stay-search` e `poi-search` in parallelo (`asyncio.gather`,
+non `ThreadPoolExecutor`: qui il lavoro è I/O puro verso altri servizi, non librerie sincrone
+bloccanti) e combina le risposte in un unico `{flights, stays, points_of_interest, errors}`.
+
+File da creare: vedi `roadmap.md` per il piano completo; il dettaglio è nel README del servizio,
+`services/trip-planner/README.md`.
+
+Definition of done:
+
+- [x] Scaffold FastAPI con orchestrazione funzionante, verificato con esecuzione reale non solo
+      `TestClient`: avviati tutti e quattro i servizi con `uvicorn` reale su porte separate
+      (8001-8004), una vera richiesta FCO→CDG/Parigi ha restituito 7 voli, 40 alloggi, 4 POI
+      reali, zero errori.
+- [x] Tolleranza ai guasti verificata live, non solo nei test: fermato `poi-search` a metà
+      sessione di test, la richiesta successiva è tornata 200 con voli e alloggi intatti e un
+      errore specifico (`"poi: All connection attempts failed"`), non un fallimento totale.
+- [x] Suite di test (`tests/`, pytest), 4 test, tutti passanti — combinazione delle tre risposte,
+      degradazione con un servizio giù, payload inviati a ciascun servizio a valle corretti.
+- [ ] Nessuna stima di costo totale che sommi un volo + un alloggio scelti — oggi liste separate.
+- [ ] Scelta e messa in opera dell'hosting — stessa domanda degli altri tre, con una complicazione
+      in più: questo servizio dipende dalla raggiungibilità reciproca degli altri tre.
+
+Domande aperte: nessuna specifica a questa feature, oltre alla domanda di hosting già comune
+agli altri tre servizi (qui più stringente, perché questo servizio non funziona affatto se gli
+altri non sono raggiungibili).
+
 ## Riconciliazione
 
-Ultima verifica: 2026-07-07. Ultimo commit reale su `origin/main` al momento di scrivere:
-`98e4395` ("Aggiungi servizio stay-search"). Il lavoro descritto sopra su test (flight-search,
-stay-search) e sul nuovo servizio `poi-search` è successivo e non ancora committato — controllare
-`git status` prima di assumere lo stato esatto.
+Ultima verifica: 2026-07-08. Ultimo commit reale su `origin/main` al momento di scrivere (da
+verificare con `git log`/`git status`, non assumere): il lavoro su cache di `stay-search`,
+`poi-search` e ora `trip-planner` potrebbe non essere ancora committato — controllare `git
+status` prima di assumere lo stato esatto.

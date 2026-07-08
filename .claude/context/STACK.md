@@ -8,6 +8,7 @@ covers-paths:
   - services/flight-search/**
   - services/stay-search/**
   - services/poi-search/**
+  - services/trip-planner/**
 last-verified-commit: fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff
 ---
 
@@ -27,23 +28,27 @@ statico su Firebase Hosting, entrambi sul piano gratuito *Spark*. Un solo proget
 (`viaggio-new`) serve tutti i viaggi; i dati sono separati per viaggio via `TRIP_ID` (dettagli in
 `README.md`, sezioni 4 e 6).
 
-Il *backend* è composto da tre servizi indipendenti, tutti Python + FastAPI, gestore pacchetti
-pip con un proprio `requirements.txt` ciascuno (nessun ambiente virtuale fissato nel repository,
-`.venv/` è gitignored). Nessuno dei tre è collegato al frontend né agli altri due: sono servizi a
-sé, eseguibili in locale con `uvicorn` su porte diverse (8001, 8002, 8003), senza deployment
-configurato. `services/flight-search/` (Fase 1) interroga Google Flights (scraping) e Kiwi
-Tequila (API key) per i voli. `services/stay-search/` (Fase 2) interroga Airbnb (scraping) per
-gli alloggi. `services/poi-search/` (Fase 4, itinerary builder) interroga Overpass API
-(OpenStreetMap) per punti di interesse. Gli ultimi due usano geocodifica del nome località via
-Nominatim (`app/geocoding.py`, stesso file duplicato in entrambi). Tutti e tre condividono lo
-stesso adapter pattern (interfaccia comune per fonte, normalizzazione verso uno schema condiviso,
-un adapter che fallisce non blocca gli altri) e la stessa cache in-memory con TTL
-(`app/cache.py`, TTL diverso per servizio: 5 minuti per i voli, 10 per gli alloggi, un'ora per i
-POI, proporzionale a quanto velocemente cambia il dato), tutti duplicati tra i tre servizi invece
-che fattorizzati in una libreria comune: scelta deliberata per tenerli indipendenti e deployabili
-separatamente, coerente con il fatto che potrebbero finire su infrastrutture diverse. Tutti e tre
-hanno una suite di test `pytest` in `tests/`, nessuna chiamata di rete reale nei test (mockate via
-`monkeypatch` con payload dalla forma reale verificata durante lo sviluppo).
+Il *backend* è composto da quattro servizi indipendenti, tutti Python + FastAPI, gestore
+pacchetti pip con un proprio `requirements.txt` ciascuno (nessun ambiente virtuale fissato nel
+repository, `.venv/` è gitignored). Nessuno è collegato al frontend: sono servizi a sé, eseguibili
+in locale con `uvicorn` su porte diverse (8001-8004), senza deployment configurato. Tre fanno
+ricerca: `services/flight-search/` (Fase 1) interroga Google Flights (scraping) e Kiwi Tequila
+(API key) per i voli; `services/stay-search/` (Fase 2) interroga Airbnb (scraping) per gli
+alloggi; `services/poi-search/` (Fase 4, itinerary builder) interroga Overpass API (OpenStreetMap)
+per punti di interesse — gli ultimi due usano geocodifica del nome località via Nominatim
+(`app/geocoding.py`, duplicato in entrambi). Il quarto, `services/trip-planner/` (Fase 3, layer
+comparatore), non ha adapter propri: orchestra gli altri tre via HTTP (`asyncio.gather`) e
+restituisce un'unica risposta combinata, con fault tolerance se uno dei tre non risponde.
+
+I tre servizi di ricerca condividono lo stesso adapter pattern (interfaccia comune per fonte,
+normalizzazione verso uno schema condiviso, un adapter che fallisce non blocca gli altri) e la
+stessa cache in-memory con TTL (`app/cache.py`, TTL diverso per servizio: 5 minuti per i voli, 10
+per gli alloggi, un'ora per i POI, proporzionale a quanto velocemente cambia il dato). Tutto
+duplicato tra i servizi invece che fattorizzato in una libreria comune: scelta deliberata per
+tenerli indipendenti e deployabili separatamente, coerente con il fatto che potrebbero finire su
+infrastrutture diverse. Tutti e quattro hanno una suite di test `pytest` in `tests/`, nessuna
+chiamata di rete reale nei test (mockate via `monkeypatch` con payload dalla forma reale
+verificata durante lo sviluppo, incluse le chiamate HTTP tra servizi in `trip-planner`).
 
 ## Alternative deliberatamente escluse
 
@@ -89,6 +94,13 @@ traduce il nome di una località in un bounding box via Nominatim prima di inter
 elementi OSM senza tag `name` e quelli con `tourism` di tipo alloggio (competenza di
 `stay-search`, non di questo servizio).
 
+`services/trip-planner/app/main.py` espone `/api/trip-plan`, l'unico endpoint asincrono
+(`async def`) tra i quattro servizi: chiama gli altri tre con `httpx.AsyncClient` dentro
+`asyncio.gather` invece di `ThreadPoolExecutor`, perché qui il lavoro è I/O puro verso altri
+servizi HTTP, non librerie sincrone bloccanti come `fast_flights` o `pyairbnb`. Le tre risposte
+diventano `dict` grezzi in `TripPlan` (`app/schemas.py`), senza ri-normalizzazione: chi li produce
+li ha già normalizzati.
+
 ## Riferimenti a snippet
 
 `public/index.html:seedIfNeeded` — seeding automatico di Firestore al primo avvio di un viaggio,
@@ -109,3 +121,8 @@ in `services/stay-search/README.md`.
 `services/poi-search/app/adapters/overpass_adapter.py:OverpassAdapter.search` — richiede un
 header `User-Agent` esplicito (altrimenti 406 dal server, scoperto in sessione), scarta gli
 elementi OSM senza nome; dettagli in `services/poi-search/README.md`.
+
+`services/trip-planner/app/main.py:build_trip_plan` — verificato live con i quattro servizi in
+esecuzione reale insieme (non solo `TestClient`) e con un test esplicito di tolleranza ai guasti
+(un servizio a valle spento non fa fallire l'intero piano); dettagli in
+`services/trip-planner/README.md`.

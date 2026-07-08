@@ -313,6 +313,36 @@ Definition of done:
 
 Domande aperte: nessuna sul design della soluzione; resta da eseguire la migrazione manuale sopra.
 
+## Feature: titolo/badge/tag del viaggio editabili dall'app (TRIP_META non più statico) — avviata
+
+Cosa fa: `TRIP_META` (badge, titolo, sottotitolo, tag/stats dell'hero) non è più solo un valore
+statico di `trip.config.js`: un nuovo documento `trips/{TRIP_ID}/state/meta` lo rende editabile
+dall'app, sincronizzato in realtime come checklist e note. Pulsante "Modifica" sull'hero apre un
+pannello con i campi e un elenco di tag aggiungibili/rimuovibili; "Salva" scrive su Firestore.
+`TRIP_META` resta il seed iniziale per un viaggio nuovo e il fallback per un viaggio già seminato
+prima che questo documento esistesse (`loadMeta` degrada senza errori, `writeMeta` con `setDoc`
+crea il documento al primo salvataggio se assente, self-healing come già fatto per `planning`).
+
+File modificati: `public/index.html` (CSS pannello, `renderHero`/`loadMeta`/`writeMeta`/
+`renderMetaEditPanel`/`toggleMetaEdit`/`addMetaStatField`/`removeMetaStatField`/`saveMeta`, seed e
+listener realtime di `state/meta`), propagato in `trips/cilento-2026/index.html`.
+
+Definition of done:
+
+- [x] Scritto e syntax-check passato (nessun test automatico esiste per il frontend, per scelta
+      di progetto: Vanilla JS senza build step, verificato finora solo manualmente in browser).
+- [ ] **Non ancora verificato in un browser reale**: serve un riscontro visivo dell'utente (regola
+      `manual-screenshots.md`) prima di considerarlo chiuso — aprire l'hero, premere "Modifica",
+      cambiare un tag, salvare, controllare che sia sincronizzato sull'altro dispositivo.
+- [ ] Contenuto scritto da un utente reale (non più solo dati scrapati come in "Pianifica" o
+      dati dello sviluppatore come il resto della shell): passato per `escHtml` per lo stesso
+      principio di sicurezza, ma vale la pena un secondo controllo visivo su caratteri speciali
+      (es. un titolo con `&`, `<`, apici).
+
+Domande aperte: se questo pattern (stato editabile su Firestore invece di config statica) regge
+bene alla prova, la dashboard costi/splitwise richiesta dall'utente come prossima feature grande
+può riusare lo stesso approccio.
+
 ## Riconciliazione
 
 Ultima verifica: 2026-07-08. Ultimo commit reale su `origin/main` al momento di scrivere (da

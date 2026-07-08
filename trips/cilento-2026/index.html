@@ -29,6 +29,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .hero{background:linear-gradient(155deg,var(--sea) 0%,var(--sea2) 100%);padding:2.8rem 1.4rem 2.2rem;text-align:center;position:relative;overflow:hidden;}
 .hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");}
 .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:100px;padding:4px 14px;font-size:11.5px;color:rgba(255,255,255,.85);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.9rem;}
+.hero-edit-btn{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:100px;padding:6px 13px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;cursor:pointer;z-index:2;}
+.hero-edit-btn:hover{background:rgba(255,255,255,.25);}
+.hero-edit-panel{max-width:760px;margin:0 auto;padding:1.2rem 1rem 0;}
+.hero-edit-card{background:var(--white);border-radius:14px;padding:16px;box-shadow:0 2px 12px var(--sh);}
+.hero-edit-field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px;}
+.hero-edit-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.hero-edit-field input{padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);outline:none;}
+.hero-edit-field input:focus{border-color:var(--sea2);}
+.hero-edit-stats-row{display:flex;gap:7px;margin-bottom:7px;}
+.hero-edit-stats-row input{flex:1;}
+.hero-edit-rm-btn{background:var(--sand);border:1.5px solid var(--border);border-radius:8px;color:var(--terra);font-size:14px;font-weight:700;cursor:pointer;width:36px;flex-shrink:0;}
+.hero-edit-add-btn{background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--muted);font-size:12px;padding:7px;width:100%;cursor:pointer;margin-bottom:11px;}
+.hero-edit-actions{display:flex;gap:8px;margin-top:5px;}
+.hero-edit-save{flex:1;padding:10px;border:none;border-radius:100px;background:var(--sea2);color:#fff;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;}
+.hero-edit-cancel{padding:10px 16px;border:1.5px solid var(--border);border-radius:100px;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13.5px;cursor:pointer;}
 .hero h1{font-family:'Poppins',sans-serif;font-size:clamp(2rem,6.5vw,3.4rem);font-weight:700;color:#fff;line-height:1.1;margin-bottom:.5rem;}
 .hero-sub{font-family:'DM Sans',sans-serif;font-size:clamp(.95rem,2.6vw,1.15rem);font-weight:400;color:rgba(255,255,255,.72);margin-bottom:1.6rem;}
 .hero-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;}
@@ -188,8 +203,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 
 <div class="sync-dot" title="Connesso - sincronizzazione attiva"></div>
 
-<!-- Hero: renderizzato dinamicamente da TRIP_META in trip.config.js -->
+<!-- Hero: renderizzato dinamicamente da S.meta (Firestore, con fallback a TRIP_META) -->
 <div id="hero-root" class="hero"></div>
+<div id="hero-edit-panel" class="hero-edit-panel" style="display:none"></div>
 
 <div class="nav-wrap">
   <nav class="nav">
@@ -297,7 +313,7 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https:
 import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLANNER_URL }  from './trip.config.js';
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
-const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null };
+const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false };
 let db;
 
 // ── Punto di ingresso ─────────────────────────────────────────────────────────
@@ -318,6 +334,7 @@ async function init() {
 
     setStatus('Caricamento itinerario...');
     await loadContent();
+    await loadMeta();
 
     setStatus('Attivazione sync in tempo reale...');
     listenRealtime();
@@ -330,14 +347,21 @@ async function init() {
   }
 }
 
-// ── Hero dinamico da TRIP_META ────────────────────────────────────────────────
+// ── Hero dinamico da S.meta (Firestore, editabile), con fallback a TRIP_META ─────
+// TRIP_META resta l'unica fonte finché lo stato Firestore non e' stato letto (primo
+// render, prima ancora della connessione), e resta il seed iniziale per ogni nuovo
+// viaggio: da li' in avanti l'utente puo' modificare titolo/badge/tag dall'app senza
+// toccare trip.config.js. escHtml perche' da questo momento e' contenuto scritto da un
+// utente reale, non solo dallo sviluppatore in trip.config.js.
 function renderHero() {
+  const m = S.meta || TRIP_META;
   document.getElementById('hero-root').innerHTML = `
-    <div class="hero-badge">${TRIP_META.badge}</div>
-    <h1>${TRIP_META.title}</h1>
-    <p class="hero-sub">${TRIP_META.subtitle}</p>
+    <button class="hero-edit-btn" onclick="toggleMetaEdit()">${S.metaEditing?'Chiudi':'Modifica'}</button>
+    <div class="hero-badge">${escHtml(m.badge)}</div>
+    <h1>${escHtml(m.title)}</h1>
+    <p class="hero-sub">${escHtml(m.subtitle)}</p>
     <div class="hero-stats">
-      ${TRIP_META.stats.map(s => `<div class="hero-stat">${s}</div>`).join('')}
+      ${m.stats.map(s => `<div class="hero-stat">${escHtml(s)}</div>`).join('')}
     </div>`;
 }
 
@@ -352,6 +376,7 @@ async function seedIfNeeded() {
     setDoc(doc(db, 'trips', TRIP_ID, 'state',   'checklist'),   { items: {} }),
     setDoc(doc(db, 'trips', TRIP_ID, 'state',   'notes'),       { days: {}, completed: {} }),
     setDoc(doc(db, 'trips', TRIP_ID, 'state',   'planning'),    { byDay: {} }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'meta'),        { ...TRIP_META }),
   ]);
 }
 
@@ -363,6 +388,14 @@ async function loadContent() {
     getDoc(doc(db, 'trips', TRIP_ID, 'content', 'checklist')),
   ]);
   S.days = d.data().data; S.restaurants = r.data().data; S.checklist = c.data().data;
+}
+
+// Viaggi seminati prima che state/meta esistesse (vedi seedIfNeeded) non hanno questo
+// documento: fallback a TRIP_META, self-healing al primo salvataggio (writeMeta usa
+// setDoc, non updateDoc, quindi crea il documento se assente).
+async function loadMeta() {
+  const snap = await getDoc(doc(db, 'trips', TRIP_ID, 'state', 'meta'));
+  S.meta = snap.exists() ? snap.data() : { ...TRIP_META };
 }
 
 // ── Listener real-time per stato condiviso ────────────────────────────────────
@@ -381,6 +414,11 @@ function listenRealtime() {
     S.planning = snap.exists() ? (snap.data().byDay || {}) : {};
     renderPlanSaved();
   });
+  onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'meta'), snap => {
+    if (!snap.exists()) return;
+    S.meta = snap.data();
+    if (!S.metaEditing) renderHero();  // non sovrascrive una modifica in corso sull'altro dispositivo
+  });
 }
 
 // ── Scritture su Firestore ────────────────────────────────────────────────────
@@ -390,9 +428,77 @@ async function writeCompleted(id, val) { await setDoc(doc(db,'trips',TRIP_ID,'st
 // merge:true crea il documento e le mappe annidate se assenti (vale anche per un viaggio
 // gia' seminato prima che 'planning' esistesse, vedi seedIfNeeded): stesso pattern di writeNote.
 async function writePlanDay(dayId, kind, arr) { await setDoc(doc(db,'trips',TRIP_ID,'state','planning'), { byDay: { [dayId]: { [kind]: arr } } }, { merge:true }); }
+async function writeMeta(meta) { await setDoc(doc(db,'trips',TRIP_ID,'state','meta'), meta); }
+
+// ── Pannello di modifica hero (badge/titolo/sottotitolo/tag) ─────────────────────
+// Bozza locale separata da S.meta: onSnapshot su state/meta non deve poter cancellare
+// modifiche non ancora salvate mentre il pannello e' aperto (vedi listenRealtime).
+let _metaDraft = null;
+
+function renderMetaEditPanel() {
+  const panel = document.getElementById('hero-edit-panel');
+  if (!S.metaEditing) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
+  const m = _metaDraft;
+  panel.style.display = 'block';
+  panel.innerHTML = `<div class="hero-edit-card">
+    <div class="hero-edit-field"><label>Badge</label><input id="me-badge" value="${escHtml(m.badge)}"></div>
+    <div class="hero-edit-field"><label>Titolo</label><input id="me-title" value="${escHtml(m.title)}"></div>
+    <div class="hero-edit-field"><label>Sottotitolo</label><input id="me-subtitle" value="${escHtml(m.subtitle)}"></div>
+    <div class="hero-edit-field"><label>Tag (vincoli/caratteristiche del viaggio)</label></div>
+    ${m.stats.map((s,i) => `<div class="hero-edit-stats-row"><input id="me-stat-${i}" value="${escHtml(s)}"><button class="hero-edit-rm-btn" onclick="removeMetaStatField(${i})">&times;</button></div>`).join('')}
+    <button class="hero-edit-add-btn" onclick="addMetaStatField()">+ Aggiungi tag</button>
+    <div class="hero-edit-actions">
+      <button class="hero-edit-save" onclick="saveMeta()">Salva</button>
+      <button class="hero-edit-cancel" onclick="toggleMetaEdit()">Annulla</button>
+    </div>
+  </div>`;
+}
+
+function _readMetaDraftFromInputs() {
+  // Legge lo stato corrente dei campi prima di ri-renderizzare (add/remove tag), cosi'
+  // non si perde quello che l'utente ha gia' digitato negli altri campi.
+  if (!_metaDraft) return;
+  const badgeEl = document.getElementById('me-badge');
+  if (!badgeEl) return; // pannello non ancora renderizzato la prima volta
+  _metaDraft.badge = badgeEl.value;
+  _metaDraft.title = document.getElementById('me-title').value;
+  _metaDraft.subtitle = document.getElementById('me-subtitle').value;
+  _metaDraft.stats = _metaDraft.stats.map((_,i) => document.getElementById(`me-stat-${i}`).value);
+}
+
+window.toggleMetaEdit = () => {
+  if (S.metaEditing) { S.metaEditing = false; }
+  else { _metaDraft = JSON.parse(JSON.stringify(S.meta || TRIP_META)); S.metaEditing = true; }
+  renderHero();
+  renderMetaEditPanel();
+};
+
+window.addMetaStatField = () => {
+  _readMetaDraftFromInputs();
+  _metaDraft.stats.push('');
+  renderMetaEditPanel();
+  document.getElementById(`me-stat-${_metaDraft.stats.length - 1}`).focus();
+};
+
+window.removeMetaStatField = (i) => {
+  _readMetaDraftFromInputs();
+  _metaDraft.stats.splice(i, 1);
+  renderMetaEditPanel();
+};
+
+window.saveMeta = () => {
+  _readMetaDraftFromInputs();
+  const meta = {
+    badge: _metaDraft.badge.trim(), title: _metaDraft.title.trim(), subtitle: _metaDraft.subtitle.trim(),
+    stats: _metaDraft.stats.map(s => s.trim()).filter(Boolean),
+  };
+  writeMeta(meta).then(() => {
+    S.meta = meta; S.metaEditing = false; renderHero(); renderMetaEditPanel();
+  }).catch(e => alert('Errore salvataggio: ' + e.message));
+};
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function renderAll() { renderDays(); renderRest(); renderCk(); renderPlanSaved(); }
+function renderAll() { renderHero(); renderDays(); renderRest(); renderCk(); renderPlanSaved(); }
 
 function renderDays() {
   const c = document.getElementById('days-container'); let html = '';

@@ -4,6 +4,19 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-08 — Titolo/badge/tag del viaggio editabili dall'app: TRIP_META passa da statico a Firestore
+
+Commit: non ancora committato.
+File toccati: `public/index.html` (propagato in `trips/cilento-2026/index.html`): nuovo documento
+`state/meta`, pulsante "Modifica" sull'hero, pannello di modifica con bozza locale separata da
+`S.meta` (per non perdere una modifica in corso se arriva un aggiornamento realtime dall'altro
+dispositivo mentre si sta editando).
+Motivo: primo dei sei punti di un messaggio con molte richieste dell'utente, scelto per primo su
+sua indicazione esplicita perché fa da base architetturale per la prossima (dashboard costi):
+stesso pattern, stato editabile su Firestore invece di valore statico in `trip.config.js`.
+Non ancora fatto: riscontro visivo dell'utente in browser (nessun test automatico esiste per il
+frontend, per scelta di progetto).
+
 ## 2026-07-08 — Un sito Firebase Hosting dedicato per viaggio (ADR-009): risolto un rischio reale di sovrascrittura
 
 Commit: non ancora committato.

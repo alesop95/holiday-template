@@ -272,6 +272,15 @@ Definition of done:
       verifica che `flight-search` non venga proprio interrogato in questo caso. Anche l'etichetta
       del menu a tendina "Salva su giorno" era poco chiara: aggiunta la scritta "Aggiungi al
       giorno" accanto al menu.
+- [x] **Terzo problema segnalato dall'uso reale**: gli alloggi mostrati non avevano alcun link
+      cliccabile alla pagina Airbnb reale per prenotare, anche se `StayOffer.url` esiste già nella
+      risposta del backend — semplicemente non veniva mai renderizzato. Aggiunto un link "Vedi e
+      prenota su Airbnb" su ogni card, sia nei risultati di ricerca sia negli elementi salvati.
+      Colto nello stesso intervento un problema di sicurezza adiacente non ancora segnalato da
+      nessuno: i dati di voli/alloggi/POI vengono da fonti esterne scrapate (a differenza del
+      resto della shell, dati sempre scritti dallo sviluppatore in `trip.config.js`) e finivano in
+      `innerHTML` senza alcun escaping — aggiunta una funzione `escHtml` e applicata a tutti i
+      campi dinamici di questa scheda.
 - [ ] Nessuna stima di costo aggregato tra un volo e un alloggio salvati sullo stesso giorno.
 - [ ] Routing/ottimizzazione del percorso giornaliero — non iniziato, resta un item separato.
 

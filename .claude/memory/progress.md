@@ -4,6 +4,25 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-08 — Link "prenota su Airbnb" mancante negli alloggi, escaping HTML aggiunto ai dati esterni scrapati
+
+Commit: non ancora committato.
+File toccati: `public/index.html` (propagato in `trips/cilento-2026/index.html`): nuova funzione
+`escHtml`, link `<a>` verso `StayOffer.url` nelle card di ricerca e negli elementi salvati.
+Motivo: l'utente ha verificato la correzione precedente su Render con screenshot reali (confermata
+funzionante: aeroporti opzionali, etichetta "Aggiungi al giorno" chiara) e ha chiesto dove vedere
+gli alloggi da prenotare su Airbnb/Booking — il campo `url` di `StayOffer` esisteva già nella
+risposta del backend ma non veniva mai renderizzato in nessuna card, un'omissione, non un bug di
+rete. Approfittando dell'intervento sulla stessa funzione di rendering, aggiunto anche l'escaping
+HTML dei campi dinamici (nome annuncio, compagnia aerea, categoria POI, ecc.): a differenza del
+resto della shell, che renderizza solo dati scritti dallo sviluppatore in `trip.config.js`, questa
+scheda inserisce in `innerHTML` dati di fonti esterne scrapate (Airbnb, Google Flights,
+OpenStreetMap) senza alcun controllo — un gap di sicurezza notato durante l'intervento, non
+segnalato dall'utente, corretto per lo stesso principio di "se noti codice insicuro, sistemalo
+subito". Nessuna fonte Booking.com esiste in questo progetto (ricerca chiusa in sessioni
+precedenti, vedi `roadmap.md`): il link aggiunto è esplicitamente etichettato "su Airbnb", non
+generico, per non promettere una fonte che non c'è.
+
 ## 2026-07-08 — Aeroporti opzionali in trip-planner: la scheda "Pianifica" non deve richiedere un volo per viaggi in auto
 
 Commit: non ancora committato.

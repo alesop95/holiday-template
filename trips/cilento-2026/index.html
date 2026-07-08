@@ -162,6 +162,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-item-nm{font-weight:600;font-size:13.5px;color:var(--text);}
 .plan-item-price{font-size:13.5px;font-weight:700;color:var(--sea);white-space:nowrap;}
 .plan-item-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;}
+.plan-item-link{display:inline-block;font-size:12px;color:var(--sea2);font-weight:600;margin-top:6px;text-decoration:none;}
+.plan-item-link:hover{text-decoration:underline;}
 .plan-item-save{display:flex;gap:7px;margin-top:9px;align-items:center;}
 .plan-item-save-lbl{font-size:11px;color:var(--muted);white-space:nowrap;}
 .plan-item-save select{flex:1;padding:7px 9px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);}
@@ -473,19 +475,26 @@ function updateNotesUI() {
 const PLAN_API_KEY = { flights: 'flights', stays: 'stays', pois: 'points_of_interest' };
 const PLAN_KIND_LABEL = { flights: 'Volo', stays: 'Alloggio', pois: 'Punto di interesse' };
 
+// Voli/alloggi/POI vengono da fonti esterne scrapate (Airbnb, Google Flights, OpenStreetMap), non
+// da trip.config.js scritto dallo sviluppatore: a differenza del resto della shell, questi valori
+// vanno sempre passati per escHtml prima di finire in innerHTML.
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function renderPlanResults() {
   const p = S.planResults; const el = document.getElementById('plan-results'); if (!p || !el) return;
-  const dayOpts = S.days.map(d => `<option value="${d.id}">${d.label} · ${d.title}</option>`).join('');
+  const dayOpts = S.days.map(d => `<option value="${d.id}">${escHtml(d.label)} · ${escHtml(d.title)}</option>`).join('');
   const groups = [
-    { key:'flights', label:'Voli', items:p.flights||[], view:f=>({nm:f.airline,price:f.price,sub:`${f.departure} → ${f.arrival} · ${f.duration} · ${f.stops===0?'diretto':f.stops+' scalo/i'}${f.is_best?' · consigliato':''}`}) },
-    { key:'stays', label:'Alloggi', items:p.stays||[], view:s=>({nm:s.name,price:s.total_price,sub:`${s.listing_type||'Alloggio'}${s.rating>0?' · '+s.rating+' ('+s.review_count+' recensioni)':' · senza recensioni'}`}) },
-    { key:'pois', label:'Punti di interesse', items:p.points_of_interest||[], view:o=>({nm:o.name,price:'',sub:o.category}) },
+    { key:'flights', label:'Voli', items:p.flights||[], view:f=>({nm:escHtml(f.airline),price:escHtml(f.price),sub:`${escHtml(f.departure)} → ${escHtml(f.arrival)} · ${escHtml(f.duration)} · ${f.stops===0?'diretto':escHtml(f.stops)+' scalo/i'}${f.is_best?' · consigliato':''}`,link:''}) },
+    { key:'stays', label:'Alloggi', items:p.stays||[], view:s=>({nm:escHtml(s.name),price:escHtml(s.total_price),sub:`${escHtml(s.listing_type||'Alloggio')}${s.rating>0?' · '+escHtml(s.rating)+' ('+escHtml(s.review_count)+' recensioni)':' · senza recensioni'}`,link:s.url||''}) },
+    { key:'pois', label:'Punti di interesse', items:p.points_of_interest||[], view:o=>({nm:escHtml(o.name),price:'',sub:escHtml(o.category),link:''}) },
   ];
   const html = groups.map(g => {
     if (!g.items.length) return '';
     return `<div class="plan-group"><div class="plan-group-ttl">${g.label} (${g.items.length})</div>
       ${g.items.map((it,i) => { const v = g.view(it);
-        return `<div class="plan-item"><div class="plan-item-hd"><div class="plan-item-nm">${v.nm}</div>${v.price?`<div class="plan-item-price">${v.price}</div>`:''}</div><div class="plan-item-sub">${v.sub}</div>
+        return `<div class="plan-item"><div class="plan-item-hd"><div class="plan-item-nm">${v.nm}</div>${v.price?`<div class="plan-item-price">${v.price}</div>`:''}</div><div class="plan-item-sub">${v.sub}</div>${v.link?`<a class="plan-item-link" href="${escHtml(v.link)}" target="_blank" rel="noopener noreferrer">Vedi e prenota su Airbnb →</a>`:''}
         <div class="plan-item-save"><span class="plan-item-save-lbl">Aggiungi al giorno</span><select>${dayOpts}</select><button class="plan-save-btn" onclick="savePlanItem('${g.key}',${i},this)">Salva</button></div></div>`;
       }).join('')}</div>`;
   }).join('');
@@ -499,12 +508,13 @@ function renderPlanSaved() {
   dayIds.sort((a,b) => (parseInt(a,10)||0) - (parseInt(b,10)||0));
   el.innerHTML = dayIds.map(dayId => {
     const dayInfo = S.days.find(d => String(d.id) === String(dayId));
-    const dayTitle = dayInfo ? `${dayInfo.label} · ${dayInfo.title}` : `Giorno ${dayId}`;
+    const dayTitle = `${escHtml(dayInfo?.label||'')} · ${escHtml(dayInfo?.title||`Giorno ${dayId}`)}`;
     const rows = [];
     ['flights','stays','pois'].forEach(kind => {
       (S.planning[dayId][kind]||[]).forEach((item,i) => {
-        const nm = kind==='flights' ? `${item.airline} · ${item.price}` : kind==='stays' ? `${item.name} · ${item.total_price}` : item.name;
-        rows.push(`<div class="plan-saved-item"><div class="plan-saved-nm">${PLAN_KIND_LABEL[kind]}: ${nm}</div><button class="plan-rm-btn" onclick="removePlanItem('${dayId}','${kind}',${i})">Rimuovi</button></div>`);
+        const nm = kind==='flights' ? `${escHtml(item.airline)} · ${escHtml(item.price)}` : kind==='stays' ? `${escHtml(item.name)} · ${escHtml(item.total_price)}` : escHtml(item.name);
+        const link = kind==='stays' && item.url ? ` <a class="plan-item-link" href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer">Airbnb →</a>` : '';
+        rows.push(`<div class="plan-saved-item"><div class="plan-saved-nm">${PLAN_KIND_LABEL[kind]}: ${nm}${link}</div><button class="plan-rm-btn" onclick="removePlanItem('${dayId}','${kind}',${i})">Rimuovi</button></div>`);
       });
     });
     return `<div class="plan-saved-day"><div class="plan-saved-day-ttl">${dayTitle}</div>${rows.join('')}</div>`;

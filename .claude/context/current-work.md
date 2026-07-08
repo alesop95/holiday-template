@@ -348,6 +348,49 @@ Domande aperte: se questo pattern (stato editabile su Firestore invece di config
 bene alla prova, la dashboard costi/splitwise richiesta dall'utente come prossima feature grande
 può riusare lo stesso approccio.
 
+**Bug trovato durante il primo test reale, corretto**: il titolo mostrava letteralmente
+"Cilento &amp; Caserta" invece di "Cilento & Caserta". Causa: `TRIP_META.title` in
+`trip.config.js` era scritto `"Cilento &amp; Caserta"` (pensato per un'epoca in cui il valore
+finiva diretto in `innerHTML` senza escaping), e ora che passa per `escHtml` (corretto, il campo è
+editabile da un utente reale) l'entity veniva codificata una seconda volta. Corretto il dato
+sorgente a `"Cilento & Caserta"` (letterale, semplice). Nessun altro campo di `TRIP_META` aveva lo
+stesso problema (controllato con una ricerca di `&amp;`/`&lt;`/`&gt;`/entità simili nel file).
+
+## Feature: dashboard "Costi Reali e Divisione tra Persone" (Splitwise semplificato) — avviata
+
+Cosa fa: nuova sezione dentro la scheda "Info & Costi" (sotto la stima statica preesistente, che
+resta invariata) che somma in automatico i voli/alloggi salvati nella scheda "Pianifica"
+(`S.planning`, prezzi parsati da stringa) più le spese aggiunte a mano (descrizione, importo,
+pagatore opzionale), poi divide il totale per il numero di partecipanti e mostra un saldo per
+persona (chi ha pagato più della propria quota "deve ricevere", chi meno "deve dare") — la
+logica minima di uno Splitwise, non un clone completo (nessuna gestione di trasferimenti multipli
+o valute diverse). Nuovo documento `trips/{TRIP_ID}/state/costs`
+(`{participants:[], expenses:[{id,label,amount,paidBy}]}`), stesso pattern di stato editabile su
+Firestore già usato per `state/meta`.
+
+File modificati: `public/index.html` (CSS dashboard, `parsePrice`/`computePlanningCosts`/
+`renderCostsDashboard`/`addCostParticipant`/`removeCostParticipant`/`addCostExpense`/
+`removeCostExpense`, seed e listener realtime di `state/costs`), propagato in
+`trips/cilento-2026/index.html`.
+
+Definition of done:
+
+- [x] Scritto e syntax-check passato.
+- [ ] **Non ancora verificato in un browser reale** (stessa limitazione delle altre feature di
+      questa sessione: nessun test automatico esiste per il frontend). Da provare: aggiungere due
+      partecipanti, salvare un volo/alloggio da Pianifica, aggiungere una spesa manuale con
+      pagatore, controllare che il totale e i saldi per persona siano corretti a mano.
+- [ ] I POI non hanno prezzo (schema `PointOfInterest`) e non entrano nel totale: comportamento
+      voluto, non un bug, ma da confermare che sia chiaro all'utente in UI.
+- [ ] Nessuna gestione di più valute o di trasferimenti ottimizzati tra persone (Splitwise vero
+      calcola il minor numero di transazioni per pareggiare i conti tra più di 2 persone): fuori
+      scope per la versione "semplice" richiesta esplicitamente dall'utente.
+
+Domande aperte: se la stima statica preesistente in questa stessa scheda (dati Cilento scritti a
+mano direttamente nello shell, non in `trip.config.js`) debba essere spostata a sua volta in
+`TRIP_DATA` per coerenza con il principio "la shell non contiene mai dati di un viaggio
+specifico" — incoerenza preesistente notata in sessione, non richiesta dall'utente, non toccata.
+
 ## Riconciliazione
 
 Ultima verifica: 2026-07-08. Ultimo commit reale su `origin/main` al momento di scrivere (da

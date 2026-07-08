@@ -72,7 +72,7 @@ export const TRIP_PLANNER_URL = "https://trip-planner-l2dh.onrender.com";
 
 export const TRIP_META = {
   badge:    "Viaggio di Coppia · Estate 2026",
-  title:    "Cilento &amp; Caserta",
+  title:    "Cilento & Caserta",
   subtitle: "7 giorni tra mare, natura e storia",
   stats:    [
     "7 giorni · 6 notti",

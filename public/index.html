@@ -160,6 +160,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .info-tips{background:#FFF1F2;border:1px solid #FFD3D7;border-radius:14px;padding:15px 17px;}
 .it-ttl{font-size:12px;font-weight:700;color:var(--terra);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;}
 .divider{height:1px;background:var(--border);margin:1.8rem 0;}
+.costs-card{background:var(--white);border-radius:14px;padding:15px 17px;box-shadow:0 2px 10px var(--sh);margin-bottom:12px;}
+.costs-card-ttl{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:600;color:var(--sea);margin-bottom:10px;}
+.costs-participants{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+.costs-chip{display:inline-flex;align-items:center;gap:6px;background:var(--sand);border-radius:100px;padding:5px 6px 5px 13px;font-size:12.5px;color:var(--text);}
+.costs-chip button{background:none;border:none;color:var(--terra);font-size:14px;font-weight:700;cursor:pointer;width:20px;height:20px;border-radius:50%;}
+.costs-empty,.costs-hint{font-size:12.5px;color:var(--muted);}
+.costs-add-row{display:flex;gap:7px;}
+.costs-add-row input{flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;}
+.costs-add-btn{padding:8px 14px;border:none;border-radius:100px;background:var(--sea2);color:#fff;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.costs-auto-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13.5px;color:var(--text);}
+.costs-expense-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.costs-expense-row:first-child{border-top:none;}
+.costs-expense-lbl{font-size:13.5px;color:var(--text);}
+.costs-expense-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.costs-expense-amt{font-weight:700;color:var(--sea);font-size:13.5px;white-space:nowrap;}
+.costs-rm-btn{background:none;border:none;color:var(--terra);font-size:16px;font-weight:700;cursor:pointer;flex-shrink:0;}
+.costs-expense-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.costs-expense-form input,.costs-expense-form select{padding:8px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;}
+.costs-expense-form input:first-child{grid-column:1/-1;}
+.costs-expense-form button{grid-column:1/-1;}
+.costs-summary{background:linear-gradient(135deg,var(--sea),var(--sea2));color:#fff;border-radius:14px;padding:17px;}
+.costs-summary-row{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;}
+.costs-summary-row strong{font-family:'Poppins',sans-serif;font-size:1.05rem;}
+.costs-balance-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-top:1px solid rgba(255,255,255,.2);margin-top:5px;padding-top:8px;}
+.costs-balance.pos{color:#B7F5D8;font-weight:600;}
+.costs-balance.neg{color:#FFD3D7;font-weight:600;}
 .plan-form{display:grid;grid-template-columns:1fr 1fr;gap:9px;background:var(--white);border-radius:14px;padding:15px;box-shadow:0 2px 10px var(--sh);margin-bottom:1.2rem;}
 .plan-field{display:flex;flex-direction:column;gap:3px;}
 .plan-field.full{grid-column:1/-1;}
@@ -283,6 +309,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
       <div class="tip" style="margin-top:6px">Hotel con colazione inclusa: risparmio €8-15/giorno a persona</div>
       <div class="tip" style="margin-top:6px">Pranzi al sacco nei giorni di trekking (risparmio €15-25 a pasto)</div>
     </div>
+    <div class="divider"></div>
+    <div class="sec-head"><h2>Costi Reali e Divisione tra Persone</h2><p>Somma i voli e gli alloggi salvati nella scheda Pianifica più le spese aggiunte a mano, poi divide la quota tra i partecipanti (la stima sopra resta fissa, non collegata a questa).</p></div>
+    <div id="costs-dashboard"></div>
   </div>
   <div id="pianifica" class="panel">
     <div class="sec-head"><h2>Cerca e Confronta</h2><p>Voli, alloggi e punti di interesse dal comparatore. Gli aeroporti sono facoltativi: lasciali vuoti per un viaggio in auto o comunque senza volo, la ricerca copre solo alloggi e punti di interesse. Non incide sull'itinerario finché non salvi un risultato su un giorno.</p></div>
@@ -313,7 +342,7 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https:
 import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLANNER_URL }  from './trip.config.js';
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
-const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false };
+const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false, costs:null };
 let db;
 
 // ── Punto di ingresso ─────────────────────────────────────────────────────────
@@ -335,6 +364,7 @@ async function init() {
     setStatus('Caricamento itinerario...');
     await loadContent();
     await loadMeta();
+    await loadCosts();
 
     setStatus('Attivazione sync in tempo reale...');
     listenRealtime();
@@ -377,6 +407,7 @@ async function seedIfNeeded() {
     setDoc(doc(db, 'trips', TRIP_ID, 'state',   'notes'),       { days: {}, completed: {} }),
     setDoc(doc(db, 'trips', TRIP_ID, 'state',   'planning'),    { byDay: {} }),
     setDoc(doc(db, 'trips', TRIP_ID, 'state',   'meta'),        { ...TRIP_META }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'costs'),       { participants: [], expenses: [] }),
   ]);
 }
 
@@ -396,6 +427,13 @@ async function loadContent() {
 async function loadMeta() {
   const snap = await getDoc(doc(db, 'trips', TRIP_ID, 'state', 'meta'));
   S.meta = snap.exists() ? snap.data() : { ...TRIP_META };
+}
+
+// Stesso fallback self-healing di loadMeta: un viaggio seminato prima che questa feature
+// esistesse non ha 'costs', riparte da un dashboard vuoto invece di rompersi.
+async function loadCosts() {
+  const snap = await getDoc(doc(db, 'trips', TRIP_ID, 'state', 'costs'));
+  S.costs = snap.exists() ? snap.data() : { participants: [], expenses: [] };
 }
 
 // ── Listener real-time per stato condiviso ────────────────────────────────────
@@ -419,6 +457,10 @@ function listenRealtime() {
     S.meta = snap.data();
     if (!S.metaEditing) renderHero();  // non sovrascrive una modifica in corso sull'altro dispositivo
   });
+  onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'costs'), snap => {
+    S.costs = snap.exists() ? snap.data() : { participants: [], expenses: [] };
+    renderCostsDashboard();
+  });
 }
 
 // ── Scritture su Firestore ────────────────────────────────────────────────────
@@ -429,6 +471,7 @@ async function writeCompleted(id, val) { await setDoc(doc(db,'trips',TRIP_ID,'st
 // gia' seminato prima che 'planning' esistesse, vedi seedIfNeeded): stesso pattern di writeNote.
 async function writePlanDay(dayId, kind, arr) { await setDoc(doc(db,'trips',TRIP_ID,'state','planning'), { byDay: { [dayId]: { [kind]: arr } } }, { merge:true }); }
 async function writeMeta(meta) { await setDoc(doc(db,'trips',TRIP_ID,'state','meta'), meta); }
+async function writeCosts(costs) { await setDoc(doc(db,'trips',TRIP_ID,'state','costs'), costs); }
 
 // ── Pannello di modifica hero (badge/titolo/sottotitolo/tag) ─────────────────────
 // Bozza locale separata da S.meta: onSnapshot su state/meta non deve poter cancellare
@@ -498,7 +541,7 @@ window.saveMeta = () => {
 };
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function renderAll() { renderHero(); renderDays(); renderRest(); renderCk(); renderPlanSaved(); }
+function renderAll() { renderHero(); renderDays(); renderRest(); renderCk(); renderPlanSaved(); renderCostsDashboard(); }
 
 function renderDays() {
   const c = document.getElementById('days-container'); let html = '';
@@ -626,6 +669,112 @@ function renderPlanSaved() {
     return `<div class="plan-saved-day"><div class="plan-saved-day-ttl">${dayTitle}</div>${rows.join('')}</div>`;
   }).join('');
 }
+
+// ── Dashboard costi reali e divisione tra persone ("Info & Costi") ───────────────
+// Fonte dei costi "automatici": tutto cio' che e' salvato in S.planning (voli/alloggi
+// scelti nella scheda Pianifica). I POI non hanno un prezzo (schema PointOfInterest,
+// vedi services/poi-search/), quindi non entrano nel totale. Le spese manuali (con un
+// pagatore opzionale) vivono solo in trips/{TRIP_ID}/state/costs, non in S.planning.
+function parsePrice(str) {
+  if (!str) return 0;
+  const m = String(str).match(/[\d]+(?:[.,]\d+)?/);
+  return m ? parseFloat(m[0].replace(',', '.')) : 0;
+}
+
+function computePlanningCosts() {
+  let flights = 0, flightsCount = 0, stays = 0, staysCount = 0;
+  Object.values(S.planning).forEach(day => {
+    (day.flights||[]).forEach(f => { flights += parsePrice(f.price); flightsCount++; });
+    (day.stays||[]).forEach(s => { stays += parsePrice(s.total_price); staysCount++; });
+  });
+  return { flights, flightsCount, stays, staysCount, total: flights + stays };
+}
+
+function renderCostsDashboard() {
+  const el = document.getElementById('costs-dashboard'); if (!el) return;
+  const c = S.costs || { participants: [], expenses: [] };
+  const auto = computePlanningCosts();
+  const manualTotal = c.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const grandTotal = auto.total + manualTotal;
+  const n = c.participants.length;
+  const perPerson = n > 0 ? grandTotal / n : 0;
+  const paidByPerson = {};
+  c.participants.forEach(p => paidByPerson[p] = 0);
+  c.expenses.forEach(e => { if (e.paidBy && paidByPerson.hasOwnProperty(e.paidBy)) paidByPerson[e.paidBy] += (e.amount || 0); });
+
+  el.innerHTML = `
+    <div class="costs-card">
+      <div class="costs-card-ttl">Partecipanti</div>
+      <div class="costs-participants">
+        ${c.participants.map((p,i) => `<span class="costs-chip">${escHtml(p)}<button onclick="removeCostParticipant(${i})">&times;</button></span>`).join('') || '<span class="costs-empty">Nessun partecipante ancora: aggiungine almeno uno per calcolare la quota a testa.</span>'}
+      </div>
+      <div class="costs-add-row"><input id="cp-new" placeholder="Nome partecipante" onkeydown="if(event.key==='Enter'){event.preventDefault();addCostParticipant();}"><button class="costs-add-btn" onclick="addCostParticipant()">+ Aggiungi</button></div>
+    </div>
+
+    <div class="costs-card">
+      <div class="costs-card-ttl">Costi automatici (da Pianifica)</div>
+      <div class="costs-auto-row"><span>Voli salvati (${auto.flightsCount})</span><strong>€ ${auto.flights.toFixed(2)}</strong></div>
+      <div class="costs-auto-row"><span>Alloggi salvati (${auto.staysCount})</span><strong>€ ${auto.stays.toFixed(2)}</strong></div>
+      <p class="costs-hint">Si aggiorna da solo ogni volta che salvi un risultato nella scheda Pianifica su un giorno.</p>
+    </div>
+
+    <div class="costs-card">
+      <div class="costs-card-ttl">Spese aggiunte a mano</div>
+      ${c.expenses.map(e => `<div class="costs-expense-row"><div><div class="costs-expense-lbl">${escHtml(e.label)}</div><div class="costs-expense-sub">${e.paidBy?'Pagato da '+escHtml(e.paidBy):'Nessun pagatore assegnato'}</div></div><div class="costs-expense-amt">€ ${(e.amount||0).toFixed(2)}</div><button class="costs-rm-btn" onclick="removeCostExpense('${e.id}')">&times;</button></div>`).join('') || '<p class="costs-hint">Nessuna spesa manuale ancora (es. traghetto, benzina, biglietti pagati da uno solo).</p>'}
+      <div class="costs-expense-form">
+        <input id="ce-label" placeholder="Descrizione (es. Traghetto, benzina)">
+        <input id="ce-amount" type="number" min="0" step="0.01" placeholder="Importo EUR">
+        <select id="ce-paidby"><option value="">Nessun pagatore</option>${c.participants.map(p=>`<option value="${escHtml(p)}">${escHtml(p)}</option>`).join('')}</select>
+        <button class="costs-add-btn" onclick="addCostExpense()">+ Aggiungi spesa</button>
+      </div>
+    </div>
+
+    <div class="costs-summary">
+      <div class="costs-summary-row"><span>Totale complessivo</span><strong>€ ${grandTotal.toFixed(2)}</strong></div>
+      ${n>0 ? `<div class="costs-summary-row"><span>Quota a testa (${n} persone)</span><strong>€ ${perPerson.toFixed(2)}</strong></div>` : ''}
+      ${n>0 ? c.participants.map(p => {
+        const balance = paidByPerson[p] - perPerson;
+        const cls = balance >= 0 ? 'pos' : 'neg';
+        const txt = balance >= 0 ? `deve ricevere € ${balance.toFixed(2)}` : `deve dare € ${Math.abs(balance).toFixed(2)}`;
+        return `<div class="costs-balance-row"><span>${escHtml(p)}</span><span class="costs-balance ${cls}">${txt}</span></div>`;
+      }).join('') : ''}
+    </div>`;
+}
+
+window.addCostParticipant = () => {
+  const input = document.getElementById('cp-new'); const name = input.value.trim();
+  if (!name) return;
+  const c = S.costs || { participants: [], expenses: [] };
+  if (c.participants.includes(name)) { input.value = ''; return; }
+  const updated = { ...c, participants: [...c.participants, name] };
+  writeCosts(updated).then(() => { S.costs = updated; renderCostsDashboard(); }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.removeCostParticipant = (i) => {
+  const c = S.costs; const name = c.participants[i];
+  const updated = {
+    participants: c.participants.filter((_,idx) => idx !== i),
+    expenses: c.expenses.map(e => e.paidBy === name ? { ...e, paidBy: '' } : e),  // spesa resta, perde solo il pagatore rimosso
+  };
+  writeCosts(updated).then(() => { S.costs = updated; renderCostsDashboard(); }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.addCostExpense = () => {
+  const label = document.getElementById('ce-label').value.trim();
+  const amount = parseFloat(document.getElementById('ce-amount').value);
+  const paidBy = document.getElementById('ce-paidby').value;
+  if (!label || !amount || amount <= 0) { alert('Inserisci una descrizione e un importo valido (maggiore di zero).'); return; }
+  const c = S.costs || { participants: [], expenses: [] };
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  const updated = { ...c, expenses: [...c.expenses, { id, label, amount, paidBy }] };
+  writeCosts(updated).then(() => { S.costs = updated; renderCostsDashboard(); }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.removeCostExpense = (id) => {
+  const c = S.costs;
+  const updated = { ...c, expenses: c.expenses.filter(e => e.id !== id) };
+  writeCosts(updated).then(() => { S.costs = updated; renderCostsDashboard(); }).catch(e => alert('Errore: ' + e.message));
+};
 
 // ── Mappa Leaflet ─────────────────────────────────────────────────────────────
 function renderMap() {

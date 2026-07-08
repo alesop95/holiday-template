@@ -4,6 +4,26 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-08 — Dashboard costi/splitwise semplificata, corretto un bug di doppio escaping nel titolo
+
+Commit: non ancora committato.
+File toccati: `public/index.html` (propagato in `trips/cilento-2026/index.html`): nuova sezione
+dentro "Info & Costi" con `state/costs`; `trips/cilento-2026/trip.config.js` (title da
+`"Cilento &amp; Caserta"` a `"Cilento & Caserta"`).
+Motivo: secondo delle quattro feature grandi richieste dall'utente, costruito mentre l'utente
+testava in browser la prima (titolo/tag editabili) su sua esplicita richiesta di procedere in
+parallelo. Il test dell'utente (screenshot) ha rivelato un bug reale: il titolo mostrava
+letteralmente "Cilento &amp; Caserta" invece del simbolo "&". Causa: `escHtml` (aggiunto in una
+voce precedente per sicurezza sui campi editabili) applicato a un valore che era già scritto come
+entità HTML nel dato sorgente, quindi codificato due volte. Corretto il dato, non la funzione di
+escaping (che è corretta e va tenuta).
+Dashboard costi: somma automaticamente voli/alloggi salvati in `S.planning` (stesso stato della
+scheda Pianifica, prezzi ri-parsati da stringa con la stessa logica del backend) più spese
+manuali con pagatore opzionale, poi calcola quota a testa e saldo per persona — versione
+"semplice" esplicitamente richiesta, non un clone completo di Splitwise (niente multivaluta,
+niente ottimizzazione del numero di trasferimenti tra persone).
+Non ancora fatto: riscontro visivo dell'utente in browser.
+
 ## 2026-07-08 — Migrazione di cilento-2026 al sito Hosting dedicato eseguita, corretto un errore sul jolly dei referrer
 
 Commit: non ancora committato (solo documentazione: la migrazione stessa è avvenuta lato Firebase/

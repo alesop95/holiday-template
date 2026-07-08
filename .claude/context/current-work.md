@@ -301,17 +301,23 @@ Definition of done:
 - [x] `trips/cilento-2026/firebase.json` guadagna `"target": "cilento-2026"`.
 - [x] Procedura di creazione di un nuovo viaggio aggiornata (`README.md` sezione 9/11, header di
       `trip.config.js`) con i due comandi CLI in più (`hosting:sites:create`, `target:apply`).
-- [ ] **Migrazione di `cilento-2026` non ancora eseguita**: richiede
-      `firebase hosting:sites:create holiday-template-cilento-2026` e
-      `firebase target:apply hosting cilento-2026 holiday-template-cilento-2026` dalla cartella
-      del viaggio (passo manuale, muta il progetto Firebase live), poi un nuovo `firebase deploy`.
-- [ ] **Restrizione referrer HTTP della apiKey da allargare su Google Cloud Console** (passo
-      manuale): oggi limitata a `viaggio-new.web.app`, va aggiunto un pattern wildcard
-      `https://holiday-template-*.web.app/*` (e l'equivalente `firebaseapp.com`) prima o insieme
-      alla migrazione, altrimenti Firebase rifiuta l'inizializzazione sul nuovo sito. Dettaglio in
-      `design-and-security.md`.
+- [x] **Migrazione di `cilento-2026` eseguita**: verificato dal vivo con una richiesta HTTP
+      reale, non assunto — `https://holiday-template-cilento-2026.web.app` risponde 200 e serve
+      l'app vera (stesso `<title>Travel App</title>` e struttura, non una pagina segnaposto).
+- [x] Restrizione referrer HTTP della apiKey allargata su Google Cloud Console: aggiunta
+      `https://holiday-template-cilento-2026.web.app/*` (verificato via screenshot). **Il jolly
+      non copre questo caso** (scoperto in sessione, non un'ipotesi): un pattern come
+      `https://holiday-template-*.web.app/*` viene rifiutato dalla Console con "Dominio sito web
+      non valido" — il carattere jolly sostituisce un'intera etichetta di sottodominio, non una
+      porzione. Corretto in `design-and-security.md`, `README.md`, header di `trip.config.js`.
+- [ ] **Manca ancora la riga equivalente `.firebaseapp.com`** per lo stesso sito
+      (`https://holiday-template-cilento-2026.firebaseapp.com/*`): nello screenshot dell'utente
+      risultava assente, segnalato, in attesa di conferma che sia stata aggiunta e salvata.
+- [ ] `viaggio-new.web.app`/`viaggio-new.firebaseapp.com` restano nella lista referrer: da
+      valutare se rimuoverli ora che nessun viaggio pubblica più lì, o lasciarli come URL di
+      cortesia — non deciso in questa sessione.
 
-Domande aperte: nessuna sul design della soluzione; resta da eseguire la migrazione manuale sopra.
+Domande aperte: se togliere o no i due referrer del vecchio URL condiviso ora inutilizzato.
 
 ## Feature: titolo/badge/tag del viaggio editabili dall'app (TRIP_META non più statico) — avviata
 

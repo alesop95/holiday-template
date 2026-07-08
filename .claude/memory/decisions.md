@@ -256,10 +256,14 @@ coerente con ogni viaggio futuro — non c'è un modo per far coesistere il vecc
 condiviso con quello nuovo dedicato senza eseguire la migrazione. Conseguenza collaterale non
 opzionale: la restrizione referrer HTTP della `apiKey` (ADR-005) limitava l'accesso al solo
 dominio condiviso `viaggio-new.web.app`; ogni sito dedicato ha un dominio diverso, quindi la
-restrizione va allargata con un pattern wildcard `https://holiday-template-*.web.app/*` (e
-l'equivalente `firebaseapp.com`) che copre tutti i viaggi presenti e futuri grazie al prefisso
-comune scelto sopra — altrimenti Firebase rifiuterebbe l'inizializzazione su ogni sito diverso da
-quello originale. Dettaglio in `design-and-security.md`.
+restrizione va allargata per ognuno. **Il jolly non copre questo caso** (verificato in sessione,
+non assunto): un pattern come `https://holiday-template-*.web.app/*` viene rifiutato dalla Console
+("Dominio sito web non valido"), perché il carattere jolly di Google sostituisce un'intera
+etichetta di sottodominio, non una porzione di un'etichetta come nel prefisso comune scelto sopra.
+Ogni nuovo viaggio richiede quindi due righe manuali in più nella lista referrer (dominio esatto
+`.web.app` e `.firebaseapp.com` del suo sito dedicato), non una regola unica valida per sempre —
+un piccolo costo operativo per viaggio, accettato esplicitamente dall'utente. Dettaglio in
+`design-and-security.md`.
 
 [^1]: **Firebase Hosting multi-site** — funzionalità di Firebase Hosting che permette a un solo
 progetto di ospitare più siti indipendenti, ciascuno con il proprio URL `<site-id>.web.app`, fino

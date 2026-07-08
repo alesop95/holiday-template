@@ -4,6 +4,31 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-08 — Migrazione di cilento-2026 al sito Hosting dedicato eseguita, corretto un errore sul jolly dei referrer
+
+Commit: non ancora committato (solo documentazione: la migrazione stessa è avvenuta lato Firebase/
+Google Cloud Console, non nel repository).
+File toccati: `README.md` (sezione 9, aggiunta "Quarta operazione" sul referrer, corretta
+l'affermazione sbagliata sul jolly), `.claude/context/design-and-security.md`,
+`.claude/context/current-work.md`, `.claude/memory/decisions.md` (ADR-009), header di
+`trip.config.js`.
+Motivo: guidato l'utente a micro-step su Google Cloud Console (stesso metodo di sessioni
+precedenti) per allargare la restrizione referrer della apiKey, prerequisito della migrazione
+hosting decisa in ADR-009. Un mio suggerimento iniziale era sbagliato: avevo indicato un pattern
+con jolly (`https://holiday-template-*.web.app/*`) per coprire tutti i viaggi futuri con una sola
+riga, ma la Console lo ha rifiutato con "Dominio sito web non valido" — il carattere jolly di
+Google sostituisce un'intera etichetta di sottodominio (`https://*.example.com`), non una porzione
+di un'etichetta come nel prefisso `holiday-template-<nome>`. Corretto immediatamente: ogni nuovo
+viaggio richiede due righe manuali specifiche (dominio esatto `.web.app` e `.firebaseapp.com`),
+non una regola unica — l'utente ha confermato che il costo operativo per viaggio è accettabile.
+Verificato dal vivo con una richiesta HTTP reale, non assunto dallo screenshot dell'utente, che
+`https://holiday-template-cilento-2026.web.app` risponde 200 e serve l'app vera: la migrazione al
+sito dedicato (comandi CLI `hosting:sites:create`/`target:apply`/`deploy`) è quindi già avvenuta,
+presumibilmente nello stesso arco di tempo in cui si sistemava il referrer.
+Non ancora fatto: aggiungere la riga referrer `.firebaseapp.com` mancante (segnalata all'utente,
+in attesa di conferma); decidere se rimuovere le due righe referrer del vecchio URL condiviso
+`viaggio-new.web.app`/`.firebaseapp.com`, ormai non più usato da nessun viaggio.
+
 ## 2026-07-08 — Titolo/badge/tag del viaggio editabili dall'app: TRIP_META passa da statico a Firestore
 
 Commit: non ancora committato.

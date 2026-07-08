@@ -90,14 +90,18 @@ API dello stesso progetto Cloud. Restrizioni applicate: referrer HTTP limitati a
 `viaggio-new.web.app` e `viaggio-new.firebaseapp.com`, e API accessibili ristrette a quattro
 (Cloud Firestore API, Identity Toolkit API, Token Service API, Firebase Installations API) invece
 
-**Conseguenza di ADR-009 ancora da applicare**: da quando ogni viaggio pubblica su un proprio sito
-Hosting dedicato (`https://holiday-template-<nome-viaggio>.web.app`, non più l'unico
-`viaggio-new.web.app`), i referrer HTTP sopra vanno allargati o la Firebase init fallirebbe per
-referrer non consentito su ogni sito diverso da quello originale. La forma che copre tutti i
-viaggi presenti e futuri in un colpo solo, invece di aggiungerne uno per ogni nuovo viaggio, è un
-referrer con wildcard: `https://holiday-template-*.web.app/*` e l'equivalente su
-`firebaseapp.com` — reso possibile proprio dal prefisso comune `holiday-template-` scelto per i
-site-id in ADR-009. Passo non ancora eseguito in questa sessione (Google Cloud Console, manuale).
+**Conseguenza di ADR-009, eseguita per `cilento-2026`**: da quando ogni viaggio pubblica su un
+proprio sito Hosting dedicato (`https://holiday-template-<nome-viaggio>.web.app`, non più l'unico
+`viaggio-new.web.app`), i referrer HTTP sopra vanno allargati per ogni nuovo sito, altrimenti la
+Firebase init fallisce per referrer non consentito. **Il jolly non copre questo caso**: provato in
+sessione un pattern tipo `https://holiday-template-*.web.app/*`, rifiutato dalla Console con
+"Dominio sito web non valido" — il carattere jolly di Google sostituisce un'intera etichetta di
+sottodominio (`https://*.example.com`), non una porzione di un'etichetta come nel prefisso
+`holiday-template-<nome>`. Non esiste quindi una scorciatoia: **ogni nuovo viaggio richiede due
+righe nuove in questo elenco** (`https://holiday-template-<nome-viaggio>.web.app/*` e
+l'equivalente `.firebaseapp.com/*`), un piccolo passo manuale in più nella procedura di creazione
+di un nuovo viaggio (`README.md` sezione 9), accettato esplicitamente dall'utente come non
+gravoso. Fatto per `cilento-2026` in questa sessione.
 delle venticinque abilitate di default sul progetto. Contesto e incidente che ha portato a questa
 scelta in ADR-005 (`memory/decisions.md`).
 

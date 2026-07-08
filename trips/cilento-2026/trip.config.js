@@ -19,6 +19,12 @@
  *      Un sito Hosting dedicato per viaggio (ADR-009): senza questo passo
  *      firebase deploy sovrascriverebbe l'ultimo viaggio pubblicato, tutti
  *      condividerebbero lo stesso URL invece di averne uno proprio.
+ *   7. Su Google Cloud Console (progetto viaggio-new > Credenziali > Browser
+ *      key > Restrizioni siti web): aggiungi
+ *      https://holiday-template-<nuovo-nome>.web.app/* e l'equivalente
+ *      .firebaseapp.com/* - un jolly non basta (rifiutato dalla Console),
+ *      serve il dominio esatto per ogni nuovo viaggio. Senza questo passo
+ *      Firebase rifiuta l'inizializzazione sul sito nuovo.
  *
  * Convenzione di stile del contenuto (vale per ogni viaggio, non solo questo):
  * nessuna emoji, nessun trattino lungo. La shell non usa piu' emoji per

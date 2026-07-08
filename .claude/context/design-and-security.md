@@ -89,6 +89,15 @@ non per segretezza ma per contenere il vero rischio di una chiave Google esposta
 API dello stesso progetto Cloud. Restrizioni applicate: referrer HTTP limitati a
 `viaggio-new.web.app` e `viaggio-new.firebaseapp.com`, e API accessibili ristrette a quattro
 (Cloud Firestore API, Identity Toolkit API, Token Service API, Firebase Installations API) invece
+
+**Conseguenza di ADR-009 ancora da applicare**: da quando ogni viaggio pubblica su un proprio sito
+Hosting dedicato (`https://holiday-template-<nome-viaggio>.web.app`, non più l'unico
+`viaggio-new.web.app`), i referrer HTTP sopra vanno allargati o la Firebase init fallirebbe per
+referrer non consentito su ogni sito diverso da quello originale. La forma che copre tutti i
+viaggi presenti e futuri in un colpo solo, invece di aggiungerne uno per ogni nuovo viaggio, è un
+referrer con wildcard: `https://holiday-template-*.web.app/*` e l'equivalente su
+`firebaseapp.com` — reso possibile proprio dal prefisso comune `holiday-template-` scelto per i
+site-id in ADR-009. Passo non ancora eseguito in questa sessione (Google Cloud Console, manuale).
 delle venticinque abilitate di default sul progetto. Contesto e incidente che ha portato a questa
 scelta in ADR-005 (`memory/decisions.md`).
 

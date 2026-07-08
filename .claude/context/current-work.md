@@ -289,6 +289,30 @@ Render, resta da decidere se mostrare gli elementi salvati anche dentro la sched
 (accanto a note e segna-come-fatto) invece che solo nella scheda "Pianifica" — non deciso in
 questa sessione.
 
+## Feature: sito Firebase Hosting dedicato per viaggio (ADR-009) — avviata
+
+Cosa fa: risolve un gap reale segnalato dall'utente, non un'ipotesi: senza un sito Hosting dedicato
+per viaggio, `firebase deploy` da qualunque `trips/<nome>/` pubblica sullo stesso URL condiviso del
+progetto, sovrascrivendo l'ultimo viaggio pubblicato. Dettaglio completo in ADR-009
+(`memory/decisions.md`).
+
+Definition of done:
+
+- [x] `trips/cilento-2026/firebase.json` guadagna `"target": "cilento-2026"`.
+- [x] Procedura di creazione di un nuovo viaggio aggiornata (`README.md` sezione 9/11, header di
+      `trip.config.js`) con i due comandi CLI in più (`hosting:sites:create`, `target:apply`).
+- [ ] **Migrazione di `cilento-2026` non ancora eseguita**: richiede
+      `firebase hosting:sites:create holiday-template-cilento-2026` e
+      `firebase target:apply hosting cilento-2026 holiday-template-cilento-2026` dalla cartella
+      del viaggio (passo manuale, muta il progetto Firebase live), poi un nuovo `firebase deploy`.
+- [ ] **Restrizione referrer HTTP della apiKey da allargare su Google Cloud Console** (passo
+      manuale): oggi limitata a `viaggio-new.web.app`, va aggiunto un pattern wildcard
+      `https://holiday-template-*.web.app/*` (e l'equivalente `firebaseapp.com`) prima o insieme
+      alla migrazione, altrimenti Firebase rifiuta l'inizializzazione sul nuovo sito. Dettaglio in
+      `design-and-security.md`.
+
+Domande aperte: nessuna sul design della soluzione; resta da eseguire la migrazione manuale sopra.
+
 ## Riconciliazione
 
 Ultima verifica: 2026-07-08. Ultimo commit reale su `origin/main` al momento di scrivere (da

@@ -8,10 +8,17 @@
  * Per un nuovo viaggio:
  *   1. Copia questa cartella in trips/<nuovo-nome>/
  *   2. Cambia TRIP_ID con un identificativo univoco (es. "tokyo-2026")
- *   3. FIREBASE_CONFIG resta lo stesso progetto Firebase di tutti i viaggi
- *      (un solo progetto, dati separati per viaggio via TRIP_ID) - non ricrearlo
+ *   3. FIREBASE_CONFIG e TRIP_PLANNER_URL restano gli stessi di tutti i viaggi
+ *      (un solo progetto Firebase, un solo backend Render, condivisi) - non ricrearli
  *   4. Modifica TRIP_META, TRIP_DATA e MAP_LOCATIONS con i nuovi dati
- *   5. Dentro trips/<nuovo-nome>/: firebase deploy
+ *   5. In firebase.json della nuova cartella, "target" deve valere <nuovo-nome>
+ *      (stesso nome della cartella)
+ *   6. Dentro trips/<nuovo-nome>/: firebase hosting:sites:create
+ *      holiday-template-<nuovo-nome>, poi firebase target:apply hosting
+ *      <nuovo-nome> holiday-template-<nuovo-nome>, poi firebase deploy.
+ *      Un sito Hosting dedicato per viaggio (ADR-009): senza questo passo
+ *      firebase deploy sovrascriverebbe l'ultimo viaggio pubblicato, tutti
+ *      condividerebbero lo stesso URL invece di averne uno proprio.
  *
  * Convenzione di stile del contenuto (vale per ogni viaggio, non solo questo):
  * nessuna emoji, nessun trattino lungo. La shell non usa piu' emoji per

@@ -218,3 +218,49 @@ comporre un URL completo con schema HTTPS a partire dal solo host/porta privato 
 verificata con sufficiente certezza contro la documentazione ufficiale per essere scritta nel
 Blueprint senza rischio di un valore inventato; il file `render.yaml` marca quei tre valori
 `sync: false` apposta.
+
+## ADR-009 — Un sito Firebase Hosting dedicato per viaggio, non più un URL condiviso
+
+Data: 2026-07-08
+Stato: accettata (configurazione scritta; la creazione effettiva del sito Hosting dedicato per
+`cilento-2026`, un'azione che muta il progetto Firebase live, resta un passo manuale non ancora
+eseguito in questa sessione)
+Contesto: l'utente ha fatto notare che `trips/cilento-2026/` pubblica su `viaggio-new.web.app`, e
+ha chiesto cosa succede quando un secondo viaggio (es. un futuro `trips/tokyo-2026/`) viene
+pubblicato. Verificato leggendo `firebase.json`/`.firebaserc` reali (nessuno dei due aveva mai
+avuto una chiave `"target"` o `"targets"`) e la sezione 11 di `README.md`, che documentava
+esplicitamente il comportamento: "l'ultimo `firebase deploy` eseguito, da qualunque cartella
+`trips/<nome>/`, è quello che risulta pubblicato" sull'unico URL condiviso del progetto. ADR-002/
+003 avevano risolto l'isolamento dei dati (Firestore namespaced per `TRIP_ID`) e del codice
+(cartella per viaggio), ma non quello dell'Hosting: pubblicare un secondo viaggio avrebbe
+sovrascritto il primo sullo stesso URL, un gap architetturale reale rimasto non affrontato dalle
+decisioni precedenti, non solo un'ipotesi.
+Decisione: ogni viaggio riceve un proprio sito *Firebase Hosting multi-site*[^1] dentro lo stesso
+progetto condiviso `viaggio-new` (nessun nuovo progetto Firebase, coerente con ADR-003), creato con
+`firebase hosting:sites:create holiday-template-<nome-viaggio>` e collegato alla cartella con
+`firebase target:apply hosting <nome-viaggio> holiday-template-<nome-viaggio>`. Il `firebase.json`
+di ogni viaggio guadagna la chiave `"target"` (valore uguale al nome della cartella); la mappatura
+verso il site-id effettivo la scrive il comando CLI nel `.firebaserc` locale (gitignored), non va
+scritta a mano. Site-id con prefisso `holiday-template-` invece del solo nome del viaggio, perché i
+site-id sono un namespace globale su tutto Firebase (come i project id): un nome breve come
+`cilento-2026` rischia una collisione con un progetto di un altro utente in tutto il mondo, un
+rischio già visto concretamente su Render con il nome `flight-search`.
+Motivazione: `firebase deploy` da una cartella pubblica ora sul sito dedicato di quel viaggio
+(`https://holiday-template-<nome-viaggio>.web.app`), non più sull'URL condiviso — nessuna
+sovrascrittura tra viaggi diversi, senza introdurre un secondo progetto Firebase (che avrebbe
+riaperto il problema originale di ADR-003, credenziali duplicate per ogni nuovo viaggio).
+Conseguenze: la procedura di creazione di un nuovo viaggio (`README.md` sezione 9, header di
+`trip.config.js`) guadagna due comandi CLI in più rispetto a prima; il viaggio già esistente
+(`cilento-2026`), pubblicato finora sull'URL condiviso, va migrato allo stesso modo per essere
+coerente con ogni viaggio futuro — non c'è un modo per far coesistere il vecchio comportamento
+condiviso con quello nuovo dedicato senza eseguire la migrazione. Conseguenza collaterale non
+opzionale: la restrizione referrer HTTP della `apiKey` (ADR-005) limitava l'accesso al solo
+dominio condiviso `viaggio-new.web.app`; ogni sito dedicato ha un dominio diverso, quindi la
+restrizione va allargata con un pattern wildcard `https://holiday-template-*.web.app/*` (e
+l'equivalente `firebaseapp.com`) che copre tutti i viaggi presenti e futuri grazie al prefisso
+comune scelto sopra — altrimenti Firebase rifiuterebbe l'inizializzazione su ogni sito diverso da
+quello originale. Dettaglio in `design-and-security.md`.
+
+[^1]: **Firebase Hosting multi-site** — funzionalità di Firebase Hosting che permette a un solo
+progetto di ospitare più siti indipendenti, ciascuno con il proprio URL `<site-id>.web.app`, fino
+a un massimo di 36 siti per progetto (limite dichiarato nella documentazione ufficiale Firebase).

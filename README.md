@@ -388,11 +388,19 @@ L'SDK Firestore gestisce internamente la coda delle scritture offline: se Device
 
 Creare una nuova istanza dell'applicazione per un viaggio diverso è un'operazione che non richiede modifiche a `public/index.html`, ai `firebase.json` esistenti o alla shell di alcun viaggio già creato. La procedura, a differenza della versione 1.0.0 di questo documento, non usa branch Git: ogni viaggio è una sotto-cartella permanente di `trips/`, visibile e navigabile insieme a tutti gli altri sullo stesso branch `main`.
 
-Prima operazione: crea `trips/<nuovo-nome>/` (es. `trips/tokyo-2026/`) copiando `public/index.html` al suo interno come `index.html`. Copia anche un `firebase.json` con lo stesso contenuto mostrato in sezione 3.
+Prima operazione: crea `trips/<nuovo-nome>/` (es. `trips/tokyo-2026/`) copiando `public/index.html` al suo interno come `index.html`. Copia anche un `firebase.json` con lo stesso contenuto mostrato in sezione 3, con l'aggiunta della chiave `"target"` descritta sotto.
 
 Seconda operazione: scrivi `trips/<nuovo-nome>/trip.config.js` da zero, sul modello di `trips/cilento-2026/trip.config.js`. Imposta un `TRIP_ID` nuovo e univoco (es. `"tokyo-2026"`) e lascia `FIREBASE_CONFIG` identico a quello degli altri viaggi: è lo stesso progetto Firebase condiviso (`viaggio-new`), quindi non serve crearne uno nuovo né richiedere nuove credenziali. Modifica poi `TRIP_META`, `MAP_LOCATIONS` e `TRIP_DATA.days / .restaurants / .checklist` con i contenuti del nuovo viaggio; la struttura degli oggetti rimane identica, cambiano solo i valori.
 
-Terza operazione: dentro `trips/<nuovo-nome>/`, esegui `firebase use --add` per collegare la cartella al progetto Firebase esistente (crea il file `.firebaserc` locale, gitignored, con lo stesso project id degli altri viaggi), poi `firebase deploy`. Al primo accesso all'URL generato, `seedIfNeeded()` (sezione 7.2) rileverà che `trips/{TRIP_ID}/content/days` non esiste ancora per questo nuovo `TRIP_ID` e popolerà Firestore con i nuovi dati, senza toccare quelli di nessun altro viaggio.
+Terza operazione, **un sito Hosting dedicato per questo viaggio** (ADR-009, `memory/decisions.md`): senza questo passo, `firebase deploy` pubblicherebbe sullo stesso URL condiviso di tutti gli altri viaggi, sovrascrivendo l'ultimo pubblicato. Dentro `trips/<nuovo-nome>/`:
+
+```bash
+firebase hosting:sites:create holiday-template-<nuovo-nome>   # crea il sito, URL globale univoco su Firebase
+firebase target:apply hosting <nuovo-nome> holiday-template-<nuovo-nome>  # collega il target locale al sito
+firebase deploy                                               # pubblica su quel sito, non su quello condiviso
+```
+
+Il primo comando può fallire se `holiday-template-<nuovo-nome>` è già in uso da un altro progetto Firebase nel mondo (i site-id sono globali): in quel caso basta un suffisso diverso, senza che cambi nient'altro nella procedura. Il secondo comando scrive la mappatura nel file `.firebaserc` locale della cartella (gitignored): per questo la chiave `"target"` dentro `firebase.json` (valore uguale a `<nuovo-nome>`, cioè il nome della cartella) va scritta a mano nel file copiato al primo passo, mentre `.firebaserc` la riceve in automatico dal comando CLI. Al primo accesso all'URL generato, `seedIfNeeded()` (sezione 7.2) rileverà che `trips/{TRIP_ID}/content/days` non esiste ancora per questo nuovo `TRIP_ID` e popolerà Firestore con i nuovi dati, senza toccare quelli di nessun altro viaggio.
 
 Se in futuro la shell canonica (`public/index.html`) riceve una correzione o un miglioramento, va ripropagata manualmente copiandola sopra l'`index.html` di ogni cartella `trips/<nome>/` che si vuole aggiornare: non esiste un meccanismo di import a runtime tra `public/` e `trips/`, per scelta, in modo che ogni viaggio resti deployabile in modo indipendente e stabile anche se la shell canonica evolve.
 
@@ -422,10 +430,12 @@ firebase login                       # autenticazione Google (si apre il browser
 cd trips/<nome-viaggio>
 firebase use --add                   # collega la cartella al progetto Firebase condiviso "viaggio-new"
                                       # (stesso project id di tutti gli altri viaggi)
-firebase deploy                      # carica il contenuto della cartella su Firebase Hosting
+firebase hosting:sites:create holiday-template-<nome-viaggio>          # sito Hosting dedicato (ADR-009)
+firebase target:apply hosting <nome-viaggio> holiday-template-<nome-viaggio>
+firebase deploy                      # carica il contenuto della cartella sul sito dedicato
 ```
 
-`firebase deploy` comprime e carica tutti i file dentro la cartella del viaggio su Firebase Hosting, assegna un hash di versione a ciascun file e aggiorna l'URL di produzione in modo atomico. Il comando stampa l'URL finale nella forma `https://<project-id>.web.app`. Poiché tutti i viaggi condividono lo stesso progetto Firebase, l'URL di Hosting è condiviso: l'ultimo `firebase deploy` eseguito, da qualunque cartella `trips/<nome>/`, è quello che risulta pubblicato su quell'URL. I dati Firestore di ogni viaggio restano invece intatti indipendentemente da quale viaggio sia attualmente pubblicato in Hosting, perché namespacizzati per `TRIP_ID` (sezione 6).
+`firebase deploy` comprime e carica tutti i file dentro la cartella del viaggio su Firebase Hosting, assegna un hash di versione a ciascun file e aggiorna l'URL di produzione in modo atomico. Da quando ogni viaggio ha un proprio sito Hosting dedicato (ADR-009, `.claude/memory/decisions.md`), il comando stampa un URL proprio di quel viaggio, nella forma `https://holiday-template-<nome-viaggio>.web.app`, non più l'URL condiviso `viaggio-new.web.app` di prima. I dati Firestore di ogni viaggio restano comunque intatti indipendentemente da quale sito venga aggiornato, perché namespacizzati per `TRIP_ID` (sezione 6) — la separazione dei siti Hosting risolve una sovrascrittura reale che esisteva prima di ADR-009, non un problema mai esistito lato dati.
 
 Per aggiornamenti frequenti al solo contenuto del viaggio (ad esempio modificare la descrizione di un ristorante), è più efficiente intervenire direttamente dalla Firebase Console sui document della collection `trips/{TRIP_ID}/content`, evitando del tutto un nuovo deploy.
 

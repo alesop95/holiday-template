@@ -4,6 +4,32 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-08 — Un sito Firebase Hosting dedicato per viaggio (ADR-009): risolto un rischio reale di sovrascrittura
+
+Commit: non ancora committato.
+File toccati: `trips/cilento-2026/firebase.json` (aggiunta chiave `"target": "cilento-2026"`),
+`trips/cilento-2026/trip.config.js` (istruzioni "per un nuovo viaggio" aggiornate con i due comandi
+CLI in più), `README.md` (sezioni 9 e 11 riscritte), `deployment.md`, `design-and-security.md`
+(conseguenza sulla restrizione referrer dell'apiKey), `memory/decisions.md` (nuovo ADR-009).
+Motivo: l'utente ha chiesto conto della strategia multi-hosting prima di aprire un secondo viaggio
+(Tokyo), notando di accedere sempre allo stesso URL `viaggio-new.web.app` per Cilento. Verificato
+leggendo `firebase.json`/`.firebaserc` reali (nessuna chiave `"target"`/`"targets"` mai esistita) e
+`README.md` sezione 11, che documentava esplicitamente il comportamento condiviso: confermato un
+gap architetturale reale, non un'ipotesi, mai affrontato da ADR-002/003 (quelle avevano risolto
+solo l'isolamento di dati e codice, non di Hosting). Risolto con il *multi-site Hosting* di
+Firebase (un sito dedicato per viaggio nello stesso progetto condiviso, niente nuovo progetto
+Firebase), verificato contro la documentazione ufficiale prima di scrivere `firebase.json`. Site-id
+con prefisso `holiday-template-` invece del solo nome viaggio, per ridurre il rischio di collisione
+nel namespace globale dei site-id Firebase (rischio già concretizzato una volta su Render con
+`flight-search`).
+Conseguenza scoperta e documentata, non ancora applicata: la restrizione referrer HTTP della
+apiKey (ADR-005) copre solo `viaggio-new.web.app`, non i futuri domini `holiday-template-*.web.app`
+dei siti dedicati — va allargata con un pattern wildcard su Google Cloud Console prima o insieme
+alla migrazione, altrimenti Firebase rifiuterebbe l'inizializzazione sui nuovi siti.
+Non ancora fatto: i comandi `firebase hosting:sites:create`/`firebase target:apply` per migrare
+`cilento-2026` al proprio sito dedicato (passo manuale, muta il progetto Firebase live) e
+l'allargamento della restrizione referrer su Google Cloud Console.
+
 ## 2026-07-08 — Link "prenota su Airbnb" mancante negli alloggi, escaping HTML aggiunto ai dati esterni scrapati
 
 Commit: non ancora committato.

@@ -28,7 +28,12 @@ lavoro diverse, perché coprono risorse Firebase di natura diversa:
 
 Hosting (i file statici di un viaggio) è per-viaggio: ogni `trips/<nome>/` ha il proprio
 `firebase.json` con chiave `"hosting"` e il proprio `.firebaserc` (gitignored) che punta allo
-stesso progetto condiviso. Il comando si lancia da dentro quella cartella.
+stesso progetto condiviso. Il comando si lancia da dentro quella cartella. Ogni viaggio pubblica
+su un proprio sito Firebase Hosting dedicato (`"target"` in `firebase.json`, multi-site Hosting
+dello stesso progetto `viaggio-new`), non su un URL condiviso tra viaggi: ADR-009
+(`memory/decisions.md`) descrive perché e come, dopo che la mancanza di questo passo è stata
+segnalata dall'utente come rischio reale (un secondo viaggio pubblicato avrebbe sovrascritto il
+primo sullo stesso URL).
 
 Firestore Rules (la sicurezza dei dati, condivisa da tutti i viaggi) è di radice: un solo
 `firebase.json` in radice con chiave `"firestore"` soltanto, un solo `.firebaserc` di radice
@@ -40,13 +45,15 @@ I quattro servizi backend (`services/{flight-search,stay-search,poi-search,trip-
 fanno parte di questo deployment Firebase: sono servizi FastAPI a sé, deliberatamente non
 integrati come Firebase Cloud Function (il progetto rimane sul piano Spark proprio perché non usa
 Cloud Functions, che richiedono il piano *Blaze* a consumo anche se l'uso resterebbe nella quota
-gratuita). Hosting scelto: **Render** (ADR-008, `memory/decisions.md`), un solo deploy condiviso
-da tutti i viaggi (nessuno dei quattro servizi conosce un `TRIP_ID`), non ancora eseguito in questa
-sessione — resta un passo manuale. Dettagli sotto, sezione "Backend su Render".
+gratuita). Hosting scelto ed eseguito: **Render** (ADR-008, `memory/decisions.md`), un solo deploy
+condiviso da tutti i viaggi (nessuno dei quattro servizi conosce un `TRIP_ID`). Dettagli sotto,
+sezione "Backend su Render".
 
 ## Comandi
 
-Deploy dell'hosting di un viaggio, dalla cartella del viaggio:
+Deploy dell'hosting di un viaggio, dalla cartella del viaggio (presuppone che il sito dedicato
+esista già e sia collegato con `firebase target:apply`, vedi ADR-009 e `README.md` sezione 9 per
+il caso di un viaggio nuovo):
 
 ```bash
 cd trips/<nome-viaggio>

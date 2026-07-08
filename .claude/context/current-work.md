@@ -391,6 +391,13 @@ mano direttamente nello shell, non in `trip.config.js`) debba essere spostata a 
 `TRIP_DATA` per coerenza con il principio "la shell non contiene mai dati di un viaggio
 specifico" — incoerenza preesistente notata in sessione, non richiesta dall'utente, non toccata.
 
+**Verificata dall'utente in browser (screenshot, due e tre partecipanti)**: calcoli confermati
+corretti a mano (totale 4 EUR, 3 persone, quota 1.33 EUR, saldi -0.33/+1.67/-1.33). Su richiesta
+dell'utente, la sezione è stata spostata dalla scheda "Info & Costi" a una scheda propria "Costi"
+dopo "Pianifica" (nav e pannello `#costi`, `renderCostsDashboard` invariato: scrive sempre in
+`#costs-dashboard`, solo la posizione nel DOM è cambiata). Ancora da rifare il riscontro visivo
+dopo questo spostamento.
+
 ## Riconciliazione
 
 Ultima verifica: 2026-07-08. Ultimo commit reale su `origin/main` al momento di scrivere (da

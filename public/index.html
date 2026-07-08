@@ -241,6 +241,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
     <button class="nav-btn" onclick="showTab('valigia',this)">Valigia</button>
     <button class="nav-btn" onclick="showTab('info',this)">Info &amp; Costi</button>
     <button class="nav-btn" onclick="showTab('pianifica',this)">Pianifica</button>
+    <button class="nav-btn" onclick="showTab('costi',this)">Costi</button>
   </nav>
 </div>
 
@@ -309,9 +310,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
       <div class="tip" style="margin-top:6px">Hotel con colazione inclusa: risparmio €8-15/giorno a persona</div>
       <div class="tip" style="margin-top:6px">Pranzi al sacco nei giorni di trekking (risparmio €15-25 a pasto)</div>
     </div>
-    <div class="divider"></div>
-    <div class="sec-head"><h2>Costi Reali e Divisione tra Persone</h2><p>Somma i voli e gli alloggi salvati nella scheda Pianifica più le spese aggiunte a mano, poi divide la quota tra i partecipanti (la stima sopra resta fissa, non collegata a questa).</p></div>
-    <div id="costs-dashboard"></div>
   </div>
   <div id="pianifica" class="panel">
     <div class="sec-head"><h2>Cerca e Confronta</h2><p>Voli, alloggi e punti di interesse dal comparatore. Gli aeroporti sono facoltativi: lasciali vuoti per un viaggio in auto o comunque senza volo, la ricerca copre solo alloggi e punti di interesse. Non incide sull'itinerario finché non salvi un risultato su un giorno.</p></div>
@@ -330,6 +328,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
     <div class="divider"></div>
     <div class="sec-head"><h2>Salvati nell'itinerario</h2><p>Risultati salvati su un giorno specifico, sincronizzati come il resto dell'app.</p></div>
     <div id="plan-saved"><p style="color:var(--muted);font-size:13px;">Nessun elemento salvato ancora.</p></div>
+  </div>
+  <div id="costi" class="panel">
+    <div class="sec-head"><h2>Costi Reali e Divisione tra Persone</h2><p>Somma i voli e gli alloggi salvati nella scheda Pianifica più le spese aggiunte a mano, poi divide la quota tra i partecipanti (la stima in Info &amp; Costi resta fissa, non collegata a questa).</p></div>
+    <div id="costs-dashboard"></div>
   </div>
 </div>
 

@@ -4,6 +4,41 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-08 — Deploy reale su Render dei quattro servizi, bug di timeout scoperto e corretto dal primo test end-to-end
+
+Commit: non ancora committato.
+File toccati: `services/trip-planner/app/main.py` (timeout `_fetch` da 30 a 90 secondi),
+`services/poi-search/app/adapters/overpass_adapter.py` (timeout httpx da 30 a 60 secondi, timeout
+della query Overpass QL da 25 a 50 secondi). Aggiornati `deployment.md`, `current-work.md`,
+`memory/decisions.md` (ADR-008 passata da "proposta" ad "accettata ed eseguita").
+Motivo: eseguiti insieme all'utente, a micro-step con screenshot (stesso metodo già usato per
+Firebase/Google Cloud/Kiwi), tutti i passi manuali di attivazione descritti come pendenti nella
+voce precedente. Workspace Render dedicato `holiday-template` creato (separato da un workspace
+preesistente `wedding-backend` di un altro progetto sulla stessa macchina, verificato vuoto prima
+di lasciarlo intatto, non cancellato: Render impedisce comunque di cancellare l'unico workspace di
+un account). Blueprint `holiday-template-backend` collegato al repository, deploy riuscito per
+tutti e quattro i servizi (verificato dallo stato "Deployed" e da un `curl` reale a `/health` di
+ciascuno). URL pubblici ottenuti e impostati manualmente nelle variabili d'ambiente di
+`trip-planner` come previsto da `render.yaml` (`sync: false`, nessun valore inventato in anticipo).
+Un primo test end-to-end reale contro `/api/trip-plan` su Render (non più in locale) ha rivelato un
+problema non visibile dai 46 test `pytest` esistenti (che mockano tutta la rete): risposta 200 ma
+con tre errori a valle (502 da `flight-search`, 502 da `poi-search`, 429 da `stay-search`).
+Diagnosticato chiamando i tre servizi direttamente con `curl`: rispondono correttamente e con dati
+reali, ma un cold start del piano free (~50s) più lo scraping reale portano una singola ricerca a
+32-56 secondi su Render, sopra il timeout fisso di 30 secondi usato sia da `trip-planner` verso i
+tre servizi a valle sia da `poi-search` verso Overpass (quest'ultimo spiegava anche perché la
+ricerca POI tornava una lista vuota invece di un errore esplicito, invece di essere un problema di
+zero risultati reali). Corretto alzando entrambi i timeout con un margine più ampio. 46 test
+rieseguiti dopo la modifica: nessuna regressione.
+Segnalato di passaggio, non correlato al progetto: due screenshot dell'utente durante la sessione
+mostravano per errore pagine Trello/Jira invece di Render (workspace/finestra sbagliata), una delle
+quali con una API key e un secret reali di un Power-Up Trello visibili in chiaro — segnalato
+all'utente come nota di igiene delle credenziali, non usato né salvato in questo progetto.
+Non ancora fatto: un nuovo test end-to-end su Render dopo la correzione dei timeout; l'aggiornamento
+di `TRIP_PLANNER_URL` in `trips/cilento-2026/trip.config.js` dall'attuale `http://localhost:8004`
+all'URL pubblico Render di `trip-planner`, e il relativo `firebase deploy`; il test visivo in
+browser della scheda "Pianifica" (bloccato finché `TRIP_PLANNER_URL` non punta a Render).
+
 ## 2026-07-08 — Primo test in browser della scheda "Pianifica": diagnosi mixed content, decisa Render come hosting (ADR-008)
 
 Commit: non ancora committato.

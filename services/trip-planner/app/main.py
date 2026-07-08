@@ -44,7 +44,11 @@ POI_SEARCH_URL = os.environ.get("POI_SEARCH_URL", "http://localhost:8003")
 
 async def _fetch(client: httpx.AsyncClient, name: str, url: str, payload: dict) -> Tuple[str, list, Optional[str]]:
     try:
-        response = await client.post(url, json=payload, timeout=30)
+        # 90s, non 30s: su un hosting free-tier (Render, ADR-008) un servizio a valle in pausa
+        # per inattivita' impiega ~50s a ripartire, prima ancora di eseguire la ricerca vera e
+        # propria (scraping, a sua volta non istantaneo). Verificato live: 32-56s per una singola
+        # ricerca reale su Render, contro pochi secondi in locale.
+        response = await client.post(url, json=payload, timeout=90)
         response.raise_for_status()
         return name, response.json(), None
     except httpx.HTTPError as exc:

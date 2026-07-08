@@ -76,22 +76,34 @@ Web Service Python indipendenti (`rootDir` per puntare ciascuno alla propria car
 come nello sviluppo locale (8001-8004) — verificato contro la documentazione ufficiale Render, non
 assunto.
 
-Passi di attivazione (manuali, non ancora eseguiti in questa sessione): su Render Dashboard, *New
-> Blueprint*, collegare il repository GitHub `alesop95/holiday-template`. Render legge
-`render.yaml` e propone la creazione dei quattro servizi. Dopo il primo deploy di
-`flight-search`/`stay-search`/`poi-search`, Render assegna a ciascuno un URL pubblico
-(`https://<nome-servizio>-xxxx.onrender.com`): questi tre URL vanno incollati a mano nelle
-variabili d'ambiente di `trip-planner` su Render (`FLIGHT_SEARCH_URL`, `STAY_SEARCH_URL`,
-`POI_SEARCH_URL`, marcate `sync: false` nel Blueprint apposta per questo). Infine, l'URL pubblico
-di `trip-planner` va incollato in `TRIP_PLANNER_URL` (`trip.config.js`) di ogni viaggio, sostituendo
-il default locale `http://localhost:8004`, e ridistribuito con `firebase deploy` da ciascuna
-cartella `trips/<nome>/`.
+**Deploy eseguito (2026-07-08)**: workspace Render dedicato `holiday-template` (separato dal
+workspace preesistente `wedding-backend`, di un altro progetto sulla stessa macchina, lasciato
+intatto), Blueprint `holiday-template-backend` collegato a `alesop95/holiday-template`. Tutti e
+quattro i servizi "Deployed", URL pubblici assegnati da Render (variano a ogni deploy, non
+prevedibili in anticipo: `flight-search` ha ricevuto un suffisso perché il nome semplice era già
+occupato da un altro utente Render, `stay-search`/`poi-search`/`trip-planner` no). Le variabili
+`FLIGHT_SEARCH_URL`/`STAY_SEARCH_URL`/`POI_SEARCH_URL` di `trip-planner` sono state impostate a
+mano dopo il primo deploy con gli URL reali assegnati, come da `render.yaml`.
 
-Limite noto del piano free, non ancora mitigato: un servizio inattivo per circa 15 minuti va in
-pausa e impiega circa 50 secondi a ripartire alla richiesta successiva (*cold start*); per una
-ricerca che coinvolge tutti e quattro il caso peggiore dopo un periodo di inattività è dell'ordine
-di 100 secondi (`trip-planner` si sveglia per primo, poi gli altri tre in parallelo). Dettagli e
-motivazione della scelta in ADR-008 (`memory/decisions.md`).
+**Bug scoperto dal primo test end-to-end reale** (non dai test `pytest`, che mockano la rete):
+una richiesta a `/api/trip-plan` tornava 200 con tre errori a valle (502, 502, 429). Diagnosi
+verificata chiamando i tre servizi direttamente: rispondono correttamente, ma un cold start di
+~50 secondi più lo scraping reale portano una singola ricerca a 32-56 secondi su Render, sopra il
+timeout fisso di 30 secondi che `trip-planner` usava per ogni chiamata a valle e sopra quello che
+`poi-search` usava verso Overpass. Corretto alzando entrambi (90s in `trip-planner`, 60s/50s in
+`poi-search`); dettaglio in `current-work.md`. Un nuovo test end-to-end dopo la correzione resta
+da fare.
+
+Passo ancora da fare: `TRIP_PLANNER_URL` in `trips/cilento-2026/trip.config.js` punta ancora a
+`http://localhost:8004` e va aggiornato all'URL pubblico Render di `trip-planner`, poi
+ridistribuito con `firebase deploy` dalla cartella del viaggio.
+
+Limite noto del piano free, accettato esplicitamente dall'utente per il pattern d'uso reale
+(ricerca occasionale, non accesso continuo): un servizio inattivo per circa 15 minuti va in pausa
+e impiega circa 50 secondi a ripartire alla richiesta successiva (*cold start*, osservato dal vivo:
+32-56 secondi per una singola ricerca reale, timeout alzati di conseguenza come sopra); per una
+ricerca che coinvolge tutti e quattro il caso peggiore dopo un periodo di inattività resta
+dell'ordine di 100 secondi. Dettagli e motivazione della scelta in ADR-008 (`memory/decisions.md`).
 
 ## Variabili d'ambiente e segreti
 

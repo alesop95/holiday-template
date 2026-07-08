@@ -51,7 +51,7 @@ class OverpassAdapter(PoiSourceAdapter):
             return []
 
         query = (
-            "[out:json][timeout:25];"
+            "[out:json][timeout:50];"
             f'(node["tourism"]({bbox.sw_lat},{bbox.sw_long},{bbox.ne_lat},{bbox.ne_long});'
             f'node["historic"]({bbox.sw_lat},{bbox.sw_long},{bbox.ne_lat},{bbox.ne_long}););'
             f"out {request.limit * 2};"  # margine: molti elementi verranno scartati (senza nome, alloggi)
@@ -62,7 +62,7 @@ class OverpassAdapter(PoiSourceAdapter):
                 OVERPASS_URL,
                 data={"data": query},
                 headers={"User-Agent": USER_AGENT},
-                timeout=30,
+                timeout=60,  # margine sopra il timeout lato server (50s nella query stessa)
             )
             response.raise_for_status()
             payload = response.json()

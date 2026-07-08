@@ -239,12 +239,25 @@ Definition of done:
       chiamata attiva verso un'origine HTTP in chiaro, a prescindere da come risponde il servizio
       — non un problema di CORS (verificato separatamente, funzionante) né di servizi spenti
       (erano attivi e rispondevano a `curl` nello stesso momento).
-- [ ] **Il flusso di salvataggio/rimozione su Firestore resta non verificato in un browser
-      reale**, bloccato dal problema sopra: senza un backend raggiungibile in HTTPS, la ricerca
-      non produce mai risultati da salvare. Sbloccato dal deploy del backend su Render (ADR-008,
-      `deployment.md`): una volta che `TRIP_PLANNER_URL` punta a un URL Render HTTPS invece di
-      `localhost`, il test visivo (ricerca, salvataggio su un giorno, controllo su
-      "Salvati nell'itinerario" e sull'altro dispositivo) torna eseguibile.
+- [x] Backend deployato su Render (ADR-008): tutti e quattro i servizi "Deployed", URL pubblici
+      assegnati (`flight-search-pfcn`, `stay-search`, `poi-search`, `trip-planner-l2dh`, dominio
+      `.onrender.com`), variabili `FLIGHT_SEARCH_URL`/`STAY_SEARCH_URL`/`POI_SEARCH_URL` di
+      `trip-planner` impostate a mano dopo il primo deploy come previsto.
+- [x] **Bug scoperto e corretto dal primo test end-to-end reale su Render**: una richiesta a
+      `/api/trip-plan` tornava 200 ma con tre errori (502 da `flight-search` e `poi-search`, 429
+      da `stay-search`). Diagnosticato chiamando i tre servizi direttamente: funzionano tutti, ma
+      un cold start (~50s, piano free) più lo scraping reale portano una singola ricerca a
+      32-56 secondi su Render, contro pochi secondi in locale — sopra il timeout fisso di 30s che
+      `trip-planner` usava per ogni chiamata a valle (`app/main.py:_fetch`), e sopra il timeout di
+      30s che `poi-search` stesso usava verso Overpass (spiega la lista POI vuota invece di un
+      errore esplicito). Alzati entrambi a un margine più ampio (90s in `trip-planner`, 60s/50s in
+      `poi-search`/query Overpass). 46 test rieseguiti dopo la modifica, nessuna regressione.
+- [ ] **Nuovo test end-to-end su Render dopo la correzione dei timeout — non ancora rifatto** in
+      questa sessione: da ripetere prima di considerare chiuso il collegamento backend.
+- [ ] `TRIP_PLANNER_URL` in `trips/cilento-2026/trip.config.js` punta ancora a
+      `http://localhost:8004`: va aggiornato all'URL pubblico di `trip-planner` su Render
+      (`https://trip-planner-l2dh.onrender.com`) e ridistribuito con `firebase deploy` prima che
+      il test visivo della scheda "Pianifica" in browser sia possibile.
 - [ ] Nessuna stima di costo aggregato tra un volo e un alloggio salvati sullo stesso giorno.
 - [ ] Routing/ottimizzazione del percorso giornaliero — non iniziato, resta un item separato.
 

@@ -175,9 +175,10 @@ introdurre l'Admin SDK a quel punto: questa decisione rimanda quel passo, non lo
 ## ADR-008 — Hosting dei quattro servizi backend su Render, un solo deploy condiviso per tutti i viaggi
 
 Data: 2026-07-08
-Stato: proposta (Blueprint scritto e verificato contro la documentazione ufficiale Render; la
-creazione effettiva dei servizi su Render, un account già esistente dell'utente collegato a
-GitHub, resta un passo manuale non ancora eseguito in questa sessione)
+Stato: accettata ed eseguita (workspace Render dedicato `holiday-template` creato, Blueprint
+deployato, tutti e quattro i servizi "Deployed" con URL pubblici assegnati; un bug di timeout
+emerso dal primo test end-to-end reale è stato diagnosticato e corretto, dettaglio in
+`current-work.md` e `deployment.md`)
 Contesto: il primo test in browser della scheda "Pianifica" (screenshot dell'utente) ha mostrato
 `Failed to fetch` verso `http://localhost:8004`: la shell gira su HTTPS (`viaggio-new.web.app`,
 referrer autorizzato dell'apiKey Firebase per ADR-005) e il browser blocca come *mixed content*

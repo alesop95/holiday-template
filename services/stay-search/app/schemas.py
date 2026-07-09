@@ -24,3 +24,5 @@ class StayOffer(BaseModel):
     rating: float = Field(0, description="0 se senza recensioni")
     review_count: int = 0
     url: str = ""
+    lat: float = Field(0, description="0 se coordinate assenti nella risposta della fonte")
+    lon: float = Field(0, description="0 se coordinate assenti nella risposta della fonte")

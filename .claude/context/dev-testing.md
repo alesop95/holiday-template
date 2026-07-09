@@ -41,8 +41,8 @@ python -m venv .venv
 
 `requirements-test.txt` (`-r requirements.txt` più `pytest`) è separato da `requirements.txt`
 perché `pytest` non serve a far girare il servizio in produzione, solo a testarlo. Nessuna
-copertura di codice misurata (`coverage.py` non introdotto): 47 test in totale (21 flight-search,
-11 stay-search, 10 poi-search, 5 trip-planner) al momento di scrivere, tutti unitari o di
+copertura di codice misurata (`coverage.py` non introdotto): 48 test in totale (21 flight-search,
+12 stay-search, 10 poi-search, 5 trip-planner) al momento di scrivere, tutti unitari o di
 integrazione in-process via `TestClient`, nessuno esegue chiamate di rete reali.
 
 ## Rotte e dati mockati

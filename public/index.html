@@ -189,6 +189,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-form{display:grid;grid-template-columns:1fr 1fr;gap:9px;background:var(--white);border-radius:14px;padding:15px;box-shadow:0 2px 10px var(--sh);margin-bottom:1.2rem;}
 .plan-field{display:flex;flex-direction:column;gap:3px;}
 .plan-field.full{grid-column:1/-1;}
+.airport-field{position:relative;}
+.airport-ac-list{position:absolute;top:100%;left:0;right:0;background:var(--white);border:1.5px solid var(--border);border-radius:9px;box-shadow:0 6px 18px var(--sh);z-index:50;max-height:220px;overflow-y:auto;margin-top:2px;}
+.airport-ac-item{padding:8px 11px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);}
+.airport-ac-item:last-child{border-bottom:none;}
+.airport-ac-item:hover{background:var(--sand);}
+.airport-ac-item strong{color:var(--sea);}
+.airport-ac-item span{display:block;font-size:11px;color:var(--muted);margin-top:1px;}
+.airport-ac-confirm{font-size:11px;color:var(--teal);margin-top:3px;min-height:14px;}
+.plan-map-price-pin{background:var(--sea2);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff;transform:translate(-50%,-50%);}
 .plan-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
 .plan-field input{padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
 .plan-field input:focus{border-color:var(--sea2);}
@@ -317,8 +326,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
   <div id="pianifica" class="panel">
     <div class="sec-head"><h2>Cerca e Confronta</h2><p>Voli, alloggi e punti di interesse dal comparatore. Gli aeroporti sono facoltativi: lasciali vuoti per un viaggio in auto o comunque senza volo, la ricerca copre solo alloggi e punti di interesse. Non incide sull'itinerario finché non salvi un risultato su un giorno.</p></div>
     <div class="plan-form">
-      <div class="plan-field"><label>Aeroporto partenza (opzionale)</label><input id="pf-origin" maxlength="3" placeholder="Vuoto se non voli"></div>
-      <div class="plan-field"><label>Aeroporto arrivo (opzionale)</label><input id="pf-dest-air" maxlength="3" placeholder="Vuoto se non voli"></div>
+      <div class="plan-field airport-field"><label>Aeroporto partenza (opzionale)</label>
+        <input id="pf-origin" placeholder="Città, aeroporto o codice IATA" autocomplete="off" oninput="onAirportInput('origin')" onfocus="onAirportInput('origin')" onblur="setTimeout(()=>hideAirportSuggestions('origin'),150)">
+        <div id="pf-origin-list" class="airport-ac-list" style="display:none"></div>
+        <div id="pf-origin-confirm" class="airport-ac-confirm"></div>
+      </div>
+      <div class="plan-field airport-field"><label>Aeroporto arrivo (opzionale)</label>
+        <input id="pf-dest-air" placeholder="Città, aeroporto o codice IATA" autocomplete="off" oninput="onAirportInput('dest')" onfocus="onAirportInput('dest')" onblur="setTimeout(()=>hideAirportSuggestions('dest'),150)">
+        <div id="pf-dest-air-list" class="airport-ac-list" style="display:none"></div>
+        <div id="pf-dest-air-confirm" class="airport-ac-confirm"></div>
+      </div>
       <div class="plan-field full"><label>Città / zona (alloggi e POI)</label><input id="pf-dest-loc" placeholder="Es. Marina di Camerota"></div>
       <div class="plan-field"><label>Andata</label><input id="pf-dep" type="date"></div>
       <div class="plan-field"><label>Ritorno</label><input id="pf-ret" type="date"></div>
@@ -327,6 +344,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
       <button class="plan-submit" id="pf-submit" onclick="searchPlan()">Cerca</button>
     </div>
     <div id="plan-msg"></div>
+    <div id="plan-map" style="display:none;height:260px;border-radius:14px;margin-bottom:1rem;box-shadow:0 4px 20px var(--sh);"></div>
     <div id="plan-results"></div>
     <div class="divider"></div>
     <div class="sec-head"><h2>Salvati nell'itinerario</h2><p>Risultati salvati su un giorno specifico, sincronizzati come il resto dell'app.</p></div>
@@ -348,7 +366,7 @@ import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLA
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
 const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc' };
-const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false, costs:null, planFilters:{...PLAN_FILTERS_DEFAULT} };
+const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false, costs:null, planFilters:{...PLAN_FILTERS_DEFAULT}, airports:null };
 let db;
 
 // ── Punto di ingresso ─────────────────────────────────────────────────────────
@@ -637,6 +655,37 @@ function escHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// ── Mappetta prezzi alloggi (Pianifica) ───────────────────────────────────────
+// Solo gli alloggi hanno coordinate (StayOffer.lat/lon, verificate live contro l'API reale
+// Airbnb): i voli non hanno una coordinata sensata da mostrare, i POI non hanno prezzo. Istanza
+// Leaflet separata da quella della scheda "Mappa" (renderMap): quella e' persistente per tutta
+// la sessione, questa va ricreata a ogni nuova ricerca (i marker cambiano), quindi richiede
+// .remove() esplicito prima di ricreare — Leaflet non permette due L.map() sullo stesso div.
+let planMapInstance = null;
+
+function renderPlanPriceMap() {
+  const el = document.getElementById('plan-map'); if (!el) return;
+  const stays = (S.planResults?.stays || []).filter(s => s.lat && s.lon);
+  if (!stays.length) {
+    el.style.display = 'none';
+    if (planMapInstance) { planMapInstance.remove(); planMapInstance = null; }
+    return;
+  }
+  el.style.display = 'block';
+  setTimeout(() => {
+    if (planMapInstance) { planMapInstance.remove(); planMapInstance = null; }
+    planMapInstance = L.map('plan-map').setView([stays[0].lat, stays[0].lon], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(planMapInstance);
+    const bounds = [];
+    stays.forEach(s => {
+      const icon = L.divIcon({ html: `<div class="plan-map-price-pin">${escHtml(s.total_price)}</div>`, className: '' });
+      L.marker([s.lat, s.lon], { icon }).addTo(planMapInstance).bindPopup(`<strong>${escHtml(s.name)}</strong><br>${escHtml(s.total_price)}`);
+      bounds.push([s.lat, s.lon]);
+    });
+    if (bounds.length > 1) planMapInstance.fitBounds(bounds, { padding: [24,24] });
+  }, 120);
+}
+
 function renderPlanResults() {
   const p = S.planResults; const el = document.getElementById('plan-results'); if (!p || !el) return;
   const dayOpts = S.days.map(d => `<option value="${d.id}">${escHtml(d.label)} · ${escHtml(d.title)}</option>`).join('');
@@ -857,6 +906,7 @@ window.showTab = (id,btn) => {
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active'); btn.classList.add('active');
   if(id==='mappa') renderMap();
+  if(id==='pianifica') ensureAirportsLoaded();
 };
 window.tog = id => document.getElementById(`dc${id}`).classList.toggle('open');
 window.ckTog = (key,el) => {
@@ -873,6 +923,76 @@ window.saveNote = (id,text) => {
   writeNote(id,text).then(()=>{ const s=document.getElementById(`note-saved-${id}`); if(s){ s.style.display='block'; setTimeout(()=>s.style.display='none',2000); } }).catch(console.error);
 };
 window.markDone = id => { const c=S.completed[id]||false; writeCompleted(id,!c).catch(console.error); };
+
+// ── Autocompletamento aeroporti (public/airports.json, dataset OurAirports) ─────
+// Caricato una sola volta, al primo accesso alla scheda Pianifica (lazy: 4562 aeroporti,
+// ~380KB, non serve scaricarlo se l'utente non apre mai questa scheda). L'input mantiene
+// sempre il codice IATA come value (compatibilita' con searchPlan, che legge 3 lettere),
+// il nome leggibile va nella label di conferma sotto il campo, non nel campo stesso.
+async function ensureAirportsLoaded() {
+  if (S.airports) return;
+  try {
+    const res = await fetch('./airports.json');
+    S.airports = await res.json();
+  } catch (e) {
+    S.airports = [];
+    console.error('Impossibile caricare airports.json', e);
+  }
+}
+
+// Punteggio di rilevanza, non solo "contiene": digitando il codice esatto ("FUE") l'aeroporto
+// giusto deve comparire primo, non dopo altri con "fue" come sottostringa casuale del nome
+// (es. Cienfuegos) - verificato con un caso reale in sessione, non un'ipotesi.
+function _airportScore(a, q) {
+  const iata = a.iata.toLowerCase(), city = a.city.toLowerCase(), name = a.name.toLowerCase();
+  if (iata === q) return 0;
+  if (iata.startsWith(q)) return 1;
+  if (city.startsWith(q)) return 2;
+  if (name.startsWith(q)) return 3;
+  if (city.includes(q)) return 4;
+  if (name.includes(q)) return 5;
+  return 9;
+}
+
+window.onAirportInput = (fieldKey) => {
+  const inputId = fieldKey === 'origin' ? 'pf-origin' : 'pf-dest-air';
+  const input = document.getElementById(inputId);
+  const listEl = document.getElementById(`${inputId}-list`);
+  const confirmEl = document.getElementById(`${inputId}-confirm`);
+  const q = input.value.trim();
+  if (!S.airports || q.length < 2) { listEl.style.display = 'none'; return; }
+
+  const exact = S.airports.find(a => a.iata === q.toUpperCase());
+  confirmEl.textContent = exact ? `${escHtml(exact.city)} — ${escHtml(exact.name)}` : '';
+
+  const ql = q.toLowerCase();
+  const matches = S.airports.map(a => ({ a, score: _airportScore(a, ql) })).filter(x => x.score < 9).sort((x,y) => x.score - y.score).slice(0, 8).map(x => x.a);
+  if (!matches.length) { listEl.style.display = 'none'; return; }
+  listEl.innerHTML = matches.map(a => `<div class="airport-ac-item" onmousedown="selectAirport('${fieldKey}','${a.iata}')"><strong>${escHtml(a.iata)}</strong> — ${escHtml(a.city)}<span>${escHtml(a.name)}</span></div>`).join('');
+  listEl.style.display = 'block';
+};
+
+window.hideAirportSuggestions = (fieldKey) => {
+  const inputId = fieldKey === 'origin' ? 'pf-origin' : 'pf-dest-air';
+  document.getElementById(`${inputId}-list`).style.display = 'none';
+};
+
+window.selectAirport = (fieldKey, iata) => {
+  const inputId = fieldKey === 'origin' ? 'pf-origin' : 'pf-dest-air';
+  const input = document.getElementById(inputId);
+  const airport = S.airports.find(a => a.iata === iata);
+  input.value = iata;
+  document.getElementById(`${inputId}-confirm`).textContent = airport ? `${escHtml(airport.city)} — ${escHtml(airport.name)}` : '';
+  document.getElementById(`${inputId}-list`).style.display = 'none';
+  // Suggerisce la citta'/zona per alloggi e POI solo se l'utente non ha gia' scritto la sua:
+  // e' un punto di partenza plausibile (comune dell'aeroporto), non sempre la zona turistica
+  // giusta (es. FUE -> "El Matorral", non "Corralejo"), quindi non sovrascrive mai un valore
+  // presente.
+  if (fieldKey === 'dest' && airport) {
+    const destLoc = document.getElementById('pf-dest-loc');
+    if (!destLoc.value.trim()) destLoc.value = airport.city;
+  }
+};
 
 window.searchPlan = async () => {
   const btn = document.getElementById('pf-submit'), msgEl = document.getElementById('plan-msg');
@@ -895,6 +1015,7 @@ window.searchPlan = async () => {
   btn.disabled = true; btn.textContent = 'Ricerca in corso...';
   msgEl.innerHTML = '<div class="plan-msg">Interrogo alloggi e punti di interesse' + (wantsFlight?' e voli':'') + '...</div>';
   document.getElementById('plan-results').innerHTML = '';
+  document.getElementById('plan-map').style.display = 'none';
   try {
     const payload = {
       destination_location: destLoc, departure_date: dep, return_date: ret,
@@ -912,6 +1033,7 @@ window.searchPlan = async () => {
     S.planFilters = { ...PLAN_FILTERS_DEFAULT };  // ogni nuova ricerca riparte pulita, niente filtri della ricerca precedente
     msgEl.innerHTML = (plan.errors && plan.errors.length) ? `<div class="plan-msg err">Parziale: ${plan.errors.join(' · ')}</div>` : '';
     renderPlanResults();
+    renderPlanPriceMap();
   } catch (e) {
     msgEl.innerHTML = `<div class="plan-msg err">Comparatore non raggiungibile (${e.message}). Verifica che i quattro servizi backend siano avviati in locale (${TRIP_PLANNER_URL}).</div>`;
   } finally {

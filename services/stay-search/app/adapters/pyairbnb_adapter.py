@@ -20,6 +20,10 @@ sessione). Il prezzo reale sta nell'ultimo elemento di `price.break_down`: quand
 sconti c'e' una sola voce (il totale del soggiorno); quando c'e' uno sconto, l'ultima voce e'
 esplicitamente "Totale" e somma le precedenti. Prendere l'ultimo elemento e' corretto in
 entrambi i casi, verificato su esempi reali di entrambe le forme.
+
+Coordinate: `item["coordinates"]["latitude"]` e `item["coordinates"]["longitud"]` (si', senza la
+"e" finale — refuso reale della libreria installata in `standardize.from_search`, verificato
+leggendo il codice sorgente installato, non assunto dal nome del campo).
 """
 
 import logging
@@ -70,6 +74,7 @@ class PyairbnbAdapter(StaySourceAdapter):
                 breakdown = item["price"]["break_down"]
                 total_amount = breakdown[-1]["amount"] / 100
                 rating = item.get("rating") or {}
+                coordinates = item.get("coordinates") or {}
                 offers.append(
                     StayOffer(
                         source=self.name,
@@ -79,6 +84,8 @@ class PyairbnbAdapter(StaySourceAdapter):
                         rating=float(rating.get("value") or 0),
                         review_count=int(rating.get("reviewCount") or 0),
                         url=f"https://www.airbnb.com/rooms/{item['room_id']}" if item.get("room_id") else "",
+                        lat=float(coordinates.get("latitude") or 0),
+                        lon=float(coordinates.get("longitud") or 0),
                     )
                 )
             except (KeyError, IndexError, TypeError, ValueError) as exc:

@@ -299,6 +299,38 @@ uno script Node a parte (nessun test automatico esiste per il frontend). I filtr
 ogni nuova ricerca (`PLAN_FILTERS_DEFAULT`), per non applicare per errore un filtro della ricerca
 precedente a una nuova. Non ancora verificato in browser.
 
+**Autocompletamento aeroporti, suggerimento città, mappetta prezzi** (quarta richiesta di questo
+giro, in tre parti): nuovo `public/airports.json` (propagato in `trips/cilento-2026/`), 4562
+aeroporti con IATA reale, filtrato dal dataset pubblico OurAirports (verificato dal vivo: 12.6MB
+di CSV scaricato ed elaborato con uno script Node deterministico, non un elenco a memoria). Campi
+`pf-origin`/`pf-dest-air` ora hanno un autocompletamento che cerca per città/nome/codice e mostra
+un punteggio di rilevanza (il codice esatto digitato deve comparire primo, non dopo un aeroporto
+con quella stringa come sottostringa casuale del nome — bug reale trovato e corretto in sessione
+con l'esempio concreto "FUE" prima mostrava Cienfuegos come primo risultato). Selezionando
+l'aeroporto di arrivo, la "Città/zona" si autocompila con il comune dell'aeroporto solo se il
+campo è vuoto (mai sovrascrive una scelta manuale, perché il comune dell'aeroporto non è sempre
+la zona turistica giusta: FUE è "El Matorral", non "Corralejo", segnalato esplicitamente
+dall'utente).
+
+Mappetta prezzi: `StayOffer` guadagna `lat`/`lon` (`services/stay-search/`), estratti da un campo
+della libreria `pyairbnb` mai usato finora (`coordinates.latitude`/`coordinates.longitud`, refuso
+reale senza "e" finale, verificato leggendo il codice sorgente installato e poi con una ricerca
+live: 40/40 alloggi reali con coordinate valide). Nuova mappa Leaflet dedicata nella scheda
+"Pianifica" (`renderPlanPriceMap`, istanza separata da quella della scheda "Mappa"), un marker per
+alloggio con il prezzo come etichetta.
+
+Definition of done:
+
+- [x] Dataset aeroporti scaricato ed elaborato da fonte reale, verificato con i codici della
+      richiesta originale (BLQ, FUE).
+- [x] Punteggio di rilevanza dei suggerimenti verificato con uno script a parte prima di scriverlo
+      nel codice applicativo.
+- [x] Coordinate alloggi verificate live (40/40 con lat/lon reali), 13 test backend aggiornati
+      (incluso un test dedicato al refuso "longitud" per bloccare una regressione futura).
+- [ ] Non ancora verificato in un browser reale: autocompletamento, suggerimento città, mappetta.
+- [ ] Nessuna fonte treni ancora integrata: la mappetta e i filtri riguardano solo voli/alloggi/POI
+      già esistenti, non tocca la richiesta separata sui treni (ancora in sospeso).
+
 ## Feature: sito Firebase Hosting dedicato per viaggio (ADR-009) — avviata
 
 Cosa fa: risolve un gap reale segnalato dall'utente, non un'ipotesi: senza un sito Hosting dedicato

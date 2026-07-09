@@ -4,6 +4,41 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-09 — Autocompletamento aeroporti, suggerimento città, mappetta prezzi alloggi
+
+Commit: non ancora committato.
+File toccati: nuovo `public/airports.json` (propagato in `trips/cilento-2026/`, 4562 aeroporti);
+`public/index.html` (propagato); `services/stay-search/app/schemas.py` (`StayOffer.lat`/`.lon`),
+`services/stay-search/app/adapters/pyairbnb_adapter.py`, `services/stay-search/tests/
+test_pyairbnb_adapter.py` (nuovo test), `services/stay-search/README.md`, `dev-testing.md`.
+Motivo: l'utente ha chiesto tre cose collegate durante un test reale (BLQ→FUE): non conosce i
+codici IATA a memoria, quindi vuole un autocompletamento con nomi; ha notato che la città per
+alloggi/POI non si compilava da sola in base all'aeroporto scelto; e ha chiesto una mappa con i
+prezzi. Anche segnalato lo stesso errore 502/429 già diagnosticato in precedenza (cold start
+Render), confermato di nuovo dal vivo con `curl`, non una regressione.
+Dataset aeroporti: verificato dal vivo che il dataset pubblico OurAirports (via mirror GitHub
+`davidmegginson.github.io/ourairports-data`) fosse reale, raggiungibile e aggiornato prima di
+usarlo — scaricato il CSV completo (12.6MB, 70000+ righe) ed elaborato con uno script Node
+deterministico (principio "deterministico prima del linguistico", `token-economy.md`) a un JSON
+di 4562 aeroporti con IATA valido (solo `large_airport`/`medium_airport`, ~388KB). Verificato con
+i codici della richiesta originale (BLQ, FUE) prima di procedere.
+Bug di rilevanza trovato e corretto prima di scrivere il codice applicativo: testando la ricerca
+"FUE" con un semplice `includes()`, l'aeroporto giusto non compariva nemmeno primo (Cienfuegos,
+che contiene "fue" come sottostringa del nome della città, veniva prima). Corretto con un
+punteggio di rilevanza (match esatto > prefisso IATA > prefisso città/nome > sottostringa),
+verificato con uno script a parte contro i dati reali prima di portarlo nel codice applicativo.
+Suggerimento città: quando si seleziona l'aeroporto di arrivo, il campo "Città/zona" si
+autocompila con il comune dell'aeroporto (dal dataset) solo se il campo è vuoto — non sovrascrive
+mai una scelta manuale, perché il comune non è sempre la zona turistica giusta (l'utente stesso
+ha dovuto "forzare" Corralejo al posto di El Matorral, il comune reale dell'aeroporto FUE).
+Mappetta prezzi: scoperto leggendo il codice sorgente installato di `pyairbnb` (non assunto) che
+`standardize.from_search` espone coordinate mai estratte finora (`coordinates.latitude`/
+`coordinates.longitud`, con un refuso reale della libreria stessa, senza "e" finale). Aggiunte a
+`StayOffer`, verificate dal vivo con una ricerca reale (40/40 alloggi con coordinate valide, non
+solo con i test mockati) prima di costruire la mappa Leaflet dedicata nella scheda "Pianifica".
+Non ancora fatto: riscontro visivo dell'utente in browser per tutte e tre le parti; nessuna fonte
+treni integrata (richiesta separata, ancora aperta).
+
 ## 2026-07-08 — Dashboard costi/splitwise semplificata, corretto un bug di doppio escaping nel titolo
 
 Commit: non ancora committato.

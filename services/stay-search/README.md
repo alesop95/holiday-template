@@ -12,11 +12,17 @@ date di check-in/check-out, numero di adulti e prezzo massimo, e restituisce una
 in un bounding box tramite Nominatim (OpenStreetMap, `app/geocoding.py`), gratuito e senza
 chiave; il bounding box alimenta la ricerca geografica di Airbnb (`app/adapters/pyairbnb_adapter.py`).
 
+`StayOffer` porta anche `lat`/`lon` (0 se assenti): la libreria le espone in
+`coordinates.latitude`/`coordinates.longitud` (si', senza "e" finale — refuso reale della
+libreria installata, verificato leggendo il suo codice sorgente), usate dalla shell frontend per
+la mappetta prezzi nella scheda "Pianifica" (`public/index.html:renderPlanPriceMap`).
+
 ## Stato di verifica
 
 Eseguito realmente in questa sessione: virtualenv, `pip install`, ricerca live per "Marina di
 Camerota" (15-20 settembre 2026, 2 adulti). Risultato: 40 alloggi reali con nomi, tipo, prezzo
-totale del soggiorno e valutazioni vere.
+totale del soggiorno e valutazioni vere, tutti con coordinate valide (verificato: 40/40 avevano
+`lat`/`lon` diversi da 0).
 
 **Due bug reali della libreria installata (`pyairbnb` 2.2.1), scoperti e aggirati in sessione,
 non documentati altrove:**

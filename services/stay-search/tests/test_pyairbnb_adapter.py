@@ -31,6 +31,8 @@ def test_search_parses_listing_without_discount(monkeypatch):
         "title": "Camerota. B&B",
         "price": {"total": {"amount": 0}, "break_down": [{"amount": 35753.0, "description": "5 notti a 71,51€"}]},
         "rating": {"value": 5.0, "reviewCount": "47"},
+        # "coordinates" assente apposta: verifica che lat/lon degradino a 0 invece di rompersi,
+        # come per un annuncio reale che non le espone.
     }
     monkeypatch.setattr("app.adapters.pyairbnb_adapter.geocode", lambda location: _BBOX)
     monkeypatch.setattr("app.adapters.pyairbnb_adapter.pyairbnb_api.get", lambda proxy: "api-key-finta")
@@ -47,6 +49,31 @@ def test_search_parses_listing_without_discount(monkeypatch):
     assert offer.rating == 5.0
     assert offer.review_count == 47
     assert offer.url == "https://www.airbnb.com/rooms/1201347293452040313"
+    assert offer.lat == 0
+    assert offer.lon == 0
+
+
+def test_search_parses_coordinates_using_real_typo_key(monkeypatch):
+    # La libreria installata scrive "longitud", non "longitude" (verificato leggendo il codice
+    # sorgente di pyairbnb.standardize.from_search): questo test blocca una regressione se in
+    # futuro qualcuno "corregge" per errore la chiave nel nostro codice.
+    raw_result = {
+        "room_id": 42,
+        "name": "Casa sul mare",
+        "title": "Marina di Camerota. Appartamento",
+        "price": {"total": {"amount": 0}, "break_down": [{"amount": 50000.0, "description": "tot"}]},
+        "rating": {"value": 4.5, "reviewCount": "10"},
+        "coordinates": {"latitude": 39.991, "longitud": 15.373},
+    }
+    monkeypatch.setattr("app.adapters.pyairbnb_adapter.geocode", lambda location: _BBOX)
+    monkeypatch.setattr("app.adapters.pyairbnb_adapter.pyairbnb_api.get", lambda proxy: "api-key-finta")
+    monkeypatch.setattr("app.adapters.pyairbnb_adapter.pyairbnb_search.get", lambda *a, **k: {"raw": True})
+    monkeypatch.setattr("app.adapters.pyairbnb_adapter.pyairbnb_standardize.from_search", lambda raw: [raw_result])
+
+    offer = PyairbnbAdapter().search(_REQUEST)[0]
+
+    assert offer.lat == 39.991
+    assert offer.lon == 15.373
 
 
 def test_search_parses_listing_with_discount_uses_last_breakdown_entry(monkeypatch):

@@ -210,7 +210,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-msg{font-size:12.5px;color:var(--muted);padding:8px 0;}
 .plan-msg.err{color:var(--terra);}
 .plan-group{margin-bottom:1.4rem;}
-.plan-group-ttl{font-family:'Poppins',sans-serif;font-size:1.02rem;font-weight:600;color:var(--sea);margin-bottom:8px;}
+.plan-group-ttl{font-family:'Poppins',sans-serif;font-size:1.02rem;font-weight:600;color:var(--sea);margin-bottom:8px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;}
+.plan-group-ttl::-webkit-details-marker{display:none;}
+.plan-group-ttl::before{content:'▸';font-size:.75em;display:inline-block;transition:transform .15s;}
+.plan-group[open]>.plan-group-ttl::before{transform:rotate(90deg);}
 .plan-filters{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:10px;}
 .plan-filters select{padding:6px 9px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);background:var(--white);}
 .plan-filters label{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;}
@@ -372,7 +375,7 @@ import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLA
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
 const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc' };
-const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false, costs:null, planFilters:{...PLAN_FILTERS_DEFAULT}, airports:null, airportZones:null };
+const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, planLastSearch:null, meta:null, metaEditing:false, costs:null, planFilters:{...PLAN_FILTERS_DEFAULT}, airports:null, airportZones:null };
 let db;
 
 // ── Punto di ingresso ─────────────────────────────────────────────────────────
@@ -654,6 +657,18 @@ function updateNotesUI() {
 const PLAN_API_KEY = { flights: 'flights', stays: 'stays', pois: 'points_of_interest' };
 const PLAN_KIND_LABEL = { flights: 'Volo', stays: 'Alloggio', pois: 'Punto di interesse' };
 
+// FlightOffer.source (services/flight-search/app/schemas.py) non porta un link di prenotazione
+// per singola offerta: né fast_flights né Kiwi Tequila espongono un booking_token verificato in
+// questa sessione (vedi README del servizio). Per fast_flights l'unico link onesto è una ricerca
+// generica su Google Flights sulla stessa rotta/date (non l'itinerario esatto), verificata dal
+// vivo in sessione (200, pagina di ricerca valida). Per kiwi, non ancora verificato live (manca
+// la chiave), nessun link finché non lo è: solo l'etichetta della fonte.
+const FLIGHT_SOURCE_LABEL = { fast_flights: 'Google Flights', kiwi: 'Kiwi.com' };
+function googleFlightsSearchUrl(origin, dest, dep, ret) {
+  const q = ret ? `Flights from ${origin} to ${dest} on ${dep} through ${ret}` : `Flights from ${origin} to ${dest} on ${dep}`;
+  return 'https://www.google.com/travel/flights?q=' + encodeURIComponent(q);
+}
+
 // Voli/alloggi/POI vengono da fonti esterne scrapate (Airbnb, Google Flights, OpenStreetMap), non
 // da trip.config.js scritto dallo sviluppatore: a differenza del resto della shell, questi valori
 // vanno sempre passati per escHtml prima di finire in innerHTML.
@@ -718,7 +733,14 @@ function renderPlanResults() {
 
   const groups = [
     { key:'flights', label:'Voli', originalCount:(p.flights||[]).length, pairs:flights,
-      view:f=>({nm:escHtml(f.airline),price:escHtml(f.price),sub:`${escHtml(f.departure)} → ${escHtml(f.arrival)} · ${escHtml(f.duration)} · ${f.stops===0?'diretto':escHtml(f.stops)+' scalo/i'}${f.is_best?' · consigliato':''}`,link:''}),
+      view:f=>{
+        const src = FLIGHT_SOURCE_LABEL[f.source] || f.source;
+        const ls = S.planLastSearch;
+        const link = (f.source === 'fast_flights' && ls) ? googleFlightsSearchUrl(ls.origin, ls.destAir, ls.dep, ls.ret) : '';
+        return {nm:escHtml(f.airline),price:escHtml(f.price),
+          sub:`${escHtml(f.departure)} → ${escHtml(f.arrival)} · ${escHtml(f.duration)} · ${f.stops===0?'diretto':escHtml(f.stops)+' scalo/i'}${f.is_best?' · consigliato':''} · fonte: ${escHtml(src)}`,
+          link, linkLabel:'Cerca su Google Flights →'};
+      },
       controls:`<div class="plan-filters">
         <label><input type="checkbox" ${pf.flightsDirectOnly?'checked':''} onchange="setPlanFilter('flightsDirectOnly',this.checked)"> Solo diretti</label>
         <select onchange="setPlanFilter('flightsSort',this.value)">
@@ -726,7 +748,7 @@ function renderPlanResults() {
           <option value="price-desc" ${pf.flightsSort==='price-desc'?'selected':''}>Prezzo decrescente</option>
         </select></div>` },
     { key:'stays', label:'Alloggi', originalCount:(p.stays||[]).length, pairs:stays,
-      view:s=>({nm:escHtml(s.name),price:escHtml(s.total_price),sub:`${escHtml(s.listing_type||'Alloggio')}${s.rating>0?' · '+escHtml(s.rating)+' ('+escHtml(s.review_count)+' recensioni)':' · senza recensioni'}`,link:s.url||''}),
+      view:s=>({nm:escHtml(s.name),price:escHtml(s.total_price),sub:`${escHtml(s.listing_type||'Alloggio')}${s.rating>0?' · '+escHtml(s.rating)+' ('+escHtml(s.review_count)+' recensioni)':' · senza recensioni'}`,link:s.url||'',linkLabel:'Vedi e prenota su Airbnb →'}),
       controls:`<div class="plan-filters">
         <select onchange="setPlanFilter('staysMinRating',parseFloat(this.value))">
           <option value="0" ${pf.staysMinRating===0?'selected':''}>Qualsiasi valutazione</option>
@@ -751,12 +773,12 @@ function renderPlanResults() {
   const html = groups.map(g => {
     if (!g.originalCount) return '';
     const countLbl = g.pairs.length !== g.originalCount ? `${g.pairs.length} di ${g.originalCount}` : `${g.originalCount}`;
-    if (!g.pairs.length) return `<div class="plan-group"><div class="plan-group-ttl">${g.label} (${countLbl})</div>${g.controls}<p class="costs-hint">Nessun risultato con i filtri scelti.</p></div>`;
-    return `<div class="plan-group"><div class="plan-group-ttl">${g.label} (${countLbl})</div>${g.controls}
+    if (!g.pairs.length) return `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (${countLbl})</summary>${g.controls}<p class="costs-hint">Nessun risultato con i filtri scelti.</p></details>`;
+    return `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (${countLbl})</summary>${g.controls}
       ${g.pairs.map(({item, origIndex}) => { const v = g.view(item);
-        return `<div class="plan-item"><div class="plan-item-hd"><div class="plan-item-nm">${v.nm}</div>${v.price?`<div class="plan-item-price">${v.price}</div>`:''}</div><div class="plan-item-sub">${v.sub}</div>${v.link?`<a class="plan-item-link" href="${escHtml(v.link)}" target="_blank" rel="noopener noreferrer">Vedi e prenota su Airbnb →</a>`:''}
+        return `<div class="plan-item"><div class="plan-item-hd"><div class="plan-item-nm">${v.nm}</div>${v.price?`<div class="plan-item-price">${v.price}</div>`:''}</div><div class="plan-item-sub">${v.sub}</div>${v.link?`<a class="plan-item-link" href="${escHtml(v.link)}" target="_blank" rel="noopener noreferrer">${escHtml(v.linkLabel||'Vedi →')}</a>`:''}
         <div class="plan-item-save"><span class="plan-item-save-lbl">Aggiungi al giorno</span><select>${dayOpts}</select><button class="plan-save-btn" onclick="savePlanItem('${g.key}',${origIndex},this)">Salva</button></div></div>`;
-      }).join('')}</div>`;
+      }).join('')}</details>`;
   }).join('');
   el.innerHTML = html || '<p style="color:var(--muted);font-size:13px;">Nessun risultato per questa ricerca.</p>';
 }
@@ -772,7 +794,7 @@ function renderPlanSaved() {
     const rows = [];
     ['flights','stays','pois'].forEach(kind => {
       (S.planning[dayId][kind]||[]).forEach((item,i) => {
-        const nm = kind==='flights' ? `${escHtml(item.airline)} · ${escHtml(item.price)}` : kind==='stays' ? `${escHtml(item.name)} · ${escHtml(item.total_price)}` : escHtml(item.name);
+        const nm = kind==='flights' ? `${escHtml(item.airline)} · ${escHtml(item.price)} · ${escHtml(FLIGHT_SOURCE_LABEL[item.source]||item.source)}` : kind==='stays' ? `${escHtml(item.name)} · ${escHtml(item.total_price)}` : escHtml(item.name);
         const link = kind==='stays' && item.url ? ` <a class="plan-item-link" href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer">Airbnb →</a>` : '';
         rows.push(`<div class="plan-saved-item"><div class="plan-saved-nm">${PLAN_KIND_LABEL[kind]}: ${nm}${link}</div><button class="plan-rm-btn" onclick="removePlanItem('${dayId}','${kind}',${i})">Rimuovi</button></div>`);
       });
@@ -1063,6 +1085,9 @@ window.searchPlan = async () => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const plan = await res.json();
     S.planResults = plan;
+    // Serve solo a costruire il link "Cerca su Google Flights" per fonte fast_flights: la
+    // FlightOffer non porta origine/destinazione/date, solo l'ultima ricerca fatta le ha.
+    S.planLastSearch = wantsFlight ? { origin, destAir, dep, ret } : null;
     S.planFilters = { ...PLAN_FILTERS_DEFAULT };  // ogni nuova ricerca riparte pulita, niente filtri della ricerca precedente
     msgEl.innerHTML = (plan.errors && plan.errors.length) ? `<div class="plan-msg err">Parziale: ${plan.errors.join(' · ')}</div>` : '';
     renderPlanResults();

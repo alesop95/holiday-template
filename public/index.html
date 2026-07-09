@@ -197,6 +197,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .airport-ac-item strong{color:var(--sea);}
 .airport-ac-item span{display:block;font-size:11px;color:var(--muted);margin-top:1px;}
 .airport-ac-confirm{font-size:11px;color:var(--teal);margin-top:3px;min-height:14px;}
+.zone-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.zone-suggestions:empty{margin-top:0;}
+.zone-chip{background:var(--sand);border:1.5px solid var(--border);border-radius:100px;padding:4px 12px;font-size:12px;color:var(--sea);cursor:pointer;}
+.zone-chip:hover{background:var(--sand2);border-color:var(--sea2);}
 .plan-map-price-pin{background:var(--sea2);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff;transform:translate(-50%,-50%);}
 .plan-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
 .plan-field input{padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
@@ -336,7 +340,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
         <div id="pf-dest-air-list" class="airport-ac-list" style="display:none"></div>
         <div id="pf-dest-air-confirm" class="airport-ac-confirm"></div>
       </div>
-      <div class="plan-field full"><label>Città / zona (alloggi e POI)</label><input id="pf-dest-loc" placeholder="Es. Marina di Camerota"></div>
+      <div class="plan-field full"><label>Città / zona (alloggi e POI)</label><input id="pf-dest-loc" placeholder="Es. Marina di Camerota">
+        <div id="pf-zone-suggestions" class="zone-suggestions"></div>
+      </div>
       <div class="plan-field"><label>Andata</label><input id="pf-dep" type="date"></div>
       <div class="plan-field"><label>Ritorno</label><input id="pf-ret" type="date"></div>
       <div class="plan-field"><label>Adulti</label><input id="pf-adults" type="number" min="1" max="9" value="2"></div>
@@ -366,7 +372,7 @@ import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLA
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
 const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc' };
-const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false, costs:null, planFilters:{...PLAN_FILTERS_DEFAULT}, airports:null };
+const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, meta:null, metaEditing:false, costs:null, planFilters:{...PLAN_FILTERS_DEFAULT}, airports:null, airportZones:null };
 let db;
 
 // ── Punto di ingresso ─────────────────────────────────────────────────────────
@@ -930,13 +936,23 @@ window.markDone = id => { const c=S.completed[id]||false; writeCompleted(id,!c).
 // sempre il codice IATA come value (compatibilita' con searchPlan, che legge 3 lettere),
 // il nome leggibile va nella label di conferma sotto il campo, non nel campo stesso.
 async function ensureAirportsLoaded() {
-  if (S.airports) return;
-  try {
-    const res = await fetch('./airports.json');
-    S.airports = await res.json();
-  } catch (e) {
-    S.airports = [];
-    console.error('Impossibile caricare airports.json', e);
+  if (!S.airports) {
+    try {
+      const res = await fetch('./airports.json');
+      S.airports = await res.json();
+    } catch (e) {
+      S.airports = [];
+      console.error('Impossibile caricare airports.json', e);
+    }
+  }
+  if (!S.airportZones) {
+    try {
+      const res = await fetch('./airport-zones.json');
+      S.airportZones = await res.json();
+    } catch (e) {
+      S.airportZones = [];
+      console.error('Impossibile caricare airport-zones.json', e);
+    }
   }
 }
 
@@ -991,7 +1007,24 @@ window.selectAirport = (fieldKey, iata) => {
   if (fieldKey === 'dest' && airport) {
     const destLoc = document.getElementById('pf-dest-loc');
     if (!destLoc.value.trim()) destLoc.value = airport.city;
+    // Zone turistiche note (public/airport-zones.json), verificate una per una con ricerca web
+    // reale, non a memoria: coprono solo aeroporti "leisure" dove il comune amministrativo e'
+    // notoriamente diverso dalla zona turistica (isole, destinazioni balneari). Un clic sostituisce
+    // sempre il valore corrente: e' una scelta esplicita dell'utente, a differenza del comune
+    // sopra che non sovrascrive mai.
+    const zoneEntry = (S.airportZones || []).find(z => z.iata === iata);
+    const zoneEl = document.getElementById('pf-zone-suggestions');
+    // data-zone, non un letterale dentro onclick: alcuni nomi reali contengono un apostrofo
+    // (es. "Playa d'en Bossa", Ibiza) che romperebbe una stringa JS incorporata nell'attributo.
+    // this.dataset.zone arriva gia' decodificato dal browser, nessun escaping manuale necessario.
+    zoneEl.innerHTML = zoneEntry
+      ? `<span class="airport-ac-confirm" style="width:100%">Zone turistiche note:</span>${zoneEntry.zones.map(z => `<span class="zone-chip" data-zone="${escHtml(z)}" onclick="pickZoneSuggestion(this.dataset.zone)">${escHtml(z)}</span>`).join('')}`
+      : '';
   }
+};
+
+window.pickZoneSuggestion = (zoneName) => {
+  document.getElementById('pf-dest-loc').value = zoneName;
 };
 
 window.searchPlan = async () => {

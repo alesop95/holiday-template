@@ -331,6 +331,23 @@ Definition of done:
 - [ ] Nessuna fonte treni ancora integrata: la mappetta e i filtri riguardano solo voli/alloggi/POI
       già esistenti, non tocca la richiesta separata sui treni (ancora in sospeso).
 
+**Zone turistiche note per aeroporto leisure, aggiunta dopo un caso reale**: il primo test
+dell'utente su BLQ→FUE ha mostrato solo un alloggio a "El Matorral" (il comune amministrativo
+dell'aeroporto, minuscolo — verificato via Nominatim, ~4x4 km, non la zona turistica). Nuovo
+`public/airport-zones.json` (propagato in `trips/cilento-2026/`), 25 aeroporti "leisure" (isole e
+destinazioni balneari) con 2-4 zone turistiche reali ciascuno, ogni voce verificata con una
+ricerca web dedicata (non a memoria) da un agente di ricerca separato, che ha anche escluso
+esplicitamente gli aeroporti dove il comune amministrativo coincide già con la zona turistica
+(es. Lampedusa, Pantelleria) invece di forzare una voce ovunque. Selezionando un aeroporto di
+arrivo con una voce in questo file, compaiono delle "chip" cliccabili con le zone note sotto il
+campo Città/zona; un clic sovrascrive sempre il campo (scelta esplicita), a differenza del comune
+amministrativo che non sovrascrive mai un valore già presente.
+Bug di escaping trovato e corretto prima di verificarlo in browser: una delle zone reali
+("Playa d'en Bossa", Ibiza) contiene un apostrofo che avrebbe rotto una stringa JS incorporata
+direttamente in un attributo `onclick` — risolto con un `data-zone` letto via
+`this.dataset.zone` invece di interpolare il nome dentro il JavaScript, verificato con un test
+di rendering a parte (nessun test automatico esiste per il frontend).
+
 **Quarto problema segnalato dall'uso reale, stesso giorno**: un altro test dell'utente ha
 mostrato 429 su tutti e tre i servizi insieme (non il solito mix 502/429 del cold start).
 Diagnosticato chiamando gli stessi tre servizi direttamente un attimo dopo: tutti hanno risposto

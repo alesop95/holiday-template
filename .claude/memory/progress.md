@@ -4,6 +4,29 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-09 — Zone turistiche note per aeroporti leisure, corretto un bug di escaping su un apostrofo reale
+
+Commit: non ancora committato.
+File toccati: nuovo `public/airport-zones.json` (propagato in `trips/cilento-2026/`, 25 aeroporti);
+`public/index.html` (propagato): chip cliccabili delle zone note sotto il campo Città/zona.
+Motivo: il test dell'utente su BLQ→FUE ha mostrato solo un alloggio, perché il comune
+amministrativo auto-suggerito ("El Matorral") è un'area minuscola vicino alla pista, non la zona
+turistica (Corralejo, Costa Calma, Morro Jable) — limite già segnalato quando la funzione di
+suggerimento città era stata scritta. L'utente ha chiesto la raccolta dati se non troppo ingente:
+delegata a un agente di ricerca (25 aeroporti "leisure" — Canarie, Baleari, Sardegna, Sicilia,
+Grecia, Portogallo, Croazia, Cipro, Malta — 2-4 zone reali ciascuno, ognuna verificata con una
+ricerca web dedicata). L'agente ha esplicitamente omesso alcuni aeroporti richiesti (Lampedusa,
+Pantelleria, Tenerife Nord) perché il divario comune/zona-turistica che il compito doveva risolvere
+non esiste realmente per quei casi — onestà preferita a una voce forzata e inventata.
+Bug trovato e corretto prima del riscontro visivo: una zona reale ("Playa d'en Bossa", Ibiza)
+contiene un apostrofo che avrebbe rotto una stringa JavaScript incorporata in un attributo
+`onclick` (l'apostrofo, una volta passato per `escHtml`, diventa l'entità `&#39;`, che il browser
+decodifica di nuovo in un apostrofo letterale prima di eseguire il JS, chiudendo la stringa in
+anticipo). Risolto con un `data-zone` letto via `this.dataset.zone`, che arriva già decodificato
+dal browser senza bisogno di escaping manuale nel JS. Verificato con un confronto di stringhe a
+parte (nessun test automatico esiste per il frontend, per scelta di progetto).
+Non ancora fatto: riscontro visivo dell'utente in browser.
+
 ## 2026-07-09 — Retry automatico in trip-planner per 429/502/503 transitori da cold start concorrente
 
 Commit: non ancora committato.

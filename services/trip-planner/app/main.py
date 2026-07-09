@@ -42,17 +42,35 @@ STAY_SEARCH_URL = os.environ.get("STAY_SEARCH_URL", "http://localhost:8002")
 POI_SEARCH_URL = os.environ.get("POI_SEARCH_URL", "http://localhost:8003")
 
 
+_TRANSIENT_STATUS_CODES = {429, 502, 503}
+
+
 async def _fetch(client: httpx.AsyncClient, name: str, url: str, payload: dict) -> Tuple[str, list, Optional[str]]:
-    try:
-        # 90s, non 30s: su un hosting free-tier (Render, ADR-008) un servizio a valle in pausa
-        # per inattivita' impiega ~50s a ripartire, prima ancora di eseguire la ricerca vera e
-        # propria (scraping, a sua volta non istantaneo). Verificato live: 32-56s per una singola
-        # ricerca reale su Render, contro pochi secondi in locale.
-        response = await client.post(url, json=payload, timeout=90)
-        response.raise_for_status()
-        return name, response.json(), None
-    except httpx.HTTPError as exc:
-        return name, [], f"{name}: {exc}"
+    # 90s, non 30s: su un hosting free-tier (Render, ADR-008) un servizio a valle in pausa
+    # per inattivita' impiega ~50s a ripartire, prima ancora di eseguire la ricerca vera e
+    # propria (scraping, a sua volta non istantaneo). Verificato live: 32-56s per una singola
+    # ricerca reale su Render, contro pochi secondi in locale.
+    #
+    # Un retry: verificato dal vivo che quando tre servizi si svegliano insieme da un cold
+    # start, Render/Cloudflare puo' rispondere 429/502/503 a un tentativo che arriva mentre il
+    # servizio e' ancora a meta' del proprio avvio, anche se lo stesso servizio, chiamato un
+    # attimo dopo, risponde correttamente — non e' un errore permanente della ricerca stessa.
+    last_exc: Optional[httpx.HTTPError] = None
+    for attempt in range(2):
+        try:
+            response = await client.post(url, json=payload, timeout=90)
+            response.raise_for_status()
+            return name, response.json(), None
+        except httpx.HTTPStatusError as exc:
+            last_exc = exc
+            if exc.response.status_code in _TRANSIENT_STATUS_CODES and attempt == 0:
+                await asyncio.sleep(6)
+                continue
+            return name, [], f"{name}: {exc}"
+        except httpx.HTTPError as exc:
+            last_exc = exc
+            return name, [], f"{name}: {exc}"
+    return name, [], f"{name}: {last_exc}"
 
 
 @app.get("/health")

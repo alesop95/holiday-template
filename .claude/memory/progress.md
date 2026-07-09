@@ -4,6 +4,26 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-09 — Retry automatico in trip-planner per 429/502/503 transitori da cold start concorrente
+
+Commit: non ancora committato.
+File toccati: `services/trip-planner/app/main.py` (`_fetch` con un retry dopo 6s per status 429/
+502/503), `services/trip-planner/tests/test_main.py` (nuovo test, uno aggiornato, `asyncio.sleep`
+mockato).
+Motivo: subito dopo il rilascio della voce precedente, l'utente ha rifatto un test reale (stesso
+BLQ→FUE) e ha ottenuto 429 su tutti e tre i servizi insieme — pattern diverso dal solito mix
+502/429 del cold start singolo. Diagnosticato chiamando gli stessi tre servizi direttamente un
+istante dopo: tutti hanno risposto bene con dati reali (compresa una nuova conferma delle
+coordinate alloggi, corrette geograficamente per Corralejo). Non un guasto della ricerca, ma
+concorrenza: quando tre servizi Render si svegliano insieme, una richiesta puo' arrivare mentre
+il container non ha ancora finito di avviarsi e Render/Cloudflare rispondono 429/502/503 anche se
+lo stesso servizio, richiamato poco dopo, funziona. Corretto con un retry (una sola ripetizione,
+6 secondi di attesa) solo per questi tre codici di stato, non per altri errori. 6 test
+trip-planner dopo la modifica, tutti passanti, nessuna attesa reale nei test.
+Non ancora fatto: riscontro visivo dell'utente che il retry risolva davvero il caso reale (il
+comportamento e' verificato nei test con risposte finte, non ancora con un vero cold start
+concorrente su Render).
+
 ## 2026-07-09 — Autocompletamento aeroporti, suggerimento città, mappetta prezzi alloggi
 
 Commit: non ancora committato.

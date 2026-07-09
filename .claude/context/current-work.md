@@ -331,6 +331,16 @@ Definition of done:
 - [ ] Nessuna fonte treni ancora integrata: la mappetta e i filtri riguardano solo voli/alloggi/POI
       già esistenti, non tocca la richiesta separata sui treni (ancora in sospeso).
 
+**Quarto problema segnalato dall'uso reale, stesso giorno**: un altro test dell'utente ha
+mostrato 429 su tutti e tre i servizi insieme (non il solito mix 502/429 del cold start).
+Diagnosticato chiamando gli stessi tre servizi direttamente un attimo dopo: tutti hanno risposto
+correttamente con dati reali (voli BLQ→FUE, 40 alloggi a Corralejo con coordinate valide) — non un
+guasto della ricerca in se', ma un problema di concorrenza quando tre servizi Render si svegliano
+insieme dal cold start. Corretto in `services/trip-planner/app/main.py:_fetch`: un retry con 6
+secondi di attesa per le sole risposte 429/502/503, non per altri errori. Due test aggiornati
+(uno adattato per il retry-poi-fallisce-comunque, uno nuovo per retry-poi-riesce), `asyncio.sleep`
+mockato nei test per non introdurre attese reali. 6 test trip-planner, tutti passanti.
+
 ## Feature: sito Firebase Hosting dedicato per viaggio (ADR-009) — avviata
 
 Cosa fa: risolve un gap reale segnalato dall'utente, non un'ipotesi: senza un sito Hosting dedicato

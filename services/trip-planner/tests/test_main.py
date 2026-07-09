@@ -42,8 +42,17 @@ class _FakeAsyncClient:
     async def post(self, url, json, timeout):
         for key, response in self._responses.items():
             if key in url:
+                # Una lista simula tentativi successivi (per testare il retry): la si consuma in
+                # ordine, l'ultimo elemento resta valido per eventuali chiamate oltre la lista.
+                if isinstance(response, list):
+                    return response.pop(0) if len(response) > 1 else response[0]
                 return response
         raise AssertionError(f"URL non atteso nel test: {url}")
+
+
+async def _instant_sleep(seconds):
+    """Sostituisce asyncio.sleep nel retry di _fetch: i test non devono aspettare 6 secondi veri."""
+    return None
 
 
 def test_health_endpoint():
@@ -74,10 +83,11 @@ def test_build_trip_plan_combines_all_three_services(monkeypatch):
 
 
 def test_build_trip_plan_degrades_gracefully_when_one_service_is_down(monkeypatch):
+    monkeypatch.setattr(main_module.asyncio, "sleep", _instant_sleep)
     fake_client = _FakeAsyncClient({
         "flights": _FakeResponse(200, [{"source": "fast_flights", "price": "100 EUR"}]),
         "stays": _FakeResponse(200, [{"source": "airbnb", "total_price": "300 EUR"}]),
-        "poi": _FakeResponse(502, {"detail": "tutti gli adapter falliti"}),
+        "poi": _FakeResponse(502, {"detail": "tutti gli adapter falliti"}),  # fallisce anche al retry
     })
     monkeypatch.setattr(main_module.httpx, "AsyncClient", lambda: fake_client)
 
@@ -91,6 +101,30 @@ def test_build_trip_plan_degrades_gracefully_when_one_service_is_down(monkeypatc
     assert plan["points_of_interest"] == []
     assert len(plan["errors"]) == 1
     assert "poi" in plan["errors"][0]
+
+
+def test_build_trip_plan_retries_once_on_transient_error_then_succeeds(monkeypatch):
+    # Scoperto dal vivo in sessione: quando tre servizi Render si svegliano insieme da un cold
+    # start, una richiesta puo' tornare 429/502/503 anche se lo stesso servizio, chiamato un
+    # attimo dopo, risponde correttamente. _fetch ritenta una volta prima di arrendersi.
+    monkeypatch.setattr(main_module.asyncio, "sleep", _instant_sleep)
+    fake_client = _FakeAsyncClient({
+        "flights": [
+            _FakeResponse(429, {"detail": "too many requests"}),
+            _FakeResponse(200, [{"source": "fast_flights", "price": "100 EUR"}]),
+        ],
+        "stays": _FakeResponse(200, [{"source": "airbnb", "total_price": "300 EUR"}]),
+        "poi": _FakeResponse(200, [{"source": "overpass", "name": "Torre Eiffel"}]),
+    })
+    monkeypatch.setattr(main_module.httpx, "AsyncClient", lambda: fake_client)
+
+    client = TestClient(app)
+    response = client.post("/api/trip-plan", json=_REQUEST_BODY)
+
+    assert response.status_code == 200
+    plan = response.json()
+    assert plan["errors"] == []  # il retry ha avuto successo, nessun errore riportato
+    assert len(plan["flights"]) == 1
 
 
 def test_build_trip_plan_skips_flights_when_airports_omitted(monkeypatch):

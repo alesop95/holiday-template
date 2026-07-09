@@ -43,6 +43,11 @@ POI_SEARCH_URL = os.environ.get("POI_SEARCH_URL", "http://localhost:8003")
 
 
 _TRANSIENT_STATUS_CODES = {429, 502, 503}
+# Un solo retry da 6s (tentato prima) non basta: verificato dal vivo che un 429/502 da cold start
+# concorrente e' un rifiuto immediato (l'intera richiesta fallita torna in pochi secondi, non
+# vicino al timeout), non un servizio lento — quindi tre tentativi con attesa crescente costano
+# poco quando falliscono ma coprono un cold start reale (30-56s misurati) quando serve davvero.
+_RETRY_BACKOFFS_SECONDS = [8, 20]
 
 
 async def _fetch(client: httpx.AsyncClient, name: str, url: str, payload: dict) -> Tuple[str, list, Optional[str]]:
@@ -50,21 +55,16 @@ async def _fetch(client: httpx.AsyncClient, name: str, url: str, payload: dict) 
     # per inattivita' impiega ~50s a ripartire, prima ancora di eseguire la ricerca vera e
     # propria (scraping, a sua volta non istantaneo). Verificato live: 32-56s per una singola
     # ricerca reale su Render, contro pochi secondi in locale.
-    #
-    # Un retry: verificato dal vivo che quando tre servizi si svegliano insieme da un cold
-    # start, Render/Cloudflare puo' rispondere 429/502/503 a un tentativo che arriva mentre il
-    # servizio e' ancora a meta' del proprio avvio, anche se lo stesso servizio, chiamato un
-    # attimo dopo, risponde correttamente — non e' un errore permanente della ricerca stessa.
     last_exc: Optional[httpx.HTTPError] = None
-    for attempt in range(2):
+    for attempt in range(len(_RETRY_BACKOFFS_SECONDS) + 1):
         try:
             response = await client.post(url, json=payload, timeout=90)
             response.raise_for_status()
             return name, response.json(), None
         except httpx.HTTPStatusError as exc:
             last_exc = exc
-            if exc.response.status_code in _TRANSIENT_STATUS_CODES and attempt == 0:
-                await asyncio.sleep(6)
+            if exc.response.status_code in _TRANSIENT_STATUS_CODES and attempt < len(_RETRY_BACKOFFS_SECONDS):
+                await asyncio.sleep(_RETRY_BACKOFFS_SECONDS[attempt])
                 continue
             return name, [], f"{name}: {exc}"
         except httpx.HTTPError as exc:

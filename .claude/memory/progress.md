@@ -20,9 +20,18 @@ il container non ha ancora finito di avviarsi e Render/Cloudflare rispondono 429
 lo stesso servizio, richiamato poco dopo, funziona. Corretto con un retry (una sola ripetizione,
 6 secondi di attesa) solo per questi tre codici di stato, non per altri errori. 6 test
 trip-planner dopo la modifica, tutti passanti, nessuna attesa reale nei test.
-Non ancora fatto: riscontro visivo dell'utente che il retry risolva davvero il caso reale (il
-comportamento e' verificato nei test con risposte finte, non ancora con un vero cold start
-concorrente su Render).
+**Corretto lo stesso giorno**: il primo retry (6s) non bastava — il riscontro dell'utente
+(screenshot con DevTools aperti, richiesta reale da 6.69s) ha mostrato che tutti e tre i servizi
+fallivano ancora dopo il retry. Diagnosticato chiamando i tre servizi direttamente: il fallimento
+e' un rifiuto immediato (pochi secondi, non un timeout lento), mentre un cold start reale misura
+30-56 secondi — 6 secondi di attesa non potevano bastare. Corretto passando a due retry con attesa
+crescente (8s, poi 20s), che costano poco quando il servizio fallisce comunque velocemente ma
+coprono un cold start reale quando serve. Verificato di nuovo dal vivo lo stesso identico volo
+(BLQ→FUE) dopo aver aspettato che i tre servizi fossero caldi: 10 voli, 1 alloggio, 0 POI, zero
+errori, in 10.8 secondi. Nuovo test che copre il doppio retry (fallisce due volte, riesce alla
+terza), 7 test trip-planner in totale.
+Non ancora fatto: riscontro visivo dell'utente che il nuovo backoff risolva il caso reale di cold
+start concorrente senza bisogno di aspettare e ritentare a mano.
 
 ## 2026-07-09 — Autocompletamento aeroporti, suggerimento città, mappetta prezzi alloggi
 

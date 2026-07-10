@@ -208,6 +208,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-submit{grid-column:1/-1;padding:11px;border:none;border-radius:100px;background:var(--sea2);color:#fff;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:opacity .2s;}
 .plan-submit:disabled{opacity:.55;cursor:default;}
 .plan-msg{font-size:12.5px;color:var(--muted);padding:8px 0;}
+.plan-retry-btn{margin-left:6px;padding:3px 11px;border:1.5px solid var(--border);background:var(--white);border-radius:100px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--sea);}
 .plan-msg.err{color:var(--terra);}
 .plan-group{margin-bottom:1.4rem;}
 .plan-group-ttl{font-family:'Poppins',sans-serif;font-size:1.02rem;font-weight:600;color:var(--sea);margin-bottom:8px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;}
@@ -1180,11 +1181,15 @@ window.searchPlan = async () => {
     // FlightOffer non porta origine/destinazione/date, solo l'ultima ricerca fatta le ha.
     S.planLastSearch = wantsFlight ? { origin, destAir, dep, ret } : null;
     S.planFilters = { ...PLAN_FILTERS_DEFAULT };  // ogni nuova ricerca riparte pulita, niente filtri della ricerca precedente
-    msgEl.innerHTML = (plan.errors && plan.errors.length) ? `<div class="plan-msg err">Parziale: ${plan.errors.join(' · ')}</div>` : '';
+    // Un 429/502/503 qui e' quasi sempre cold start concorrente dei servizi Render (piano free):
+    // trip-planner ha gia' ritentato per 90s prima di arrendersi, ma un secondo tentativo a
+    // freddo puo' ancora fallire se i servizi non erano ancora svegli — un pulsante "Riprova"
+    // evita di dover ridigitare tutto il form per il tentativo successivo, quasi sempre risolutivo.
+    msgEl.innerHTML = (plan.errors && plan.errors.length) ? `<div class="plan-msg err">Parziale: ${plan.errors.join(' · ')} <button class="plan-retry-btn" onclick="searchPlan()">Riprova</button></div>` : '';
     renderPlanResults();
     renderPlanPriceMap();
   } catch (e) {
-    msgEl.innerHTML = `<div class="plan-msg err">Comparatore non raggiungibile (${e.message}). Verifica che i quattro servizi backend siano avviati in locale (${TRIP_PLANNER_URL}).</div>`;
+    msgEl.innerHTML = `<div class="plan-msg err">Comparatore non raggiungibile (${e.message}). Se i servizi si stanno solo risvegliando (cold start su Render), riprova. <button class="plan-retry-btn" onclick="searchPlan()">Riprova</button></div>`;
   } finally {
     btn.disabled = false; btn.textContent = 'Cerca';
   }

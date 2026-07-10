@@ -43,11 +43,15 @@ POI_SEARCH_URL = os.environ.get("POI_SEARCH_URL", "http://localhost:8003")
 
 
 _TRANSIENT_STATUS_CODES = {429, 502, 503}
-# Un solo retry da 6s (tentato prima) non basta: verificato dal vivo che un 429/502 da cold start
-# concorrente e' un rifiuto immediato (l'intera richiesta fallita torna in pochi secondi, non
-# vicino al timeout), non un servizio lento — quindi tre tentativi con attesa crescente costano
-# poco quando falliscono ma coprono un cold start reale (30-56s misurati) quando serve davvero.
-_RETRY_BACKOFFS_SECONDS = [8, 20]
+# Due tentativi precedenti (6s, poi 8s+20s=28s totali) non bastavano ancora: verificato dal vivo
+# in piu' occasioni che un cold start concorrente dei tre servizi a valle puo' superare i 28s di
+# attesa cumulata (misurati dal vivo tra i 22 e i 56s solo per il risveglio di un singolo
+# servizio, prima ancora della ricerca vera), quindi il fallimento si ripresentava identico anche
+# dopo l'aumento precedente. Tre retry con attesa crescente (15+30+45=90s totali) coprono con
+# margine il caso peggiore osservato; costano poco quando il servizio e' gia' sveglio, perche' un
+# 429/502/503 da cold start e' un rifiuto immediato (torna in pochi decimi di secondo, non vicino
+# al timeout di 90s), non un servizio lento.
+_RETRY_BACKOFFS_SECONDS = [15, 30, 45]
 
 
 async def _fetch(client: httpx.AsyncClient, name: str, url: str, payload: dict) -> Tuple[str, list, Optional[str]]:

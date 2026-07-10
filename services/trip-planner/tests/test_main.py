@@ -51,7 +51,8 @@ class _FakeAsyncClient:
 
 
 async def _instant_sleep(seconds):
-    """Sostituisce asyncio.sleep nel retry di _fetch: i test non devono aspettare 6 secondi veri."""
+    """Sostituisce asyncio.sleep nel retry di _fetch: i test non devono aspettare i secondi veri
+    del backoff (15s+30s+45s)."""
     return None
 
 
@@ -154,12 +155,37 @@ def test_build_trip_plan_skips_flights_when_airports_omitted(monkeypatch):
 
 
 def test_build_trip_plan_retries_twice_before_succeeding(monkeypatch):
-    # Un cold start reale puo' far fallire anche il primo retry (8s non basta sempre): il secondo
-    # retry (20s) deve ancora scattare, non solo il primo.
+    # Un cold start reale puo' far fallire anche il primo retry (15s non basta sempre): il
+    # secondo retry (30s) deve ancora scattare, non solo il primo.
     monkeypatch.setattr(main_module.asyncio, "sleep", _instant_sleep)
     fake_client = _FakeAsyncClient({
         "flights": [
             _FakeResponse(429, {"detail": "too many requests"}),
+            _FakeResponse(502, {"detail": "bad gateway"}),
+            _FakeResponse(200, [{"source": "fast_flights", "price": "100 EUR"}]),
+        ],
+        "stays": _FakeResponse(200, [{"source": "airbnb", "total_price": "300 EUR"}]),
+        "poi": _FakeResponse(200, [{"source": "overpass", "name": "Torre Eiffel"}]),
+    })
+    monkeypatch.setattr(main_module.httpx, "AsyncClient", lambda: fake_client)
+
+    client = TestClient(app)
+    response = client.post("/api/trip-plan", json=_REQUEST_BODY)
+
+    assert response.status_code == 200
+    plan = response.json()
+    assert plan["errors"] == []
+    assert len(plan["flights"]) == 1
+
+
+def test_build_trip_plan_retries_three_times_before_succeeding(monkeypatch):
+    # I due retry precedenti (28s cumulati) si sono rivelati insufficienti dal vivo: un terzo
+    # retry (45s, 90s cumulati in totale) deve ancora scattare ed essere sufficiente.
+    monkeypatch.setattr(main_module.asyncio, "sleep", _instant_sleep)
+    fake_client = _FakeAsyncClient({
+        "flights": [
+            _FakeResponse(502, {"detail": "bad gateway"}),
+            _FakeResponse(502, {"detail": "bad gateway"}),
             _FakeResponse(502, {"detail": "bad gateway"}),
             _FakeResponse(200, [{"source": "fast_flights", "price": "100 EUR"}]),
         ],

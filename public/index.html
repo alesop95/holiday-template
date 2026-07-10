@@ -237,6 +237,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-saved-total{text-align:right;font-size:12.5px;font-weight:700;color:var(--sea);padding-top:8px;margin-top:2px;border-top:1.5px solid var(--border);}
 .day-planning{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
 .day-planning-ttl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+.route-btn{margin-top:10px;}
+.day-route{margin-top:8px;}
+.route-summary{font-size:12px;font-weight:700;color:var(--sea);margin-bottom:6px;}
+.route-step{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text);padding:4px 0;}
+.route-step-n{width:20px;height:20px;border-radius:50%;background:var(--sea);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
 .plan-rm-btn{background:none;border:none;color:var(--terra);font-size:12px;cursor:pointer;flex-shrink:0;}
 @media(min-width:600px){.map-leg{grid-template-columns:1fr 1fr 1fr;}}
 </style>
@@ -374,7 +379,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 // ── Importa SDK Firebase e configurazione del viaggio ─────────────────────────
 import { initializeApp }                                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLANNER_URL }  from './trip.config.js';
+import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLANNER_URL, ROUTING_PROFILE }  from './trip.config.js';
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
 const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc' };
@@ -816,9 +821,49 @@ function renderDayPlanning(dayId) {
   const rows = [];
   ['flights','stays','pois'].forEach(kind => (day[kind]||[]).forEach((item,i) => rows.push(planSavedRowHtml(String(dayId), kind, item, i))));
   if (!rows.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  // L'ottimizzazione ha senso solo con almeno due POI con coordinate: un solo punto (o nessuno)
+  // non ha un ordine da scegliere. L'alloggio del giorno, se presente, si aggiunge come punto di
+  // partenza dentro optimizeDayRoute, non qui: non conta per la soglia dei due POI.
+  const poisWithCoords = (day.pois||[]).filter(p => p.lat != null && p.lon != null);
+  const routeBlk = poisWithCoords.length >= 2
+    ? `<button class="act-btn route-btn" onclick="optimizeDayRoute(${dayId})">Ottimizza percorso</button><div class="day-route" id="day-route-${dayId}"></div>`
+    : '';
   el.style.display = 'block';
-  el.innerHTML = `<div class="day-planning-ttl">Prenotato da Pianifica</div>${rows.join('')}${planSavedTotalHtml(day)}`;
+  el.innerHTML = `<div class="day-planning-ttl">Prenotato da Pianifica</div>${rows.join('')}${planSavedTotalHtml(day)}${routeBlk}`;
 }
+
+// ── Ottimizzazione percorso giornaliero (Itinerario) ───────────────────────────
+// Server demo pubblico OSRM (router.project-osrm.org): gratuito, senza chiave, CORS aperto
+// (Access-Control-Allow-Origin: *, verificato dal vivo), nessun backend proprio necessario. I
+// suoi termini d'uso dichiarati limitano il server demo a "reasonable, non-commercial use", non
+// piu' di 1 richiesta al secondo e nessuna garanzia di uptime/latenza — coerente con un click
+// manuale occasionale dell'utente, mai con chiamate automatiche o in sequenza ravvicinata.
+window.optimizeDayRoute = async (dayId) => {
+  const el = document.getElementById(`day-route-${dayId}`); if (!el) return;
+  const day = S.planning[dayId] || {};
+  const pois = (day.pois || []).filter(p => p.lat != null && p.lon != null);
+  const stay = (day.stays || []).find(s => s.lat != null && s.lon != null);
+  const points = stay ? [stay, ...pois] : pois; // l'alloggio, se c'e', e' sempre il punto di partenza (source=first sotto)
+
+  el.innerHTML = '<p class="costs-hint">Calcolo percorso...</p>';
+  const coords = points.map(p => `${p.lon},${p.lat}`).join(';');
+  try {
+    const res = await fetch(`https://router.project-osrm.org/trip/v1/${ROUTING_PROFILE}/${coords}?source=first&roundtrip=false`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.code !== 'Ok' || !data.trips || !data.trips.length) throw new Error(data.message || data.code || 'risposta inattesa');
+    const trip = data.trips[0];
+    const ordered = data.waypoints
+      .map((w,i) => ({ point: points[i], order: w.waypoint_index }))
+      .sort((a,b) => a.order - b.order)
+      .map(w => w.point);
+    const mins = Math.round(trip.duration / 60), km = (trip.distance / 1000).toFixed(1);
+    const steps = ordered.map((p,i) => `<div class="route-step"><span class="route-step-n">${i+1}</span>${escHtml(p.name)}</div>`).join('');
+    el.innerHTML = `<div class="route-summary">${mins} min · ${km} km (stima stradale, non tiene conto di soste)</div>${steps}`;
+  } catch (e) {
+    el.innerHTML = `<p class="costs-hint">Percorso non calcolabile (${escHtml(e.message)}). Il servizio di routing è un demo pubblico gratuito, senza garanzia di disponibilità: riprova più tardi.</p>`;
+  }
+};
 
 function renderPlanSaved() {
   const el = document.getElementById('plan-saved'); if (!el) return;

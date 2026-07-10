@@ -67,6 +67,21 @@ export const FIREBASE_CONFIG = {
 
 export const TRIP_PLANNER_URL = "https://trip-planner-l2dh.onrender.com";
 
+// Profilo di spostamento per l'ottimizzazione del percorso giornaliero (scheda "Itinerario",
+// pulsante "Ottimizza percorso"): "driving" o "foot", secondo il mezzo prevalente di questo
+// viaggio. Cilento e' esplicitamente in auto. Usa il server demo pubblico OSRM
+// (router.project-osrm.org, gratuito, senza chiave, licenza BSD-2-Clause), non un servizio
+// self-hosted: verificato dal vivo che il server demo risponde con dati reali e CORS aperto per
+// entrambi i profili "driving" e "foot", ma i suoi termini d'uso lo restringono esplicitamente a
+// "reasonable, non-commercial use" con un limite dichiarato di 1 richiesta al secondo e nessuna
+// garanzia di uptime — coerente con un uso privato saltuario come questo, non con un traffico
+// alto o continuo. A differenza di altri valori opzionali di questo file, l'export deve sempre
+// esistere (anche solo "driving"): un import ES nominato che non trova l'export richiesto rompe
+// il caricamento dell'intero modulo nel browser, non lo lascia semplicemente `undefined` come in
+// CommonJS — ripetere questa riga in ogni futuro trip.config.js, sullo stesso modello di
+// TRIP_PLANNER_URL.
+export const ROUTING_PROFILE = "driving";
+
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 // Contenuto della sezione di testa dell'applicazione.
 

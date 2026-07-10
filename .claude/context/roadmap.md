@@ -69,8 +69,22 @@ fuori scope per un progetto privato).
    `trip-planner` e salva un risultato scelto su un giorno specifico direttamente su Firestore dal
    browser, senza Admin SDK nel backend (ADR-007) — verificato live lato backend (CORS, forma
    della risposta), non ancora verificato in un browser reale lato Firestore (dettaglio in
-   `current-work.md`). Resta non iniziato il routing/ottimizzazione del percorso giornaliero
-   (OpenTripPlanner o GraphHopper, entrambi self-hostabili in Docker).
+   `current-work.md`). Routing/ottimizzazione del percorso giornaliero: **fatto (2026-07-10),
+   senza Docker**. L'ipotesi originale (OpenTripPlanner o GraphHopper self-hostati) è stata
+   scartata prima di scrivere codice: significava introdurre la prima infrastruttura
+   self-hosted del progetto, con un costo di gestione (immagine Docker, estratto OSM regionale,
+   RAM/disco) sproporzionato rispetto al bisogno. Verificato dal vivo che il server demo pubblico
+   **OSRM** (`router.project-osrm.org`, licenza BSD-2-Clause, nessuna chiave) espone già
+   l'endpoint `/trip`, pensato esattamente per ordinare un insieme di punti minimizzando lo
+   spostamento totale, con CORS aperto (`Access-Control-Allow-Origin: *`) — chiamabile
+   direttamente dal browser, zero nuovo codice backend. I suoi termini d'uso dichiarati
+   (`github.com/Project-OSRM/osrm-backend` wiki, pagina *Demo server*) restringono il servizio a
+   "reasonable, non-commercial use", non più di una richiesta al secondo, nessuna garanzia di
+   uptime/latenza: coerente con un click occasionale dell'utente in "Itinerario", non con
+   traffico automatico o in serie. Nuovo campo obbligatorio `ROUTING_PROFILE` in ogni
+   `trip.config.js` ("driving" per Cilento; anche "foot" verificato funzionante, per un futuro
+   viaggio a piedi in città). Dettaglio implementativo in `public/index.html`
+   (`optimizeDayRoute`, scheda "Itinerario").
 5. *Rifinitura* — non iniziato. Export dell'itinerario, price alert opzionali, gestione multivaluta.
 
 Non conviene inseguire integrazioni ufficiali con Skyscanner o Booking.com: entrambe le API sono

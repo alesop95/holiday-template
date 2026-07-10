@@ -49,6 +49,24 @@ class _FakeAsyncClient:
                 return response
         raise AssertionError(f"URL non atteso nel test: {url}")
 
+    async def get(self, url, timeout):
+        # A differenza di post() (dove il path distingue "/api/flights/search" da "/api/stays/
+        # search"), qui l'unico path e' "/health" per tutti e tre: si distingue per prefisso URL,
+        # confrontando con le costanti FLIGHT_SEARCH_URL/STAY_SEARCH_URL/POI_SEARCH_URL.
+        self.get_calls = getattr(self, "get_calls", []) + [url]
+        if url.startswith(main_module.FLIGHT_SEARCH_URL):
+            key = "flights"
+        elif url.startswith(main_module.STAY_SEARCH_URL):
+            key = "stays"
+        elif url.startswith(main_module.POI_SEARCH_URL):
+            key = "poi"
+        else:
+            raise AssertionError(f"URL non atteso nel test: {url}")
+        response = self._responses[key]
+        if isinstance(response, list):
+            return response.pop(0) if len(response) > 1 else response[0]
+        return response
+
 
 async def _instant_sleep(seconds):
     """Sostituisce asyncio.sleep nel retry di _fetch: i test non devono aspettare i secondi veri
@@ -201,6 +219,29 @@ def test_build_trip_plan_retries_three_times_before_succeeding(monkeypatch):
     plan = response.json()
     assert plan["errors"] == []
     assert len(plan["flights"]) == 1
+
+
+def test_warmup_pings_all_three_services_and_ignores_errors(monkeypatch):
+    # /api/warmup e' chiamato dal frontend appena si apre la scheda "Pianifica", prima ancora
+    # che l'utente cerchi qualcosa: deve raggiungere i tre servizi anche se rispondono con
+    # errore (cold start in corso) e tornare comunque 200 in fretta, senza propagare l'errore.
+    fake_client = _FakeAsyncClient({
+        "flights": _FakeResponse(502, {"detail": "cold start"}),
+        "stays": _FakeResponse(200, {"status": "ok"}),
+        "poi": _FakeResponse(200, {"status": "ok"}),
+    })
+    monkeypatch.setattr(main_module.httpx, "AsyncClient", lambda: fake_client)
+
+    client = TestClient(app)
+    response = client.post("/api/warmup")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "warming"}
+    assert sorted(fake_client.get_calls) == sorted([
+        f"{main_module.FLIGHT_SEARCH_URL}/health",
+        f"{main_module.STAY_SEARCH_URL}/health",
+        f"{main_module.POI_SEARCH_URL}/health",
+    ])
 
 
 def test_build_trip_plan_sends_correct_payloads_to_each_service(monkeypatch):

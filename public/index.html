@@ -934,7 +934,7 @@ window.showTab = (id,btn) => {
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active'); btn.classList.add('active');
   if(id==='mappa') renderMap();
-  if(id==='pianifica') ensureAirportsLoaded();
+  if(id==='pianifica') { ensureAirportsLoaded(); warmupBackend(); }
 };
 window.tog = id => document.getElementById(`dc${id}`).classList.toggle('open');
 window.ckTog = (key,el) => {
@@ -1048,6 +1048,19 @@ window.selectAirport = (fieldKey, iata) => {
 window.pickZoneSuggestion = (zoneName) => {
   document.getElementById('pf-dest-loc').value = zoneName;
 };
+
+// Il cold start concorrente dei tre servizi a valle (flight/stay/poi-search) puo' superare anche
+// i 90s di margine gia' coperti dal retry di trip-planner (verificato dal vivo in sessione): li
+// si sveglia in anticipo, appena si apre questa scheda, cosi' il tempo speso a compilare il form
+// diventa tempo di risveglio gratuito invece di attesa durante "Cerca". Fire-and-forget: non si
+// aspetta la risposta e non si blocca l'interfaccia, un fallimento qui non è mai un errore per
+// l'utente (la ricerca vera ha comunque il proprio retry indipendente).
+let backendWarmed = false;
+function warmupBackend() {
+  if (backendWarmed) return;
+  backendWarmed = true;
+  fetch(`${TRIP_PLANNER_URL}/api/warmup`, { method: 'POST' }).catch(() => {});
+}
 
 window.searchPlan = async () => {
   const btn = document.getElementById('pf-submit'), msgEl = document.getElementById('plan-msg');

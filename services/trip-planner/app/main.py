@@ -82,6 +82,33 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+async def _wake(client: httpx.AsyncClient, url: str) -> None:
+    # Timeout breve deliberato: l'obiettivo e' inviare la richiesta che fa scattare il risveglio
+    # del servizio su Render, non aspettare che sia gia' pronto — quello lo fa comunque _fetch
+    # con il suo retry, quando arriva la ricerca vera. Qualunque esito (200, 502, timeout) va
+    # bene qui: anche una risposta fallita ha comunque raggiunto il servizio e avviato il boot.
+    try:
+        await client.get(url, timeout=5)
+    except httpx.HTTPError:
+        pass
+
+
+@app.post("/api/warmup")
+async def warmup() -> dict:
+    """Innesca il risveglio dei tre servizi a valle senza aspettare che siano pronti: pensato per
+    essere chiamato dal frontend appena si apre la scheda "Pianifica", prima che l'utente finisca
+    di compilare il form. Il tempo speso a scegliere aeroporti e date diventa cosi' tempo di
+    risveglio gratuito per un cold start che, se concorrente su tutti e tre insieme, puo' superare
+    anche i 90s di margine gia' coperti dal retry di _fetch (verificato dal vivo in sessione)."""
+    async with httpx.AsyncClient() as client:
+        await asyncio.gather(
+            _wake(client, f"{FLIGHT_SEARCH_URL}/health"),
+            _wake(client, f"{STAY_SEARCH_URL}/health"),
+            _wake(client, f"{POI_SEARCH_URL}/health"),
+        )
+    return {"status": "warming"}
+
+
 @app.post("/api/trip-plan", response_model=TripPlan)
 async def build_trip_plan(request: TripPlanRequest) -> TripPlan:
     stay_payload = {

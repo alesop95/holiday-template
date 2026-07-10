@@ -745,6 +745,11 @@ function renderPlanResults() {
 
   const groups = [
     { key:'flights', label:'Voli', originalCount:(p.flights||[]).length, pairs:flights,
+      // S.planLastSearch e' non-null solo se questa ricerca ha davvero incluso aeroporti: serve a
+      // distinguere "non ho chiesto voli" (sezione nascosta, comportamento invariato) da "li ho
+      // chiesti ma la fonte non ha restituito nulla" (messaggio esplicito invece del silenzio
+      // totale di prima — un utente non puo' distinguere i due casi senza questo messaggio).
+      emptyMsg: S.planLastSearch ? 'Nessun volo trovato per questa rotta e queste date. Puo\' essere una rotta senza voli in quel periodo, oppure la fonte (Google Flights) non ha risposto: non e\' necessariamente un errore del comparatore.' : null,
       view:f=>{
         const src = FLIGHT_SOURCE_LABEL[f.source] || f.source;
         const ls = S.planLastSearch;
@@ -783,7 +788,12 @@ function renderPlanResults() {
   ];
 
   const html = groups.map(g => {
-    if (!g.originalCount) return '';
+    if (!g.originalCount) {
+      // g.emptyMsg distingue "sezione non pertinente a questa ricerca" (torna '', comportamento
+      // invariato) da "pertinente ma zero risultati dalla fonte" (messaggio esplicito, vedi
+      // definizione del gruppo "flights" sopra per il caso d'uso reale che l'ha motivato).
+      return g.emptyMsg ? `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (0)</summary><p class="costs-hint">${escHtml(g.emptyMsg)}</p></details>` : '';
+    }
     const countLbl = g.pairs.length !== g.originalCount ? `${g.pairs.length} di ${g.originalCount}` : `${g.originalCount}`;
     if (!g.pairs.length) return `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (${countLbl})</summary>${g.controls}<p class="costs-hint">Nessun risultato con i filtri scelti.</p></details>`;
     return `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (${countLbl})</summary>${g.controls}

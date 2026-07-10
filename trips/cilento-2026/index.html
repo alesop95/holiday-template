@@ -234,6 +234,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-saved-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--border);}
 .plan-saved-item:first-of-type{border-top:none;}
 .plan-saved-nm{font-size:12.5px;color:var(--text);}
+.plan-saved-total{text-align:right;font-size:12.5px;font-weight:700;color:var(--sea);padding-top:8px;margin-top:2px;border-top:1.5px solid var(--border);}
 .plan-rm-btn{background:none;border:none;color:var(--terra);font-size:12px;cursor:pointer;flex-shrink:0;}
 @media(min-width:600px){.map-leg{grid-template-columns:1fr 1fr 1fr;}}
 </style>
@@ -799,7 +800,13 @@ function renderPlanSaved() {
         rows.push(`<div class="plan-saved-item"><div class="plan-saved-nm">${PLAN_KIND_LABEL[kind]}: ${nm}${link}</div><button class="plan-rm-btn" onclick="removePlanItem('${dayId}','${kind}',${i})">Rimuovi</button></div>`);
       });
     });
-    return `<div class="plan-saved-day"><div class="plan-saved-day-ttl">${dayTitle}</div>${rows.join('')}</div>`;
+    // Totale combinato volo+alloggio per questo giorno: ha senso solo se ci sono entrambi,
+    // altrimenti e' solo il prezzo del singolo elemento gia' visibile sopra, ridondante.
+    const dayFlights = S.planning[dayId].flights || [], dayStays = S.planning[dayId].stays || [];
+    const totalRow = (dayFlights.length && dayStays.length)
+      ? `<div class="plan-saved-total">Totale volo + alloggio: ${(dayFlights.reduce((s,f)=>s+parsePrice(f.price),0) + dayStays.reduce((s,st)=>s+parsePrice(st.total_price),0)).toFixed(2)} EUR</div>`
+      : '';
+    return `<div class="plan-saved-day"><div class="plan-saved-day-ttl">${dayTitle}</div>${rows.join('')}${totalRow}</div>`;
   }).join('');
 }
 

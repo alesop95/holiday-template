@@ -112,6 +112,28 @@ planner con collaborazione realtime, mappe Leaflet/Mapbox, route optimization e 
 il progetto più vicino, come *UX*[^6] finale, a un itinerary builder completo; da valutare se
 prendere solo a riferimento di data model o effettivamente estendere).
 
+**Treni italiani (Trenitalia/Italo), ricerca conclusa senza esito pratico (2026-07-10).** A
+differenza di voli e alloggi, non esiste una libreria keyless mantenuta e verificata per il
+prezzo di biglietti Trenitalia o Italo. `trvl`, già citato sopra, copre Trainline (licenza
+*PolyForm Noncommercial 1.0.0*, compatibile con l'uso privato di questo progetto) ma solo tramite
+un fallback basato su browser/cookie per i provider protetti come Trainline, non una chiamata
+HTTP diretta pulita — lo stesso profilo di fragilità già scartato per Booking.com — ed è
+distribuito come binario Go pensato per girare come server MCP, non come libreria Python da
+importare in un servizio FastAPI. I repository specifici per Trenitalia (`SimoDax/
+Trenitalia-API`, documentazione; `jacopo-j/TrenitaliaAPI`, Python) sono fermi da quattro-sei anni
+e non mostrano un esempio di output reale verificabile. L'unico trovato che cerca prezzi per
+entrambe le compagnie insieme (`stefanopochet/trenitalia-italo-api`) dipende per lo scraping da
+un servizio esterno del 2017 quasi certamente non più attivo. Esiste un'opzione a pagamento
+dimostrata funzionante (un Actor Apify su `lefrecce.it`, circa 1,50$ ogni 1000 richieste), ma
+introduce sia un costo reale sia una dipendenza da fornitore terzo, contro il principio di costo
+zero seguito finora in questo progetto. Conclusione: nessun candidato pronto da integrare così
+com'è; l'unica via resterebbe un adapter scritto da zero con reverse-engineering degli endpoint
+di Trenitalia/ViaggiaTreno, verificato dal vivo passo per passo con lo stesso rigore già usato per
+`fast_flights`, con un rischio non quantificabile prima di provare (cookie di sessione o token
+CSRF, eventuale blocco più severo di un IP di data center come Render rispetto a una rete
+residenziale). Accantonato su decisione esplicita dell'utente il 2026-07-10: da riprendere solo se
+emerge una libreria migliore o si accetta il costo dell'opzione Apify.
+
 Considerazione legale da verificare caso per caso prima di ogni integrazione: gran parte delle
 fonti voli/alloggi più utili (Google Flights, Airbnb) non hanno API pubblica ufficiale, quindi le
 librerie che le interrogano fanno reverse-engineering di endpoint non documentati. Per uso

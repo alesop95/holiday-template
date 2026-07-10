@@ -235,6 +235,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-saved-item:first-of-type{border-top:none;}
 .plan-saved-nm{font-size:12.5px;color:var(--text);}
 .plan-saved-total{text-align:right;font-size:12.5px;font-weight:700;color:var(--sea);padding-top:8px;margin-top:2px;border-top:1.5px solid var(--border);}
+.day-planning{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
+.day-planning-ttl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
 .plan-rm-btn{background:none;border:none;color:var(--terra);font-size:12px;cursor:pointer;flex-shrink:0;}
 @media(min-width:600px){.map-leg{grid-template-columns:1fr 1fr 1fr;}}
 </style>
@@ -485,6 +487,7 @@ function listenRealtime() {
   onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'planning'), snap => {
     S.planning = snap.exists() ? (snap.data().byDay || {}) : {};
     renderPlanSaved();
+    renderDayPlanningAll();
   });
   onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'meta'), snap => {
     if (!snap.exists()) return;
@@ -592,6 +595,7 @@ function renderDays() {
         ${d.sections.map(s=>`<div class="sec-blk"><div class="sec-ttl" style="color:${d.color}">${s.t}</div><div class="sec-txt">${s.tx}</div></div>`).join('')}
         ${d.tips?`<div class="tips-box" style="border-left-color:${d.color}"><div class="tips-ttl" style="color:${d.color}">Consigli Pratici</div>${d.tips.map(t=>`<div class="tip">${t}</div>`).join('')}</div>`:''}
         <div class="dcosts"><div class="cpill cf">Pasti: €${d.cf}/pers.</div>${d.ca==='0'?'<div class="cpill cg">Attività: Gratuito</div>':`<div class="cpill ca">Attività: €${d.ca}/pers.</div>`}</div>
+        <div class="day-planning" id="day-planning-${d.id}" style="display:none"></div>
         <div class="day-actions">
           <button class="act-btn${done?' btn-done-active':''}" id="done-btn-${d.id}" onclick="markDone(${d.id})">${done?'✓ Fatto!':'○ Segna come fatto'}</button>
           <button class="act-btn" onclick="toggleNote(${d.id})">Note</button>
@@ -603,6 +607,7 @@ function renderDays() {
       </div></div>`;
   });
   c.innerHTML = html;
+  renderDayPlanningAll();
 }
 
 function renderRest() {
@@ -784,6 +789,37 @@ function renderPlanResults() {
   el.innerHTML = html || '<p style="color:var(--muted);font-size:13px;">Nessun risultato per questa ricerca.</p>';
 }
 
+// Riga di una singola prenotazione salvata: condivisa tra la scheda "Pianifica" (renderPlanSaved,
+// raggruppata per giorno) e il blocco "Prenotato" dentro ogni day-card di "Itinerario"
+// (renderDayPlanning), cosi' le due viste non duplicano la stessa logica di formattazione.
+function planSavedRowHtml(dayId, kind, item, i) {
+  const nm = kind==='flights' ? `${escHtml(item.airline)} · ${escHtml(item.price)} · ${escHtml(FLIGHT_SOURCE_LABEL[item.source]||item.source)}` : kind==='stays' ? `${escHtml(item.name)} · ${escHtml(item.total_price)}` : escHtml(item.name);
+  const link = kind==='stays' && item.url ? ` <a class="plan-item-link" href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer">Airbnb →</a>` : '';
+  return `<div class="plan-saved-item"><div class="plan-saved-nm">${PLAN_KIND_LABEL[kind]}: ${nm}${link}</div><button class="plan-rm-btn" onclick="removePlanItem('${dayId}','${kind}',${i})">Rimuovi</button></div>`;
+}
+
+// Il totale combinato volo+alloggio di un giorno ha senso solo se ci sono entrambi, altrimenti
+// e' solo il prezzo del singolo elemento gia' visibile sopra, ridondante. Condiviso per lo
+// stesso motivo di planSavedRowHtml.
+function planSavedTotalHtml(dayPlanning) {
+  const dayFlights = dayPlanning.flights || [], dayStays = dayPlanning.stays || [];
+  if (!dayFlights.length || !dayStays.length) return '';
+  const total = dayFlights.reduce((s,f)=>s+parsePrice(f.price),0) + dayStays.reduce((s,st)=>s+parsePrice(st.total_price),0);
+  return `<div class="plan-saved-total">Totale volo + alloggio: ${total.toFixed(2)} EUR</div>`;
+}
+
+function renderDayPlanningAll() { S.days.forEach(d => renderDayPlanning(d.id)); }
+
+function renderDayPlanning(dayId) {
+  const el = document.getElementById(`day-planning-${dayId}`); if (!el) return;
+  const day = S.planning[dayId] || {};
+  const rows = [];
+  ['flights','stays','pois'].forEach(kind => (day[kind]||[]).forEach((item,i) => rows.push(planSavedRowHtml(String(dayId), kind, item, i))));
+  if (!rows.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  el.style.display = 'block';
+  el.innerHTML = `<div class="day-planning-ttl">Prenotato da Pianifica</div>${rows.join('')}${planSavedTotalHtml(day)}`;
+}
+
 function renderPlanSaved() {
   const el = document.getElementById('plan-saved'); if (!el) return;
   const dayIds = Object.keys(S.planning).filter(id => ['flights','stays','pois'].some(k => (S.planning[id][k]||[]).length));
@@ -794,19 +830,9 @@ function renderPlanSaved() {
     const dayTitle = `${escHtml(dayInfo?.label||'')} · ${escHtml(dayInfo?.title||`Giorno ${dayId}`)}`;
     const rows = [];
     ['flights','stays','pois'].forEach(kind => {
-      (S.planning[dayId][kind]||[]).forEach((item,i) => {
-        const nm = kind==='flights' ? `${escHtml(item.airline)} · ${escHtml(item.price)} · ${escHtml(FLIGHT_SOURCE_LABEL[item.source]||item.source)}` : kind==='stays' ? `${escHtml(item.name)} · ${escHtml(item.total_price)}` : escHtml(item.name);
-        const link = kind==='stays' && item.url ? ` <a class="plan-item-link" href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer">Airbnb →</a>` : '';
-        rows.push(`<div class="plan-saved-item"><div class="plan-saved-nm">${PLAN_KIND_LABEL[kind]}: ${nm}${link}</div><button class="plan-rm-btn" onclick="removePlanItem('${dayId}','${kind}',${i})">Rimuovi</button></div>`);
-      });
+      (S.planning[dayId][kind]||[]).forEach((item,i) => rows.push(planSavedRowHtml(dayId, kind, item, i)));
     });
-    // Totale combinato volo+alloggio per questo giorno: ha senso solo se ci sono entrambi,
-    // altrimenti e' solo il prezzo del singolo elemento gia' visibile sopra, ridondante.
-    const dayFlights = S.planning[dayId].flights || [], dayStays = S.planning[dayId].stays || [];
-    const totalRow = (dayFlights.length && dayStays.length)
-      ? `<div class="plan-saved-total">Totale volo + alloggio: ${(dayFlights.reduce((s,f)=>s+parsePrice(f.price),0) + dayStays.reduce((s,st)=>s+parsePrice(st.total_price),0)).toFixed(2)} EUR</div>`
-      : '';
-    return `<div class="plan-saved-day"><div class="plan-saved-day-ttl">${dayTitle}</div>${rows.join('')}${totalRow}</div>`;
+    return `<div class="plan-saved-day"><div class="plan-saved-day-ttl">${dayTitle}</div>${rows.join('')}${planSavedTotalHtml(S.planning[dayId])}</div>`;
   }).join('');
 }
 

@@ -11,7 +11,8 @@ class StaySearchRequest(BaseModel):
     check_in: str = Field(..., description="Data di check-in, formato YYYY-MM-DD")
     check_out: str = Field(..., description="Data di check-out, formato YYYY-MM-DD")
     adults: int = Field(2, ge=1, le=16)
-    price_max: int = Field(500, ge=0, description="Prezzo massimo per l'intero soggiorno, in EUR")
+    price_max: int = Field(500, ge=0, description="Prezzo massimo per l'intero soggiorno, nella valuta di 'currency'")
+    currency: str = Field("EUR", min_length=3, max_length=3, description="Codice valuta ISO 4217 per la ricerca, es. 'EUR', 'USD', 'GBP'")
 
 
 class StayOffer(BaseModel):

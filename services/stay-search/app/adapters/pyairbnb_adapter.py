@@ -60,7 +60,7 @@ class PyairbnbAdapter(StaySourceAdapter):
                 api_key, "", request.check_in, request.check_out,
                 bbox.ne_lat, bbox.ne_long, bbox.sw_lat, bbox.sw_long,
                 12,  # zoom_value: livello città, non quartiere
-                "EUR", "", 0, request.price_max, [], False,
+                request.currency, "", 0, request.price_max, [], False,
                 request.adults, 0, 0, 0, 0, 0, "it", "", hash="",
             )
             results = pyairbnb_standardize.from_search(raw)  # bypass del bug, vedi docstring
@@ -72,6 +72,10 @@ class PyairbnbAdapter(StaySourceAdapter):
         for item in results:
             try:
                 breakdown = item["price"]["break_down"]
+                # /100: l'importo grezzo e' nell'unita' minore della valuta (centesimi per EUR/
+                # USD/GBP, verificato dal vivo solo in EUR). Non generalizzato a valute senza
+                # unita' minore a due cifre (es. JPY, KWD): da rivedere se in futuro serve una di
+                # quelle, non assunto qui per onestà.
                 total_amount = breakdown[-1]["amount"] / 100
                 rating = item.get("rating") or {}
                 coordinates = item.get("coordinates") or {}
@@ -80,7 +84,7 @@ class PyairbnbAdapter(StaySourceAdapter):
                         source=self.name,
                         name=item.get("name") or item.get("title") or "Senza nome",
                         listing_type=(item.get("title") or "").split("⋅")[0].strip(),
-                        total_price=f"{total_amount:.0f} EUR",
+                        total_price=f"{total_amount:.0f} {request.currency}",
                         rating=float(rating.get("value") or 0),
                         review_count=int(rating.get("reviewCount") or 0),
                         url=f"https://www.airbnb.com/rooms/{item['room_id']}" if item.get("room_id") else "",

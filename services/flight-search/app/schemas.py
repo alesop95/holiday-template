@@ -16,6 +16,7 @@ class FlightSearchRequest(BaseModel):
     return_date: Optional[str] = Field(None, description="Data di ritorno, formato YYYY-MM-DD; assente per un volo one-way")
     adults: int = Field(1, ge=1, le=9)
     seat: str = Field("economy", description="economy | premium-economy | business | first")
+    currency: str = Field("EUR", min_length=3, max_length=3, description="Codice valuta ISO 4217 per la ricerca, es. 'EUR', 'USD', 'GBP'")
 
 
 class FlightOffer(BaseModel):

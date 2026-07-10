@@ -64,7 +64,7 @@ class KiwiAdapter(FlightSourceAdapter):
             "date_from": kiwi_date,
             "date_to": kiwi_date,
             "adults": request.adults,
-            "curr": "EUR",
+            "curr": request.currency,
             "limit": 10,
         }
 
@@ -99,7 +99,7 @@ class KiwiAdapter(FlightSourceAdapter):
                         arrival=route[-1]["local_arrival"][:16].replace("T", " "),
                         duration=_format_duration(item["duration"]["total"]),
                         stops=len(route) - 1,
-                        price=f"{item['price']} EUR",
+                        price=f"{item['price']} {request.currency}",
                     )
                 )
             except (KeyError, IndexError) as exc:

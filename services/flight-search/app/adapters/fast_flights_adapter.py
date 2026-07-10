@@ -98,7 +98,7 @@ class FastFlightsAdapter(FlightSourceAdapter):
             seat=request.seat,
             trip="round-trip" if request.return_date else "one-way",
             passengers=Passengers(adults=request.adults),
-            currency="EUR",
+            currency=request.currency,
             language="it",
         )
 
@@ -120,7 +120,7 @@ class FastFlightsAdapter(FlightSourceAdapter):
                         arrival=_format_datetime(last_leg.arrival),
                         duration=_format_duration(sum(leg.duration for leg in itinerary.flights)),
                         stops=len(itinerary.flights) - 1,
-                        price=f"{itinerary.price} EUR",
+                        price=f"{itinerary.price} {request.currency}",
                     )
                 )
             except (IndexError, AttributeError, ValueError, TypeError) as exc:

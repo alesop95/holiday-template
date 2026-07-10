@@ -82,6 +82,14 @@ export const TRIP_PLANNER_URL = "https://trip-planner-l2dh.onrender.com";
 // TRIP_PLANNER_URL.
 export const ROUTING_PROFILE = "driving";
 
+// Valuta di questo viaggio: passata ai backend (flight-search, stay-search, trip-planner) come
+// codice ISO 4217 per le ricerche reali (Google Flights/Kiwi/Airbnb restituiscono prezzi in
+// questa valuta), e usata dal frontend per i totali calcolati localmente (Pianifica, Costi,
+// stime giornaliere). Cilento e' in EUR. Obbligatori entrambi gli export, stesso motivo di
+// ROUTING_PROFILE (import ES nominato mancante rompe il modulo, non degrada a un default).
+export const CURRENCY_CODE = "EUR";
+export const CURRENCY_SYMBOL = "€";
+
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 // Contenuto della sezione di testa dell'applicazione.
 

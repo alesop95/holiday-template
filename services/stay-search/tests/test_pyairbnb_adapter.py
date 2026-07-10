@@ -106,6 +106,38 @@ def test_search_parses_listing_with_discount_uses_last_breakdown_entry(monkeypat
     assert offers[0].review_count == 0
 
 
+def test_search_passes_custom_currency_to_request_and_price(monkeypatch):
+    # Prova che request.currency arriva davvero al parametro posizionale "currency" mandato ad
+    # Airbnb (indice 9 di pyairbnb.search.get, verificato contro la firma reale della libreria
+    # installata) e nella stringa prezzo, non solo che il campo esiste inutilizzato nello schema.
+    captured = {}
+    raw_result = {
+        "room_id": 99,
+        "name": "Studio in centro",
+        "title": "Appartamento",
+        "price": {"total": {"amount": 0}, "break_down": [{"amount": 20000.0, "description": "tot"}]},
+        "rating": {"value": 0, "reviewCount": 0},
+    }
+
+    def _fake_search_get(*a, **k):
+        captured["currency"] = a[9]
+        return {"raw": True}
+
+    monkeypatch.setattr("app.adapters.pyairbnb_adapter.geocode", lambda location: _BBOX)
+    monkeypatch.setattr("app.adapters.pyairbnb_adapter.pyairbnb_api.get", lambda proxy: "api-key-finta")
+    monkeypatch.setattr("app.adapters.pyairbnb_adapter.pyairbnb_search.get", _fake_search_get)
+    monkeypatch.setattr("app.adapters.pyairbnb_adapter.pyairbnb_standardize.from_search", lambda raw: [raw_result])
+
+    request = StaySearchRequest(
+        location="Marina di Camerota", check_in="2026-09-15", check_out="2026-09-20",
+        adults=2, price_max=500, currency="USD",
+    )
+    offers = PyairbnbAdapter().search(request)
+
+    assert captured["currency"] == "USD"
+    assert offers[0].total_price == "200 USD"
+
+
 def test_search_skips_malformed_item_without_crashing(monkeypatch):
     monkeypatch.setattr("app.adapters.pyairbnb_adapter.geocode", lambda location: _BBOX)
     monkeypatch.setattr("app.adapters.pyairbnb_adapter.pyairbnb_api.get", lambda proxy: "api-key-finta")

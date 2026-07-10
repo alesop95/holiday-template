@@ -117,6 +117,7 @@ async def build_trip_plan(request: TripPlanRequest) -> TripPlan:
         "check_out": request.return_date,
         "adults": request.adults,
         "price_max": request.price_max_stay,
+        "currency": request.currency,
     }
     poi_payload = {"location": request.destination_location, "limit": request.poi_limit}
 
@@ -133,6 +134,7 @@ async def build_trip_plan(request: TripPlanRequest) -> TripPlan:
                 "departure_date": request.departure_date,
                 "return_date": request.return_date,
                 "adults": request.adults,
+                "currency": request.currency,
             }
             fetches.append(_fetch(client, "flights", f"{FLIGHT_SEARCH_URL}/api/flights/search", flight_payload))
 

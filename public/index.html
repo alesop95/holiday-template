@@ -381,7 +381,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
       <div class="plan-field"><label>Andata</label><input id="pf-dep" type="date"></div>
       <div class="plan-field"><label>Ritorno</label><input id="pf-ret" type="date"></div>
       <div class="plan-field"><label>Adulti</label><input id="pf-adults" type="number" min="1" max="9" value="2"></div>
-      <div class="plan-field"><label>Budget alloggio (EUR, totale)</label><input id="pf-budget" type="number" min="0" value="500"></div>
+      <div class="plan-field"><label id="pf-budget-label">Budget alloggio (EUR, totale)</label><input id="pf-budget" type="number" min="0" value="500"></div>
       <button class="plan-submit" id="pf-submit" onclick="searchPlan()">Cerca</button>
     </div>
     <div id="plan-msg"></div>
@@ -403,7 +403,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 // ── Importa SDK Firebase e configurazione del viaggio ─────────────────────────
 import { initializeApp }                                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLANNER_URL, ROUTING_PROFILE }  from './trip.config.js';
+import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLANNER_URL, ROUTING_PROFILE, CURRENCY_CODE, CURRENCY_SYMBOL }  from './trip.config.js';
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
 const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc' };
@@ -413,6 +413,11 @@ let db;
 // ── Punto di ingresso ─────────────────────────────────────────────────────────
 async function init() {
   renderHero(); // non richiede Firebase, renderizza subito
+  // Etichetta statica in HTML (non rigenerata da un render()): l'unico punto dove riflettere
+  // CURRENCY_CODE è impostarla qui una volta, non serve un listener perché il valore è un
+  // import statico immutabile per tutta la sessione.
+  const budgetLabel = document.getElementById('pf-budget-label');
+  if (budgetLabel) budgetLabel.textContent = `Budget alloggio (${CURRENCY_CODE}, totale)`;
 
   if (FIREBASE_CONFIG.apiKey === 'REPLACE_ME') {
     setStatus('Configura Firebase: sostituisci i valori REPLACE_ME in trip.config.js');
@@ -623,7 +628,7 @@ function renderDays() {
       <div class="day-body">
         ${d.sections.map(s=>`<div class="sec-blk"><div class="sec-ttl" style="color:${d.color}">${s.t}</div><div class="sec-txt">${s.tx}</div></div>`).join('')}
         ${d.tips?`<div class="tips-box" style="border-left-color:${d.color}"><div class="tips-ttl" style="color:${d.color}">Consigli Pratici</div>${d.tips.map(t=>`<div class="tip">${t}</div>`).join('')}</div>`:''}
-        <div class="dcosts"><div class="cpill cf">Pasti: €${d.cf}/pers.</div>${d.ca==='0'?'<div class="cpill cg">Attività: Gratuito</div>':`<div class="cpill ca">Attività: €${d.ca}/pers.</div>`}</div>
+        <div class="dcosts"><div class="cpill cf">Pasti: ${CURRENCY_SYMBOL}${d.cf}/pers.</div>${d.ca==='0'?'<div class="cpill cg">Attività: Gratuito</div>':`<div class="cpill ca">Attività: ${CURRENCY_SYMBOL}${d.ca}/pers.</div>`}</div>
         <div class="day-planning" id="day-planning-${d.id}" style="display:none"></div>
         <div class="day-actions">
           <button class="act-btn${done?' btn-done-active':''}" id="done-btn-${d.id}" onclick="markDone(${d.id})">${done?'✓ Fatto!':'○ Segna come fatto'}</button>
@@ -844,7 +849,7 @@ function planSavedTotalHtml(dayPlanning) {
   const dayFlights = dayPlanning.flights || [], dayStays = dayPlanning.stays || [];
   if (!dayFlights.length || !dayStays.length) return '';
   const total = dayFlights.reduce((s,f)=>s+parsePrice(f.price),0) + dayStays.reduce((s,st)=>s+parsePrice(st.total_price),0);
-  return `<div class="plan-saved-total">Totale volo + alloggio: ${total.toFixed(2)} EUR</div>`;
+  return `<div class="plan-saved-total">Totale volo + alloggio: ${total.toFixed(2)} ${CURRENCY_CODE}</div>`;
 }
 
 function renderDayPlanningAll() { S.days.forEach(d => renderDayPlanning(d.id)); }
@@ -958,29 +963,29 @@ function renderCostsDashboard() {
 
     <div class="costs-card">
       <div class="costs-card-ttl">Costi automatici (da Pianifica)</div>
-      <div class="costs-auto-row"><span>Voli salvati (${auto.flightsCount})</span><strong>€ ${auto.flights.toFixed(2)}</strong></div>
-      <div class="costs-auto-row"><span>Alloggi salvati (${auto.staysCount})</span><strong>€ ${auto.stays.toFixed(2)}</strong></div>
+      <div class="costs-auto-row"><span>Voli salvati (${auto.flightsCount})</span><strong>${CURRENCY_SYMBOL} ${auto.flights.toFixed(2)}</strong></div>
+      <div class="costs-auto-row"><span>Alloggi salvati (${auto.staysCount})</span><strong>${CURRENCY_SYMBOL} ${auto.stays.toFixed(2)}</strong></div>
       <p class="costs-hint">Si aggiorna da solo ogni volta che salvi un risultato nella scheda Pianifica su un giorno.</p>
     </div>
 
     <div class="costs-card">
       <div class="costs-card-ttl">Spese aggiunte a mano</div>
-      ${c.expenses.map(e => `<div class="costs-expense-row"><div><div class="costs-expense-lbl">${escHtml(e.label)}</div><div class="costs-expense-sub">${e.paidBy?'Pagato da '+escHtml(e.paidBy):'Nessun pagatore assegnato'}</div></div><div class="costs-expense-amt">€ ${(e.amount||0).toFixed(2)}</div><button class="costs-rm-btn" onclick="removeCostExpense('${e.id}')">&times;</button></div>`).join('') || '<p class="costs-hint">Nessuna spesa manuale ancora (es. traghetto, benzina, biglietti pagati da uno solo).</p>'}
+      ${c.expenses.map(e => `<div class="costs-expense-row"><div><div class="costs-expense-lbl">${escHtml(e.label)}</div><div class="costs-expense-sub">${e.paidBy?'Pagato da '+escHtml(e.paidBy):'Nessun pagatore assegnato'}</div></div><div class="costs-expense-amt">${CURRENCY_SYMBOL} ${(e.amount||0).toFixed(2)}</div><button class="costs-rm-btn" onclick="removeCostExpense('${e.id}')">&times;</button></div>`).join('') || '<p class="costs-hint">Nessuna spesa manuale ancora (es. traghetto, benzina, biglietti pagati da uno solo).</p>'}
       <div class="costs-expense-form">
         <input id="ce-label" placeholder="Descrizione (es. Traghetto, benzina)">
-        <input id="ce-amount" type="number" min="0" step="0.01" placeholder="Importo EUR">
+        <input id="ce-amount" type="number" min="0" step="0.01" placeholder="Importo ${CURRENCY_CODE}">
         <select id="ce-paidby"><option value="">Nessun pagatore</option>${c.participants.map(p=>`<option value="${escHtml(p)}">${escHtml(p)}</option>`).join('')}</select>
         <button class="costs-add-btn" onclick="addCostExpense()">+ Aggiungi spesa</button>
       </div>
     </div>
 
     <div class="costs-summary">
-      <div class="costs-summary-row"><span>Totale complessivo</span><strong>€ ${grandTotal.toFixed(2)}</strong></div>
-      ${n>0 ? `<div class="costs-summary-row"><span>Quota a testa (${n} persone)</span><strong>€ ${perPerson.toFixed(2)}</strong></div>` : ''}
+      <div class="costs-summary-row"><span>Totale complessivo</span><strong>${CURRENCY_SYMBOL} ${grandTotal.toFixed(2)}</strong></div>
+      ${n>0 ? `<div class="costs-summary-row"><span>Quota a testa (${n} persone)</span><strong>${CURRENCY_SYMBOL} ${perPerson.toFixed(2)}</strong></div>` : ''}
       ${n>0 ? c.participants.map(p => {
         const balance = paidByPerson[p] - perPerson;
         const cls = balance >= 0 ? 'pos' : 'neg';
-        const txt = balance >= 0 ? `deve ricevere € ${balance.toFixed(2)}` : `deve dare € ${Math.abs(balance).toFixed(2)}`;
+        const txt = balance >= 0 ? `deve ricevere ${CURRENCY_SYMBOL} ${balance.toFixed(2)}` : `deve dare ${CURRENCY_SYMBOL} ${Math.abs(balance).toFixed(2)}`;
         return `<div class="costs-balance-row"><span>${escHtml(p)}</span><span class="costs-balance ${cls}">${txt}</span></div>`;
       }).join('') : ''}
     </div>`;
@@ -1199,7 +1204,7 @@ window.searchPlan = async () => {
   try {
     const payload = {
       destination_location: destLoc, departure_date: dep, return_date: ret,
-      adults, price_max_stay: budget, poi_limit: 20,
+      adults, price_max_stay: budget, poi_limit: 20, currency: CURRENCY_CODE,
     };
     if (wantsFlight) { payload.origin_airport = origin; payload.destination_airport = destAir; }
     const res = await fetch(`${TRIP_PLANNER_URL}/api/trip-plan`, {

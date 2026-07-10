@@ -268,7 +268,36 @@ def test_build_trip_plan_sends_correct_payloads_to_each_service(monkeypatch):
 
     assert flight_payload["origin"] == "FCO"
     assert flight_payload["destination"] == "CDG"
+    assert flight_payload["currency"] == "EUR"  # default dello schema, non passato in _REQUEST_BODY
     assert stay_payload["location"] == "Paris"
     assert stay_payload["check_in"] == "2026-09-15"
     assert stay_payload["check_out"] == "2026-09-20"
+    assert stay_payload["currency"] == "EUR"
     assert poi_payload["location"] == "Paris"
+
+
+def test_build_trip_plan_forwards_custom_currency_to_flights_and_stays(monkeypatch):
+    # Prova che una valuta non-default richiesta dal frontend arriva davvero a entrambi i
+    # payload a valle, non solo che il campo esiste inutilizzato nello schema.
+    captured = {}
+
+    class _CapturingClient(_FakeAsyncClient):
+        async def post(self, url, json, timeout):
+            captured[url] = json
+            return await super().post(url, json, timeout)
+
+    fake_client = _CapturingClient({
+        "flights": _FakeResponse(200, []),
+        "stays": _FakeResponse(200, []),
+        "poi": _FakeResponse(200, []),
+    })
+    monkeypatch.setattr(main_module.httpx, "AsyncClient", lambda: fake_client)
+
+    client = TestClient(app)
+    client.post("/api/trip-plan", json={**_REQUEST_BODY, "currency": "USD"})
+
+    flight_payload = next(v for k, v in captured.items() if "flights" in k)
+    stay_payload = next(v for k, v in captured.items() if "stays" in k)
+
+    assert flight_payload["currency"] == "USD"
+    assert stay_payload["currency"] == "USD"

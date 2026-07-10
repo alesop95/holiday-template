@@ -61,6 +61,36 @@ def test_search_parses_real_shaped_response(monkeypatch):
     assert offer.departure == "2026-09-15 10:35"
 
 
+def test_search_passes_custom_currency_to_request_and_price(monkeypatch):
+    # Prova che request.currency arriva davvero al parametro "curr" mandato a Kiwi Tequila e
+    # nella stringa prezzo, non solo che il campo esiste inutilizzato nello schema.
+    captured = {}
+    payload = {
+        "data": [
+            {
+                "price": 120,
+                "route": [
+                    {"airline": "BA", "local_departure": "2026-09-15T10:35:00.000Z", "local_arrival": "2026-09-15T17:45:00.000Z"},
+                ],
+                "duration": {"total": 25800},
+            }
+        ]
+    }
+
+    def _fake_get(url, params, headers, timeout):
+        captured.update(params)
+        return _FakeResponse(payload)
+
+    monkeypatch.setattr("app.adapters.kiwi_adapter.httpx.get", _fake_get)
+
+    adapter = KiwiAdapter(api_key="chiave-di-test")
+    request = FlightSearchRequest(origin="FCO", destination="CDG", departure_date="2026-09-15", currency="USD")
+    offers = adapter.search(request)
+
+    assert captured["curr"] == "USD"
+    assert offers[0].price == "120 USD"
+
+
 def test_search_skips_malformed_item_without_crashing(monkeypatch):
     payload = {"data": [{"price": 99}]}  # manca "route": la voce va scartata, non deve rompere
     monkeypatch.setattr(

@@ -23,8 +23,9 @@ class TripPlanRequest(BaseModel):
     departure_date: str = Field(..., description="Data di partenza/check-in, formato YYYY-MM-DD")
     return_date: str = Field(..., description="Data di ritorno/check-out, formato YYYY-MM-DD")
     adults: int = Field(1, ge=1, le=9)
-    price_max_stay: int = Field(500, ge=0, description="Prezzo massimo per l'intero soggiorno, in EUR")
+    price_max_stay: int = Field(500, ge=0, description="Prezzo massimo per l'intero soggiorno, nella valuta di 'currency'")
     poi_limit: int = Field(20, ge=1, le=100)
+    currency: str = Field("EUR", min_length=3, max_length=3, description="Codice valuta ISO 4217 per voli e alloggi, es. 'EUR', 'USD', 'GBP'")
 
 
 class TripPlan(BaseModel):

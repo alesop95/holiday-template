@@ -245,6 +245,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .route-step-n{width:20px;height:20px;border-radius:50%;background:var(--sea);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
 .plan-rm-btn{background:none;border:none;color:var(--terra);font-size:12px;cursor:pointer;flex-shrink:0;}
 @media(min-width:600px){.map-leg{grid-template-columns:1fr 1fr 1fr;}}
+
+/* ── Esportazione/stampa dell'itinerario ("Esporta / Stampa itinerario", tab Itinerario) ────────
+   window.print() nativo invece di una libreria PDF caricata da CDN: zero dipendenza nuova, e il
+   dialogo di stampa del browser offre gia' "Salva come PDF" su ogni sistema operativo moderno,
+   coprendo sia "PDF" sia "stampa pulita" con lo stesso meccanismo. Forza sempre la vista
+   Itinerario indipendentemente dalla scheda attiva sullo schermo (un'esportazione e' un'azione
+   dedicata, non "stampa quello che vedi ora"), ed espande ogni day-card anche se collassata a
+   schermo (.day-body e' display:none di default, controllato da JS su clic): senza questa
+   regola l'esportazione mostrerebbe solo i giorni che l'utente aveva gia' aperto manualmente. */
+@media print {
+  .nav-wrap, .hero-edit-btn, .hero-edit-panel, #export-print-btn,
+  .day-actions, .day-chv, .plan-rm-btn, .route-btn { display: none !important; }
+  .panel { display: none !important; }
+  #itinerario { display: block !important; }
+  .day-body { display: block !important; }
+  .day-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+  .hero { background: none !important; color: #111; }
+  .hero h1 { color: #111; }
+  .hero-sub, .hero-stat { color: #333 !important; }
+  .hero-badge { background: none; border-color: #111; color: #111; }
+  .hero-stat { background: none; border: 1px solid #999; }
+}
 </style>
 </head>
 <body>
@@ -278,6 +300,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
     <div class="sec-head">
       <h2>Il Programma</h2>
       <p>4 notti a Marina di Camerota, Castellabate e Paestum lungo il percorso, 2 notti a Caserta. Un solo cambio hotel, tutto visto.</p>
+      <button class="act-btn" id="export-print-btn" onclick="window.print()">Esporta / Stampa itinerario</button>
     </div>
     <div id="days-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
   </div>

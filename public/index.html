@@ -189,6 +189,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .costs-balance-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-top:1px solid rgba(255,255,255,.2);margin-top:5px;padding-top:8px;}
 .costs-balance.pos{color:#B7F5D8;font-weight:600;}
 .costs-balance.neg{color:#FFD3D7;font-weight:600;}
+.costs-person-block{margin-bottom:12px;}
+.costs-person-block:last-child{margin-bottom:0;}
+.costs-person-name{font-family:'Poppins',sans-serif;font-size:13.5px;font-weight:600;color:var(--sea);margin-bottom:4px;}
 .plan-form{display:grid;grid-template-columns:1fr 1fr;gap:9px;background:var(--white);border-radius:14px;padding:15px;box-shadow:0 2px 10px var(--sh);margin-bottom:1.2rem;}
 .plan-field{display:flex;flex-direction:column;gap:3px;}
 .plan-field.full{grid-column:1/-1;}
@@ -656,7 +659,7 @@ function renderRest() {
 function resolveAccommodationCost() {
   const confirmed = S.costs?.confirmedAccommodation;
   if (confirmed && confirmed.totalPrice) {
-    return { amount: confirmed.totalPrice, count: 1, label: confirmed.label || 'Prenotazione confermata', link: confirmed.link || '', status: 'confirmed' };
+    return { amount: confirmed.totalPrice, count: 1, label: confirmed.label || 'Prenotazione confermata', link: confirmed.link || '', paidBy: confirmed.paidBy || '', status: 'confirmed' };
   }
   const savedStays = Object.values(S.planning).flatMap(day => day.stays || []);
   if (savedStays.length) {
@@ -687,20 +690,22 @@ function activeDiscount() {
 }
 
 function renderConfirmedBookingBlock(resolvedAcc) {
+  const participants = (S.costs && S.costs.participants) || [];
   if (resolvedAcc && resolvedAcc.status === 'confirmed') {
     return `<div class="info-hotel">
       <div class="costs-card-ttl">Prenotazione confermata</div>
-      <div class="costs-auto-row"><span>${escHtml(resolvedAcc.label)} — ${CURRENCY_SYMBOL} ${resolvedAcc.amount.toFixed(2)} totale${resolvedAcc.link?` · <a href="${escHtml(resolvedAcc.link)}" target="_blank" rel="noopener noreferrer">link</a>`:''}</span>
+      <div class="costs-auto-row"><span>${escHtml(resolvedAcc.label)} — ${CURRENCY_SYMBOL} ${resolvedAcc.amount.toFixed(2)} totale${resolvedAcc.paidBy?` · pagato da ${escHtml(resolvedAcc.paidBy)}`:' · nessun pagatore assegnato'}${resolvedAcc.link?` · <a href="${escHtml(resolvedAcc.link)}" target="_blank" rel="noopener noreferrer">link</a>`:''}</span>
       <button class="costs-rm-btn" onclick="clearConfirmedAccommodation()">&times;</button></div>
     </div>`;
   }
   return `<div class="info-hotel">
     <div class="costs-card-ttl">Segna una prenotazione come confermata</div>
-    <p class="costs-hint">Finché non confermi nulla qui, l'alloggio resta la stima indicativa sopra (o quanto salvato da Pianifica, se presente).</p>
+    <p class="costs-hint">Finché non confermi nulla qui, l'alloggio resta la stima indicativa sopra (o quanto salvato da Pianifica, se presente). Il pagatore serve per calcolare correttamente chi deve dare cosa a chi nella scheda "Costi".</p>
     <div class="costs-expense-form">
       <input id="cb-label" placeholder="Nome struttura (es. Magda Relax Suites)">
       <input id="cb-price" type="number" min="0" step="0.01" placeholder="Prezzo totale ${CURRENCY_CODE}">
       <input id="cb-link" placeholder="Link (facoltativo)">
+      <select id="cb-paidby"><option value="">Nessun pagatore</option>${participants.map(p=>`<option value="${escHtml(p)}">${escHtml(p)}</option>`).join('')}</select>
       <button class="costs-add-btn" onclick="saveConfirmedAccommodation()">Conferma prenotazione</button>
     </div>
   </div>`;
@@ -710,8 +715,9 @@ window.saveConfirmedAccommodation = () => {
   const label = document.getElementById('cb-label').value.trim();
   const price = parseFloat(document.getElementById('cb-price').value);
   const link = document.getElementById('cb-link').value.trim();
+  const paidBy = document.getElementById('cb-paidby').value;
   if (!label || !price) { alert('Inserisci almeno nome struttura e prezzo totale.'); return; }
-  writeCosts({ ...(S.costs||{participants:[],expenses:[]}), confirmedAccommodation: { label, totalPrice: price, link } }).catch(e => alert('Errore: ' + e.message));
+  writeCosts({ ...(S.costs||{participants:[],expenses:[]}), confirmedAccommodation: { label, totalPrice: price, link, paidBy } }).catch(e => alert('Errore: ' + e.message));
 };
 window.clearConfirmedAccommodation = () => {
   writeCosts({ ...(S.costs||{participants:[],expenses:[]}), confirmedAccommodation: null }).catch(e => alert('Errore: ' + e.message));
@@ -1084,6 +1090,25 @@ function parsePrice(str) {
   return m ? parseFloat(m[0].replace(',', '.')) : 0;
 }
 
+// Algoritmo greedy di settlement: da N saldi (positivo = deve ricevere, negativo = deve dare)
+// produce il minor numero ragionevole di trasferimenti "X deve dare a Y" invece di una riga di
+// saldo per persona — per due persone si riduce sempre a una sola riga, eliminando il caso
+// "entrambi in debito" che non ha senso quando i soldi restano tra loro due.
+function computeSettlement(balances) {
+  const creditors = balances.filter(b => b.balance > 0.005).map(b => ({ ...b })).sort((a,b) => b.balance - a.balance);
+  const debtors = balances.filter(b => b.balance < -0.005).map(b => ({ name: b.name, balance: -b.balance })).sort((a,b) => b.balance - a.balance);
+  const transactions = [];
+  let i = 0, j = 0;
+  while (i < debtors.length && j < creditors.length) {
+    const amount = Math.min(debtors[i].balance, creditors[j].balance);
+    transactions.push({ from: debtors[i].name, to: creditors[j].name, amount });
+    debtors[i].balance -= amount; creditors[j].balance -= amount;
+    if (debtors[i].balance < 0.005) i++;
+    if (creditors[j].balance < 0.005) j++;
+  }
+  return transactions;
+}
+
 function computePlanningCosts() {
   let flights = 0, flightsCount = 0;
   Object.values(S.planning).forEach(day => (day.flights||[]).forEach(f => { flights += parsePrice(f.price); flightsCount++; }));
@@ -1094,7 +1119,8 @@ function computePlanningCosts() {
   const resolvedAcc = resolveAccommodationCost();
   const stays = resolvedAcc ? resolvedAcc.amount : 0;
   const staysCount = resolvedAcc ? resolvedAcc.count : 0;
-  return { flights, flightsCount, stays, staysCount, staysStatus: resolvedAcc?.status || null, total: flights + stays };
+  const staysPaidBy = resolvedAcc && resolvedAcc.status === 'confirmed' ? resolvedAcc.paidBy : '';
+  return { flights, flightsCount, stays, staysCount, staysStatus: resolvedAcc?.status || null, staysPaidBy, total: flights + stays };
 }
 
 function renderCostsDashboard() {
@@ -1108,9 +1134,23 @@ function renderCostsDashboard() {
   const grandTotal = Math.max(0, auto.total + manualTotal - (disc ? disc.amount : 0));
   const n = c.participants.length;
   const perPerson = n > 0 ? grandTotal / n : 0;
+  // paidByPerson deve includere OGNI spesa reale attribuita a qualcuno, non solo quelle manuali:
+  // prima l'alloggio confermato (spesso la voce piu' grande) non veniva mai accreditato a chi
+  // l'ha davvero pagato, quindi il saldo di nessuno tornava mai a zero tra due persone — un
+  // conto che non può matematicamente risultare "entrambi in debito" per una spesa di coppia.
   const paidByPerson = {};
-  c.participants.forEach(p => paidByPerson[p] = 0);
-  c.expenses.forEach(e => { if (e.paidBy && paidByPerson.hasOwnProperty(e.paidBy)) paidByPerson[e.paidBy] += (e.amount || 0); });
+  const itemsByPerson = {};
+  c.participants.forEach(p => { paidByPerson[p] = 0; itemsByPerson[p] = []; });
+  c.expenses.forEach(e => {
+    if (e.paidBy && paidByPerson.hasOwnProperty(e.paidBy)) {
+      paidByPerson[e.paidBy] += (e.amount || 0);
+      itemsByPerson[e.paidBy].push({ label: e.label, amount: e.amount || 0 });
+    }
+  });
+  if (auto.staysPaidBy && paidByPerson.hasOwnProperty(auto.staysPaidBy)) {
+    paidByPerson[auto.staysPaidBy] += auto.stays;
+    itemsByPerson[auto.staysPaidBy].push({ label: 'Alloggio confermato', amount: auto.stays });
+  }
 
   el.innerHTML = `
     <div class="costs-card">
@@ -1139,16 +1179,28 @@ function renderCostsDashboard() {
       </div>
     </div>
 
+    ${n>0 ? `<div class="costs-card">
+      <div class="costs-card-ttl">Le spese di ciascuno</div>
+      ${c.participants.map(p => `<div class="costs-person-block">
+        <div class="costs-person-name">${escHtml(p)} — totale pagato ${CURRENCY_SYMBOL} ${paidByPerson[p].toFixed(2)}</div>
+        ${itemsByPerson[p].length ? itemsByPerson[p].map(it => `<div class="costs-auto-row"><span>${escHtml(it.label)}</span><span>${CURRENCY_SYMBOL} ${it.amount.toFixed(2)}</span></div>`).join('') : '<p class="costs-hint">Nessuna spesa attribuita ancora.</p>'}
+      </div>`).join('')}
+    </div>` : ''}
+
     <div class="costs-summary">
       ${disc ? `<div class="costs-summary-row"><span>Sconto applicato (entro il ${disc.validUntil.split('-').reverse().join('/')})</span><strong style="color:var(--teal)">-${CURRENCY_SYMBOL} ${disc.amount.toFixed(2)}</strong></div>` : ''}
       <div class="costs-summary-row"><span>Totale complessivo</span><strong>${CURRENCY_SYMBOL} ${grandTotal.toFixed(2)}</strong></div>
       ${n>0 ? `<div class="costs-summary-row"><span>Quota a testa (${n} persone)</span><strong>${CURRENCY_SYMBOL} ${perPerson.toFixed(2)}</strong></div>` : ''}
-      ${n>0 ? c.participants.map(p => {
-        const balance = paidByPerson[p] - perPerson;
-        const cls = balance >= 0 ? 'pos' : 'neg';
-        const txt = balance >= 0 ? `deve ricevere ${CURRENCY_SYMBOL} ${balance.toFixed(2)}` : `deve dare ${CURRENCY_SYMBOL} ${Math.abs(balance).toFixed(2)}`;
-        return `<div class="costs-balance-row"><span>${escHtml(p)}</span><span class="costs-balance ${cls}">${txt}</span></div>`;
-      }).join('') : ''}
+      ${(() => {
+        if (n===0) return '';
+        // Un solo saldo netto per coppia (o il minor numero di trasferimenti per N persone),
+        // non un saldo indipendente a testa: altrimenti, con una spesa grande attribuita a una
+        // sola persona, entrambi potevano risultare "in debito" senza che i conti tornassero.
+        const balances = c.participants.map(p => ({ name: p, balance: paidByPerson[p] - perPerson }));
+        const settlement = computeSettlement(balances);
+        if (!settlement.length) return '<div class="costs-balance-row"><span>Conti già in pari</span></div>';
+        return settlement.map(t => `<div class="costs-balance-row"><span>${escHtml(t.from)} deve dare a ${escHtml(t.to)}</span><span class="costs-balance neg">${CURRENCY_SYMBOL} ${t.amount.toFixed(2)}</span></div>`).join('');
+      })()}
     </div>`;
 }
 

@@ -193,8 +193,10 @@ export const TRIP_DATA = {
       { nm:"Via dell'Arco Basso", tags:["Street food","$"], note:"Non un ristorante ma una strada: le massaie di Bari Vecchia preparano orecchiette a mano davanti casa, vendute fresche. Esperienza autentica più che un pasto vero e proprio.", sp:"Sosta breve, non un pranzo completo" },
     ]},
     { area:"Polignano a Mare", days:"Giorni 1, 2, 6", items:[
-      { nm:"Grotta Palazzese", tags:["Pesce","$$$$"], note:"Ristorante scavato in una grotta naturale a picco sul mare. Prezzo reale almeno €200/persona, tavolo vista mare non garantito anche prenotando, recensioni discordanti (3,4/5 Tripadvisor) — dettaglio completo nel Giorno 2. Fonte: <a href=\"https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/\" target=\"_blank\" rel=\"noopener noreferrer\">Dissapore</a>, <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>.", sp:"Esperienza per l'ambiente, non il miglior pasto del viaggio" },
-      { nm:"Pescaria", tags:["Pesce","Street food","$"], note:"Piazza Aldo Moro 6-8. Il primo fast food di pesce d'Italia, nato qui a Polignano: panini di mare, tartare di tonno, fish and chips. Informale, senza prenotazione. 4,8/5 su Restaurant Guru, #10 su 205 ristoranti di Polignano su Tripadvisor. Fonte: <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>, <a href=\"https://www.yelp.com/biz/pescaria-polignano-a-mare\" target=\"_blank\" rel=\"noopener noreferrer\">Yelp</a>.", sp:"Ottima alternativa economica a Grotta Palazzese" },
+      { nm:"Grotta Palazzese", tags:["Pesce","$$$$"], note:"Ristorante scavato in una grotta naturale a picco sul mare. Prezzo reale almeno €200/persona, tavolo vista mare non garantito anche prenotando, recensioni discordanti (3,4/5 Tripadvisor) — dettaglio completo nel Giorno 2. Fonte: <a href=\"https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/\" target=\"_blank\" rel=\"noopener noreferrer\">Dissapore</a>, <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>.", sp:"Esperienza per l'ambiente, non il miglior pasto del viaggio", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html" },
+      // Nessun campo thefork per Grotta Palazzese: verificato che non ha una scheda su TheFork,
+      // prenota solo dal proprio sito ufficiale (grottapalazzese.it) — non inventato un link.
+      { nm:"Pescaria", tags:["Pesce","Street food","$"], note:"Piazza Aldo Moro 6-8. Il primo fast food di pesce d'Italia, nato qui a Polignano: panini di mare, tartare di tonno, fish and chips. Informale, senza prenotazione. 4,8/5 su Restaurant Guru, #10 su 205 ristoranti di Polignano su Tripadvisor. Fonte: <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>, <a href=\"https://www.yelp.com/biz/pescaria-polignano-a-mare\" target=\"_blank\" rel=\"noopener noreferrer\">Yelp</a>.", sp:"Ottima alternativa economica a Grotta Palazzese", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html", thefork:"https://www.thefork.it/ristorante/pescaria-polignano-r849503" },
     ]},
     { area:"Alberobello", days:"Giorno 3 pranzo", items:[
       { nm:"Trattoria in un trullo", tags:["Valle d'Itria","$-$$"], note:"Voce indicativa: diversi ristoranti del centro storico occupano trulli veri. Orecchiette, verdure sott'olio, formaggi locali." },
@@ -303,7 +305,12 @@ export const TRIP_DATA = {
       { label:"Carburante diesel", desc:"1106 km reali (Civitanova-Bari-Polignano A/R + spostamenti locali), Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone", amount:"€43-46" },
       { label:"Extra e imprevisti", amount:"€50-100" },
     ],
-    total: { sub:"6 giorni, tutto incluso" }
+    total: { sub:"6 giorni, tutto incluso" },
+    // Importo di coppia (non per persona), sottratto coerentemente da tutte le viste che mostrano
+    // un totale (Info & Costi per persona, Costi il totale reale) — vedi renderInfoCosts e
+    // renderCostsDashboard in public/index.html. Scaduto dopo validUntil: non piu' applicato
+    // automaticamente, per non mostrare uno sconto non piu' reale.
+    discount: { amount: 74.66, desc: "Sconto disponibile su questa prenotazione", validUntil: "2026-07-30" }
   },
 
   tickets: [

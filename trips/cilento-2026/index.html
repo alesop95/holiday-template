@@ -115,6 +115,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .rtag.p{background:#E3F7EE;color:var(--teal);}
 .rest-note{font-size:12.5px;color:#5A5048;line-height:1.55;}
 .rest-sp{font-size:12px;color:var(--terra);font-weight:500;margin-top:4px;}
+.rest-links{display:flex;gap:12px;margin-top:7px;}
+.rest-link{font-size:12px;color:var(--sea2);font-weight:600;text-decoration:none;}
+.rest-link:hover{text-decoration:underline;}
 .ck-prog{background:var(--white);border-radius:12px;padding:15px;margin-bottom:1.4rem;box-shadow:0 2px 10px var(--sh);}
 .ck-prog-lbl{display:flex;justify-content:space-between;font-size:13px;font-weight:500;margin-bottom:9px;}
 .ck-bar{height:7px;background:var(--sand2);border-radius:100px;overflow:hidden;}
@@ -616,10 +619,20 @@ function renderDays() {
   renderDayPlanningAll();
 }
 
+// Link esterni opzionali per ristorante (tripadvisor/thefork su ogni item di TRIP_DATA.
+// restaurants[].items[]): funzionalità di template generale, non specifica di un viaggio —
+// un item senza questi campi semplicemente non mostra la riga link, come per gli altri
+// campi opzionali già esistenti (sp, tags vuoti).
 function renderRest() {
   document.getElementById('rest-container').innerHTML = S.restaurants.map(a=>`
     <div class="rest-area"><div class="rest-area-ttl">${a.area}</div><div class="rest-area-sub">${a.days}</div>
-    <div class="rest-grid">${a.items.map(r=>`<div class="rest-card"><div class="rest-nm">${r.nm}</div><div class="rest-tags">${r.tags.map(t=>`<span class="rtag${t.startsWith('$')?' p':''}">${t}</span>`).join('')}</div><div class="rest-note">${r.note}</div>${r.sp?`<div class="rest-sp">${r.sp}</div>`:''}</div>`).join('')}</div></div>`).join('');
+    <div class="rest-grid">${a.items.map(r=>{
+      const links = [
+        r.tripadvisor ? `<a class="rest-link" href="${r.tripadvisor}" target="_blank" rel="noopener noreferrer">Tripadvisor →</a>` : '',
+        r.thefork ? `<a class="rest-link" href="${r.thefork}" target="_blank" rel="noopener noreferrer">TheFork →</a>` : '',
+      ].filter(Boolean).join('');
+      return `<div class="rest-card"><div class="rest-nm">${r.nm}</div><div class="rest-tags">${r.tags.map(t=>`<span class="rtag${t.startsWith('$')?' p':''}">${t}</span>`).join('')}</div><div class="rest-note">${r.note}</div>${r.sp?`<div class="rest-sp">${r.sp}</div>`:''}${links?`<div class="rest-links">${links}</div>`:''}</div>`;
+    }).join('')}</div></div>`).join('');
 }
 
 // ── Gerarchia di risoluzione del costo alloggio ────────────────────────────────
@@ -649,6 +662,17 @@ function parseCostRange(str) {
   const nums = (String(str).match(/[\d]+(?:[.,]\d+)?/g) || []).map(n => parseFloat(n.replace(',', '.')));
   if (!nums.length) return [0, 0];
   return nums.length > 1 ? [nums[0], nums[1]] : [nums[0], nums[0]];
+}
+
+// Sconto opzionale di TRIP_DATA.costEstimate.discount: importo di coppia (non per persona),
+// applicato coerentemente sia in "Info & Costi" (diviso /2) sia nel totale reale di "Costi"
+// (per intero). Scaduto dopo validUntil: torna null, non si applica piu' automaticamente —
+// evita di mostrare uno sconto non piu' valido solo perche' nessuno ha aggiornato il file.
+function activeDiscount() {
+  const d = TRIP_DATA.costEstimate?.discount;
+  if (!d) return null;
+  if (d.validUntil && new Date() > new Date(d.validUntil + 'T23:59:59')) return null;
+  return d;
 }
 
 function renderConfirmedBookingBlock(resolvedAcc) {
@@ -716,10 +740,15 @@ function renderInfoCosts() {
       }
       return { label:r.label, desc:r.desc, amount:r.amount, _range:parseCostRange(r.amount) };
     });
-    const lo = rows.reduce((s,r)=>s+r._range[0],0), hi = rows.reduce((s,r)=>s+r._range[1],0);
+    // Sconto: importo di coppia, va diviso /2 prima di sottrarlo da un totale "per persona".
+    const disc = activeDiscount();
+    const discPerPerson = disc ? disc.amount / 2 : 0;
+    const lo = Math.max(0, rows.reduce((s,r)=>s+r._range[0],0) - discPerPerson);
+    const hi = Math.max(0, rows.reduce((s,r)=>s+r._range[1],0) - discPerPerson);
     const totalTxt = lo===hi ? `${CURRENCY_SYMBOL}${lo.toFixed(2)}` : `${CURRENCY_SYMBOL}${lo.toFixed(0)}-${hi.toFixed(0)}`;
+    const discRow = disc ? `<div class="cost-row"><div class="cost-inf"><div class="cost-lbl">Sconto</div><div class="cost-desc">${escHtml(disc.desc)} (entro il ${disc.validUntil.split('-').reverse().join('/')})</div></div><div class="cost-amt" style="color:var(--teal)">-${CURRENCY_SYMBOL}${discPerPerson.toFixed(2)}</div></div>` : '';
     html += `<div class="sec-head"><h2>Stima Costi</h2><p>${cost.subtitle||''}</p></div>
-      <div class="cost-tbl">${rows.map(r => `<div class="cost-row"><div class="cost-inf"><div class="cost-lbl">${r.label}</div>${r.desc?`<div class="cost-desc">${r.desc}</div>`:''}</div><div class="cost-amt">${r.amount}</div></div>`).join('')}</div>
+      <div class="cost-tbl">${rows.map(r => `<div class="cost-row"><div class="cost-inf"><div class="cost-lbl">${r.label}</div>${r.desc?`<div class="cost-desc">${r.desc}</div>`:''}</div><div class="cost-amt">${r.amount}</div></div>`).join('')}${discRow}</div>
       <div class="cost-total"><div class="ct-lbl">Totale stimato per persona</div><div><div class="ct-amt">${totalTxt}</div><div class="ct-sub">${cost.total.sub}</div></div></div>`;
   }
   if (tickets.length) {
@@ -1058,7 +1087,10 @@ function renderCostsDashboard() {
   const c = S.costs || { participants: [], expenses: [] };
   const auto = computePlanningCosts();
   const manualTotal = c.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-  const grandTotal = auto.total + manualTotal;
+  // Sconto: importo di coppia, sottratto per intero qui (a differenza di Info & Costi, che lo
+  // divide /2 perche' quel totale e' gia' per persona).
+  const disc = activeDiscount();
+  const grandTotal = Math.max(0, auto.total + manualTotal - (disc ? disc.amount : 0));
   const n = c.participants.length;
   const perPerson = n > 0 ? grandTotal / n : 0;
   const paidByPerson = {};
@@ -1093,6 +1125,7 @@ function renderCostsDashboard() {
     </div>
 
     <div class="costs-summary">
+      ${disc ? `<div class="costs-summary-row"><span>Sconto applicato (entro il ${disc.validUntil.split('-').reverse().join('/')})</span><strong style="color:var(--teal)">-${CURRENCY_SYMBOL} ${disc.amount.toFixed(2)}</strong></div>` : ''}
       <div class="costs-summary-row"><span>Totale complessivo</span><strong>${CURRENCY_SYMBOL} ${grandTotal.toFixed(2)}</strong></div>
       ${n>0 ? `<div class="costs-summary-row"><span>Quota a testa (${n} persone)</span><strong>${CURRENCY_SYMBOL} ${perPerson.toFixed(2)}</strong></div>` : ''}
       ${n>0 ? c.participants.map(p => {

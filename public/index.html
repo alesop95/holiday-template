@@ -431,29 +431,35 @@ function renderHero() {
 }
 
 // ── Seed automatico al primo avvio ────────────────────────────────────────────
+// days/restaurants/checklist NON sono piu' seminati su Firestore (erano "seed once": la prima
+// visita li scriveva su Firestore e ogni modifica successiva a TRIP_DATA restava invisibile
+// finche' qualcuno non cancellava i documenti a mano su Firebase Console — fonte reale di
+// confusione, riscontrata piu' volte durante lo sviluppo di piu' viaggi). Sono contenuto
+// dello sviluppatore, mai modificato dall'app: si leggono sempre dal file, sullo stesso
+// modello gia' usato per hotelChange/accommodation/costEstimate/tickets/savingTips/
+// programSummary. Si perde la comodita' di editarli da Firebase Console senza redeploy
+// (documentata in precedenza in README.md, mai usata nella pratica), a favore di un solo
+// meccanismo coerente per tutto il contenuto statico del viaggio.
+// state/* resta seed-once (a differenza di content, e' dati reali dell'utente — checklist
+// spuntata, note, alloggi salvati, prenotazione confermata — che un reseed ripetuto
+// distruggerebbe: setDoc con un array vuoto sovrascrive per intero l'array esistente anche
+// con merge:true, Firestore non fa merge profondo sugli array). state/meta come sentinella
+// di "prima visita mai fatta", sullo stesso ruolo che content/days aveva prima.
 async function seedIfNeeded() {
-  const snap = await getDoc(doc(db, 'trips', TRIP_ID, 'content', 'days'));
+  const snap = await getDoc(doc(db, 'trips', TRIP_ID, 'state', 'meta'));
   if (snap.exists()) return;
   await Promise.all([
-    setDoc(doc(db, 'trips', TRIP_ID, 'content', 'days'),        { data: TRIP_DATA.days }),
-    setDoc(doc(db, 'trips', TRIP_ID, 'content', 'restaurants'), { data: TRIP_DATA.restaurants }),
-    setDoc(doc(db, 'trips', TRIP_ID, 'content', 'checklist'),   { data: TRIP_DATA.checklist }),
-    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'checklist'),   { items: {} }),
-    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'notes'),       { days: {}, completed: {} }),
-    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'planning'),    { byDay: {} }),
-    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'meta'),        { ...TRIP_META }),
-    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'costs'),       { participants: [], expenses: [] }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state', 'checklist'), { items: {} }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state', 'notes'),     { days: {}, completed: {} }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state', 'planning'),  { byDay: {} }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state', 'meta'),      { ...TRIP_META }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state', 'costs'),     { participants: [], expenses: [] }),
   ]);
 }
 
-// ── Lettura contenuto da Firestore ────────────────────────────────────────────
-async function loadContent() {
-  const [d, r, c] = await Promise.all([
-    getDoc(doc(db, 'trips', TRIP_ID, 'content', 'days')),
-    getDoc(doc(db, 'trips', TRIP_ID, 'content', 'restaurants')),
-    getDoc(doc(db, 'trips', TRIP_ID, 'content', 'checklist')),
-  ]);
-  S.days = d.data().data; S.restaurants = r.data().data; S.checklist = c.data().data;
+// ── Contenuto del viaggio: sempre dal file, mai da Firestore ──────────────────
+function loadContent() {
+  S.days = TRIP_DATA.days; S.restaurants = TRIP_DATA.restaurants; S.checklist = TRIP_DATA.checklist;
 }
 
 // Viaggi seminati prima che state/meta esistesse (vedi seedIfNeeded) non hanno questo

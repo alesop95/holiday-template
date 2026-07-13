@@ -406,7 +406,7 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https:
 import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLANNER_URL, ROUTING_PROFILE, CURRENCY_CODE, CURRENCY_SYMBOL }  from './trip.config.js';
 
 // ── Stato applicativo in memoria ──────────────────────────────────────────────
-const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc' };
+const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc', poiFeeOnly:false };
 const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, planLastSearch:null, meta:null, metaEditing:false, costs:null, planFilters:{...PLAN_FILTERS_DEFAULT}, airports:null, airportZones:null };
 let db;
 
@@ -747,9 +747,22 @@ function renderPlanPriceMap() {
   }, 120);
 }
 
+// Menu "Aggiungi al giorno": i giorni del viaggio sono sempre gli stessi (TRIP_DATA.days, scritti
+// dallo sviluppatore), ma l'ordine in cui compaiono per ciascun tipo (volo/alloggio/POI) riflette
+// cosa quel giorno ha gia' — un giorno che ha gia' un volo salvato va in fondo, non e' piu'
+// probabile che serva un secondo volo lo stesso giorno. Non nasconde nessun giorno (resta scelta
+// manuale dell'utente, l'app non conosce la destinazione di un giorno per bloccare scelte
+// incoerenti), solo lo rende meno probabile per disattenzione.
+function dayOptsForKind(kind) {
+  return S.days
+    .map(d => ({ d, has: ((S.planning[d.id] || {})[kind] || []).length > 0 }))
+    .sort((a, b) => (a.has === b.has ? 0 : a.has ? 1 : -1))
+    .map(({ d, has }) => `<option value="${d.id}">${escHtml(d.label)} · ${escHtml(d.title)}${has ? ' (già presente)' : ''}</option>`)
+    .join('');
+}
+
 function renderPlanResults() {
   const p = S.planResults; const el = document.getElementById('plan-results'); if (!p || !el) return;
-  const dayOpts = S.days.map(d => `<option value="${d.id}">${escHtml(d.label)} · ${escHtml(d.title)}</option>`).join('');
   const pf = S.planFilters;
   // Ogni item porta con se' l'indice originale in S.planResults: filtrare/ordinare non deve mai
   // rompere savePlanItem, che legge S.planResults[chiave][idx] per indice, non per riferimento.
@@ -769,6 +782,10 @@ function renderPlanResults() {
   const poiCategories = [...new Set((p.points_of_interest || []).map(o => o.category))].sort();
   let pois = withIndex(p.points_of_interest || []);
   if (pf.poiCategory) pois = pois.filter(x => x.item.category === pf.poiCategory);
+  // "a pagamento" e' un giudizio best-effort sul tag OSM fee grezzo: qualunque valore diverso da
+  // "no" (compreso "yes" o una nota libera) conta come pagamento presunto. Un POI senza il tag
+  // fee non entra in questo filtro: assenza del dato non e' la stessa cosa di "gratuito".
+  if (pf.poiFeeOnly) pois = pois.filter(x => x.item.fee && x.item.fee !== 'no');
   pois.sort((a,b) => pf.poiSort === 'name-desc' ? b.item.name.localeCompare(a.item.name) : a.item.name.localeCompare(b.item.name));
 
   const groups = [
@@ -807,12 +824,21 @@ function renderPlanResults() {
           <option value="rating-desc" ${pf.staysSort==='rating-desc'?'selected':''}>Valutazione più alta</option>
         </select></div>` },
     { key:'pois', label:'Punti di interesse', originalCount:(p.points_of_interest||[]).length, pairs:pois,
-      view:o=>({nm:escHtml(o.name),price:'',sub:escHtml(o.category),link:''}),
-      controls: poiCategories.length > 1 ? `<div class="plan-filters">
-        <select onchange="setPlanFilter('poiCategory',this.value)">
+      // fee/price_hint vengono dai tag OSM fee/charge, copertura reale bassa (verificato in
+      // sessione: 0/30 su un'area rurale, 5/100 con un prezzo vero su un'area museale densa) —
+      // per questo qui e' solo informativo, mai sommato nel totale automatico dei costi.
+      view:o=>{
+        const feeTxt = o.price_hint ? `Ingresso: ${o.price_hint}` : (o.fee === 'no' ? 'Ingresso gratuito' : (o.fee ? 'Ingresso a pagamento' : ''));
+        return {nm:escHtml(o.name), price:'', sub:`${escHtml(o.category)}${feeTxt?' · '+escHtml(feeTxt):''}`, link:''};
+      },
+      controls: `<div class="plan-filters">
+        ${poiCategories.length > 1 ? `<select onchange="setPlanFilter('poiCategory',this.value)">
           <option value="">Tutte le categorie</option>
           ${poiCategories.map(c => `<option value="${escHtml(c)}" ${pf.poiCategory===c?'selected':''}>${escHtml(c)}</option>`).join('')}
-        </select></div>` : '' },
+        </select>` : ''}
+        <label><input type="checkbox" ${pf.poiFeeOnly?'checked':''} onchange="setPlanFilter('poiFeeOnly',this.checked)"> Solo a pagamento</label>
+      </div>
+      <p class="costs-hint">Il dato ingresso viene da OpenStreetMap ed è spesso assente anche quando il posto è davvero a pagamento: non conteggiato nel totale automatico dei costi per questo motivo.</p>` },
   ];
 
   const html = groups.map(g => {
@@ -824,6 +850,7 @@ function renderPlanResults() {
     }
     const countLbl = g.pairs.length !== g.originalCount ? `${g.pairs.length} di ${g.originalCount}` : `${g.originalCount}`;
     if (!g.pairs.length) return `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (${countLbl})</summary>${g.controls}<p class="costs-hint">Nessun risultato con i filtri scelti.</p></details>`;
+    const dayOpts = dayOptsForKind(g.key);
     return `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (${countLbl})</summary>${g.controls}
       ${g.pairs.map(({item, origIndex}) => { const v = g.view(item);
         return `<div class="plan-item"><div class="plan-item-hd"><div class="plan-item-nm">${v.nm}</div>${v.price?`<div class="plan-item-price">${v.price}</div>`:''}</div><div class="plan-item-sub">${v.sub}</div>${v.link?`<a class="plan-item-link" href="${escHtml(v.link)}" target="_blank" rel="noopener noreferrer">${escHtml(v.linkLabel||'Vedi →')}</a>`:''}

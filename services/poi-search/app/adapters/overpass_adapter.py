@@ -12,6 +12,13 @@ documentazione:
 
 Filtra i valori del tag `tourism` che rappresentano alloggi (hotel, ostelli, ecc.): quelli sono
 compito di services/stay-search/, non di un itinerary builder che suggerisce cosa visitare.
+
+Tag `fee`/`charge` (ingresso a pagamento): copertura verificata dal vivo con query reali, non
+assunta. Su un'area rurale (Marina di Camerota, 30 elementi) zero avevano uno dei due tag; su
+un'area museale densa (Parigi, 100 elementi tourism=museum/attraction) 30 avevano `fee` (quasi
+sempre "yes"/"no", a volte una nota libera con importi non strutturati) e solo 5 avevano `charge`
+con un prezzo vero e proprio. Per questo il frontend non somma questi valori in un totale
+automatico: la copertura e' troppo incompleta per un numero che sembri completo senza esserlo.
 """
 
 import logging
@@ -89,6 +96,8 @@ class OverpassAdapter(PoiSourceAdapter):
                         category=category or "altro",
                         lat=element["lat"],
                         lon=element["lon"],
+                        fee=tags.get("fee"),
+                        price_hint=tags.get("charge"),
                     )
                 )
             except (KeyError, TypeError) as exc:

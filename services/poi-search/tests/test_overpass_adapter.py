@@ -43,6 +43,29 @@ def test_search_filters_unnamed_and_accommodation_elements(monkeypatch):
     assert names == {"Grotta Azzurra", "Belvedere di Cala Fortuna"}
 
 
+def test_search_parses_fee_and_charge_tags_when_present(monkeypatch):
+    # Forma reale verificata dal vivo contro l'API Overpass (Parigi, tourism=museum): fee spesso
+    # solo "yes"/"no", charge un vero importo ma raro (5/100 elementi nella verifica).
+    payload = {
+        "elements": [
+            {"type": "node", "id": 1, "lat": 48.85, "lon": 2.35, "tags": {"name": "Musée Edith Piaf", "tourism": "museum", "fee": "yes", "charge": "10 EUR"}},
+            {"type": "node", "id": 2, "lat": 48.86, "lon": 2.36, "tags": {"name": "Maison de Victor Hugo", "tourism": "museum", "fee": "no"}},
+            {"type": "node", "id": 3, "lat": 48.87, "lon": 2.37, "tags": {"name": "Point zéro", "tourism": "attraction"}},  # nessun tag fee/charge
+        ]
+    }
+    monkeypatch.setattr("app.adapters.overpass_adapter.geocode", lambda location: _BBOX)
+    monkeypatch.setattr("app.adapters.overpass_adapter.httpx.post", lambda *a, **k: _FakeResponse(payload))
+
+    pois = {p.name: p for p in OverpassAdapter().search(_REQUEST)}
+
+    assert pois["Musée Edith Piaf"].fee == "yes"
+    assert pois["Musée Edith Piaf"].price_hint == "10 EUR"
+    assert pois["Maison de Victor Hugo"].fee == "no"
+    assert pois["Maison de Victor Hugo"].price_hint is None
+    assert pois["Point zéro"].fee is None
+    assert pois["Point zéro"].price_hint is None
+
+
 def test_search_respects_limit(monkeypatch):
     payload = {
         "elements": [

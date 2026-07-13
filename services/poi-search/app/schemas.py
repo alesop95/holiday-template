@@ -3,6 +3,8 @@
 Vedi .claude/context/roadmap.md, Fase 4 (itinerary builder), per il piano completo.
 """
 
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -19,3 +21,5 @@ class PointOfInterest(BaseModel):
     category: str = Field(..., description="Valore del tag OSM tourism/historic, es. 'museum', 'castle'")
     lat: float
     lon: float
+    fee: Optional[str] = Field(None, description="Valore grezzo del tag OSM fee ('yes'/'no'/nota libera), assente se il tag non esiste")
+    price_hint: Optional[str] = Field(None, description="Valore grezzo del tag OSM charge (es. '10 EUR'), assente se il tag non esiste — copertura reale bassa, verificata: solo 5/100 su un'area museale densa (Parigi), 0/30 su un'area rurale (Marina di Camerota)")

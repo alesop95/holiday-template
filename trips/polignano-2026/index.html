@@ -302,7 +302,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
   <div id="itinerario" class="panel active">
     <div class="sec-head">
       <h2>Il Programma</h2>
-      <p>4 notti a Marina di Camerota, Castellabate e Paestum lungo il percorso, 2 notti a Caserta. Un solo cambio hotel, tutto visto.</p>
+      <p id="program-summary"></p>
       <button class="act-btn" id="export-print-btn" onclick="window.print()">Esporta / Stampa itinerario</button>
     </div>
     <div id="days-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
@@ -340,7 +340,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
         <div id="pf-dest-air-list" class="airport-ac-list" style="display:none"></div>
         <div id="pf-dest-air-confirm" class="airport-ac-confirm"></div>
       </div>
-      <div class="plan-field full"><label>Città / zona (alloggi e POI)</label><input id="pf-dest-loc" placeholder="Es. Marina di Camerota">
+      <div class="plan-field full"><label>Città / zona (alloggi e POI)</label><input id="pf-dest-loc" placeholder="Es. il nome della città o della zona">
         <div id="pf-zone-suggestions" class="zone-suggestions"></div>
       </div>
       <div class="plan-field"><label>Andata</label><input id="pf-dep" type="date"></div>
@@ -586,6 +586,11 @@ function renderAll() { renderHero(); renderDays(); renderRest(); renderCk(); ren
 
 function renderDays() {
   const c = document.getElementById('days-container'); let html = '';
+  // "Il Programma" era testo scritto a mano nella shell condivisa con la sintesi di Cilento
+  // (stesso problema gia' corretto per "Cambio Hotel" e "Info & Costi", qui era sfuggito):
+  // ogni viaggio copiato dalla shell mostrava la sintesi di Cilento invece della propria.
+  const summaryEl = document.getElementById('program-summary');
+  if (summaryEl) summaryEl.textContent = TRIP_DATA.programSummary || '';
   // Il banner di cambio hotel e' specifico dei viaggi con piu' di una base (es. Cilento,
   // 4 notti + 2 notti): TRIP_DATA.hotelChange e' assente per un viaggio a base unica come
   // Polignano, quindi il banner semplicemente non compare, invece di mostrare per errore

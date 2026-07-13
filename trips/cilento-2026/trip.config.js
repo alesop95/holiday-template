@@ -129,11 +129,15 @@ export const MAP_LOCATIONS = [
 // Modificabile successivamente dalla Firebase Console o dall'app stessa.
 //
 // Schema:
-//   days[]        → giorni dell'itinerario
-//   restaurants[] → ristoranti per area geografica
-//   checklist[]   → categorie con elementi spuntabili
+//   programSummary → sintesi mostrata sotto "Il Programma" in cima a Itinerario
+//   days[]         → giorni dell'itinerario
+//   restaurants[]  → ristoranti per area geografica
+//   checklist[]    → categorie con elementi spuntabili
 
 export const TRIP_DATA = {
+
+  programSummary: "4 notti a Marina di Camerota, Castellabate e Paestum lungo il percorso, 2 notti a Caserta. Un solo cambio hotel, tutto visto.",
+
 
   days: [
     {

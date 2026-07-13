@@ -76,6 +76,12 @@ export const MAP_LOCATIONS = [
 
 export const TRIP_DATA = {
 
+  // Prima era testo scritto a mano nella shell condivisa con la sintesi di Cilento — bug
+  // template gia' corretto per "Cambio Hotel" e "Info & Costi", qui era sfuggito finche'
+  // l'utente non l'ha notato sul sito live di Polignano.
+  programSummary: "Sosta a Bari in itinere, poi 5 notti a Polignano a Mare con gite a Alberobello, Ostuni e Monopoli. Una sola base, nessun cambio hotel.",
+
+
   days: [
     {
       id:1, color:"#2B5C8A", label:"Giorno 1",

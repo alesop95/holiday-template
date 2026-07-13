@@ -12,9 +12,14 @@
  * l'app stessa (non solo in questi commenti): la sosta a Bari (Giorno 1, scheda
  * Itinerario), Grotta Palazzese e Pescaria (Giorno 2 e scheda Ristoranti), le spiagge
  * meno affollate di Ostuni e Monopoli (Giorni 4 e 5), il consumo reale dell'Alfa Romeo
- * Giulietta diesel usato per il carburante in costEstimate. Le voci
- * ristoranti di Alberobello e Ostuni restano indicative (tipo di cucina, non un nome
- * verificato), non ancora coperte da questa seconda passata.
+ * Giulietta diesel usato per il carburante in costEstimate. Una terza passata
+ * (2026-07-13, stessa modalità sequenziale) ha coperto Alberobello (Rione Monti/Aia
+ * Piccola, orari consigliati, Trullo Sovrano con prezzo reale €2,50), Ostuni (Piazza
+ * della Libertà, parcheggio ZTL, e un fatto rilevante: la Concattedrale risulta chiusa
+ * per restauro secondo un aggiornamento di aprile 2026 — da riverificare sul posto,
+ * non assumere che abbia riaperto) e Monopoli (Castello di Carlo V, Piazza Giuseppe
+ * Garibaldi). Le voci ristoranti di Alberobello e Ostuni restano indicative (tipo di
+ * cucina, non un nome verificato), non coperte da nessuna delle passate finora.
  */
 
 // ─── IDENTIFICATIVO DEL VIAGGIO ────────────────────────────────────────────────
@@ -133,9 +138,9 @@ export const TRIP_DATA = {
         { t:"Come Arrivare",
           tx:"Da Polignano ad Alberobello: circa 35 km, 40-45 minuti in auto." },
         { t:"Rione Monti & Aia Piccola",
-          tx:"Alberobello è patrimonio <b>UNESCO</b> per i suoi <b>trulli</b>, le caratteristiche case in pietra a secco con tetto conico bianco. <b>Rione Monti</b> è il quartiere principale, denso di trulli (molti oggi negozi di souvenir); <b>Aia Piccola</b>, dall'altra parte del paese, è più residenziale e autentico, meno turistico." },
+          tx:"Alberobello è patrimonio <b>UNESCO</b> per i suoi <b>trulli</b>, le caratteristiche case in pietra a secco con tetto conico bianco. <b>Rione Monti</b> (oltre 1.000 trulli) è il quartiere principale, denso di trulli — molti oggi negozi di souvenir — e molto affollato nelle ore centrali: meglio visitarlo presto la mattina o dopo cena. <b>Aia Piccola</b> (400 trulli), dall'altra parte del paese, è molto meno turistica — ancora abitazioni di famiglia vere, il nucleo più antico del paese — ed è particolarmente suggestiva la sera. Percorso consigliato: dal belvedere, scendere nel Rione Monti, poi Aia Piccola per capire la differenza tra la parte scenografica e quella vissuta. Fonte: <a href=\"https://www.marcotogni.it/cosa-vedere-alberobello/\" target=\"_blank\" rel=\"noopener noreferrer\">Marco Togni</a>." },
         { t:"Trullo Sovrano",
-          tx:"L'unico trullo a due piani della città, oggi piccolo museo. Ingresso a pagamento, pochi euro." },
+          tx:"L'unico trullo a due piani della città (fine XVIII secolo, monumento nazionale dal 1930), oggi piccolo museo con ambienti ricostruiti (panificio, camera da letto, cucina). Biglietto: <b>€2,50</b> (Piazza Sacramento 10). Fonte: <a href=\"https://www.trullosovrano.eu/ingresso-biglietti/\" target=\"_blank\" rel=\"noopener noreferrer\">sito ufficiale</a>." },
         { t:"Pranzo",
           tx:"Pranzo in una trattoria del centro storico: cucina della Valle d'Itria, orecchiette, verdure locali." },
       ],
@@ -145,12 +150,14 @@ export const TRIP_DATA = {
     {
       id:4, color:"#7B4F9E", label:"Giorno 4",
       title:"Ostuni, la Città Bianca",
-      places:"Centro storico · Cattedrale · Costa Ostunese",
+      places:"Centro storico · Piazza della Libertà · Costa Ostunese",
       sections:[
         { t:"Come Arrivare",
           tx:"Da Polignano a Ostuni: circa 50 km, 50-60 minuti in auto." },
+        { t:"Parcheggio",
+          tx:"Il centro storico è in gran parte <b>ZTL</b>, strade strette e affollate in alta stagione: meglio lasciare l'auto in un parcheggio esterno a pagamento (es. Ostuni Parking Area1, o i parcheggi di Via Antonia Specchia) e proseguire a piedi. Fonte: <a href=\"https://www.ostunicentralparking.it/2025/06/20/cosa-vedere-a-ostuni-in-un-giorno-con-mappa-e-consigli-di-parcheggio/\" target=\"_blank\" rel=\"noopener noreferrer\">Ostuni Central Parking</a>." },
         { t:"Mattino - Il centro storico",
-          tx:"Ostuni è nota come <b>la Città Bianca</b> per il centro storico interamente imbiancato a calce, arroccato su una collina con vista sulla piana degli ulivi e sul mare. Vicoli stretti, scalinate, la <b>Concattedrale di Ostuni</b> con il grande rosone gotico." },
+          tx:"Ostuni è nota come <b>la Città Bianca</b> per il centro storico interamente imbiancato a calce, arroccato su una collina con vista sulla piana degli ulivi e sul mare. Vicoli stretti, scalinate, molti vicoli ciechi. <b>Piazza della Libertà</b>, con la Colonna di Sant'Oronzo, è il punto d'incontro tra la città nuova e il borgo antico. <b>Attenzione</b>: la Concattedrale di Ostuni, con il suo rosone gotico, risulta <b>chiusa per lavori di ristrutturazione</b> secondo un aggiornamento di aprile 2026 — verificare sul posto se ha riaperto prima di contarci come tappa, non è detto che sia già visitabile ad agosto. Fonte: <a href=\"https://www.eleonoraongaro.it/ostuni-cosa-vedere/\" target=\"_blank\" rel=\"noopener noreferrer\">Sarà Perché Viaggio</a>." },
         { t:"Pomeriggio - Mare, meno affollato",
           tx:"Sulla costa di Ostuni, <b>Torre Pozzelle</b> ha una serie di calette selvagge tra gli scogli, e <b>Costa Merlata</b> insenature rocciose meno battute delle spiagge principali — alternative valide a Rosa Marina se si cerca meno folla. Fonte: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>." },
       ],
@@ -166,9 +173,11 @@ export const TRIP_DATA = {
         { t:"Come Arrivare",
           tx:"Da Polignano a Monopoli: solo 12 km, 15-20 minuti in auto — la tappa più vicina, giornata più rilassata." },
         { t:"Centro storico & Porto",
-          tx:"Monopoli ha un centro storico bianco simile a Polignano ma più esteso, cinto da mura, con un <b>porto peschereccio</b> ancora attivo pieno di barche colorate. Il <b>Castello di Carlo V</b>, sul mare, domina il porto vecchio." },
+          tx:"Monopoli ha un centro storico bianco simile a Polignano ma più esteso, cinto da mura, con un <b>porto peschereccio</b> ancora attivo — barche colorate (i tradizionali gozzi), pescatori che riparano le reti. Il <b>Castello di Carlo V</b> (XVI secolo), sul mare accanto al centro storico, domina il porto vecchio: non è visitabile ovunque all'interno (parte ospita uffici comunali), ma l'esterno vale comunque la sosta. Fonte: <a href=\"https://www.regionepuglia.org/monopoli/\" target=\"_blank\" rel=\"noopener noreferrer\">Regione Puglia</a>." },
         { t:"Mare, meno affollato",
           tx:"A sud del centro, <b>Spiaggia di Porto Ghiacciolo</b> (5 minuti in auto) è segnalata come la spiaggia migliore della zona, sabbia dorata e acqua limpida. Più selvagge: <b>Port'Alga</b> (Scoglio dell'Eremita) e <b>Torre Incina</b>, buone per lo snorkeling; <b>Cala Verde</b>, dietro il campeggio Santo Stefano, è la più remota e meno frequentata. Fonti: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>, <a href=\"https://roamandthrive.com/best-beaches-monopoli-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Roam & Thrive</a>." },
+        { t:"Sera - Porto vecchio",
+          tx:"A fine giornata, rientro nel centro storico per l'atmosfera serale intorno al porto vecchio e <b>Piazza Giuseppe Garibaldi</b>, il ritrovo serale della città." },
       ],
       tips:["Giornata volutamente leggera, vicina alla base: buon giorno per riposare dagli spostamenti"],
       cf:"20-35", ca:"0"
@@ -322,7 +331,7 @@ export const TRIP_DATA = {
   tickets: [
     { name:"Basilica di San Nicola (Bari)", price:"Gratuito", free:true },
     { name:"Bari Vecchia (passeggiata)", price:"Gratuito", free:true },
-    { name:"Trullo Sovrano (Alberobello)", price:"€1-2" },
+    { name:"Trullo Sovrano (Alberobello)", price:"€2,50" },
     { name:"Centro storico Ostuni", price:"Gratuito", free:true },
     { name:"Centro storico Monopoli", price:"Gratuito", free:true },
   ],

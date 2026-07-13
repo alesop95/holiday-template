@@ -724,10 +724,14 @@ function renderInfoCosts() {
   const resolvedAcc = resolveAccommodationCost();
   let html = '';
   if (acc) {
+    // Le opzioni indicative (options) non hanno piu' senso una volta che una prenotazione e'
+    // davvero confermata: mostrarle insieme al prezzo vero e' rumore, non un'alternativa reale
+    // da valutare. L'intestazione della base (nome/date) resta, per contesto.
+    const hideOptions = resolvedAcc && resolvedAcc.status === 'confirmed';
     html += `<div class="sec-head"><h2>Gli Hotel</h2><p>${acc.subtitle||''}</p></div>`;
     html += acc.bases.map(b => `<div class="info-hotel">
       <div class="ih-head"><div><div class="ih-name">${b.name}</div><div class="ih-loc">${b.location}</div></div><div class="ih-badge" style="background:${b.badgeBg};color:${b.badgeColor};">${b.badge}</div></div>
-      ${b.options.map(o => `<div class="ih-opt"><div class="ih-oname">${o.name}</div><div class="ih-price">${o.price}</div><div class="ih-desc">${o.desc}</div>${o.note?`<div class="ih-note">${o.note}</div>`:''}</div>`).join('')}
+      ${hideOptions ? '' : b.options.map(o => `<div class="ih-opt"><div class="ih-oname">${o.name}</div><div class="ih-price">${o.price}</div><div class="ih-desc">${o.desc}</div>${o.note?`<div class="ih-note">${o.note}</div>`:''}</div>`).join('')}
     </div>`).join('');
     html += renderConfirmedBookingBlock(resolvedAcc);
   }

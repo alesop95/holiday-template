@@ -308,7 +308,7 @@ export const TRIP_DATA = {
       { label:"Alloggio", desc:"5 notti a Polignano a Mare, alta stagione agosto (indicativo, non verificato — diventa reale se confermi una prenotazione o salvi un alloggio da Pianifica)", amount:"€225-400", kind:"accommodation" },
       { label:"Pasti", desc:"Somma delle stime giornaliere sopra (Giorni 1-6)", amount:"€120-225" },
       { label:"Biglietti e attività", desc:"Grotta Palazzese/Pescaria escluse (già in Pasti se scelte), Trullo Sovrano incluso", amount:"€15-35" },
-      { label:"Carburante diesel", desc:"1106 km reali (Civitanova-Bari-Polignano A/R + spostamenti locali), Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone", amount:"€43-46" },
+      { label:"Carburante diesel", desc:"1106 km reali (Civitanova-Bari-Polignano A/R + spostamenti locali, calcolati con OSRM), Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone. Fonti: <a href=\"https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/\" target=\"_blank\" rel=\"noopener noreferrer\">Motor1</a>, <a href=\"https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda tecnica</a>.", amount:"€43-46" },
       { label:"Extra e imprevisti", amount:"€50-100" },
     ],
     total: { sub:"6 giorni, tutto incluso" },

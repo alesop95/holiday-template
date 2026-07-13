@@ -484,6 +484,10 @@ function listenRealtime() {
     S.planning = snap.exists() ? (snap.data().byDay || {}) : {};
     renderPlanSaved();
     renderDayPlanningAll();
+    // computePlanningCosts()/resolveAccommodationCost() dipendono da S.planning: senza queste due
+    // righe, "Costi" e "Info & Costi" restavano disallineati finché non si cambiava scheda.
+    renderCostsDashboard();
+    renderInfoCosts();
   });
   onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'meta'), snap => {
     if (!snap.exists()) return;
@@ -493,6 +497,7 @@ function listenRealtime() {
   onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'costs'), snap => {
     S.costs = snap.exists() ? snap.data() : { participants: [], expenses: [] };
     renderCostsDashboard();
+    renderInfoCosts(); // confirmedAccommodation vive nello stesso documento: aggiorna anche "Info & Costi"
   });
 }
 
@@ -617,6 +622,66 @@ function renderRest() {
     <div class="rest-grid">${a.items.map(r=>`<div class="rest-card"><div class="rest-nm">${r.nm}</div><div class="rest-tags">${r.tags.map(t=>`<span class="rtag${t.startsWith('$')?' p':''}">${t}</span>`).join('')}</div><div class="rest-note">${r.note}</div>${r.sp?`<div class="rest-sp">${r.sp}</div>`:''}</div>`).join('')}</div></div>`).join('');
 }
 
+// ── Gerarchia di risoluzione del costo alloggio ────────────────────────────────
+// Confermato (prenotazione reale, es. Booking.com) > salvato da Pianifica (ricerca
+// Airbnb, automatico ma non confermato) > nessuno dei due, resta solo la stima
+// indicativa scritta a mano in TRIP_DATA.costEstimate. Condivisa tra "Info & Costi"
+// e il totale automatico di "Costi": lo stesso valore risolto qui alimenta entrambe
+// le schede, cosi' un alloggio confermato non si somma due volte (una in "Info &
+// Costi", una nel totale di "Costi" calcolato separatamente da Pianifica).
+function resolveAccommodationCost() {
+  const confirmed = S.costs?.confirmedAccommodation;
+  if (confirmed && confirmed.totalPrice) {
+    return { amount: confirmed.totalPrice, count: 1, label: confirmed.label || 'Prenotazione confermata', link: confirmed.link || '', status: 'confirmed' };
+  }
+  const savedStays = Object.values(S.planning).flatMap(day => day.stays || []);
+  if (savedStays.length) {
+    const amount = savedStays.reduce((s, st) => s + parsePrice(st.total_price), 0);
+    return { amount, count: savedStays.length, label: `${savedStays.length} alloggio/i salvato/i da Pianifica`, link: '', status: 'pianifica' };
+  }
+  return null;
+}
+
+// Estrae [minimo, massimo] da una stringa come "€120-225" o "€50" (valore singolo): serve a
+// ricalcolare il totale di "Stima Costi" quando la riga Alloggio diventa un valore risolto
+// (confermato o da Pianifica) invece dell'intervallo indicativo scritto a mano.
+function parseCostRange(str) {
+  const nums = (String(str).match(/[\d]+(?:[.,]\d+)?/g) || []).map(n => parseFloat(n.replace(',', '.')));
+  if (!nums.length) return [0, 0];
+  return nums.length > 1 ? [nums[0], nums[1]] : [nums[0], nums[0]];
+}
+
+function renderConfirmedBookingBlock(resolvedAcc) {
+  if (resolvedAcc && resolvedAcc.status === 'confirmed') {
+    return `<div class="info-hotel">
+      <div class="costs-card-ttl">Prenotazione confermata</div>
+      <div class="costs-auto-row"><span>${escHtml(resolvedAcc.label)} — ${CURRENCY_SYMBOL} ${resolvedAcc.amount.toFixed(2)} totale${resolvedAcc.link?` · <a href="${escHtml(resolvedAcc.link)}" target="_blank" rel="noopener noreferrer">link</a>`:''}</span>
+      <button class="costs-rm-btn" onclick="clearConfirmedAccommodation()">&times;</button></div>
+    </div>`;
+  }
+  return `<div class="info-hotel">
+    <div class="costs-card-ttl">Segna una prenotazione come confermata</div>
+    <p class="costs-hint">Finché non confermi nulla qui, l'alloggio resta la stima indicativa sopra (o quanto salvato da Pianifica, se presente).</p>
+    <div class="costs-expense-form">
+      <input id="cb-label" placeholder="Nome struttura (es. Magda Relax Suites)">
+      <input id="cb-price" type="number" min="0" step="0.01" placeholder="Prezzo totale ${CURRENCY_CODE}">
+      <input id="cb-link" placeholder="Link (facoltativo)">
+      <button class="costs-add-btn" onclick="saveConfirmedAccommodation()">Conferma prenotazione</button>
+    </div>
+  </div>`;
+}
+
+window.saveConfirmedAccommodation = () => {
+  const label = document.getElementById('cb-label').value.trim();
+  const price = parseFloat(document.getElementById('cb-price').value);
+  const link = document.getElementById('cb-link').value.trim();
+  if (!label || !price) { alert('Inserisci almeno nome struttura e prezzo totale.'); return; }
+  writeCosts({ ...(S.costs||{participants:[],expenses:[]}), confirmedAccommodation: { label, totalPrice: price, link } }).catch(e => alert('Errore: ' + e.message));
+};
+window.clearConfirmedAccommodation = () => {
+  writeCosts({ ...(S.costs||{participants:[],expenses:[]}), confirmedAccommodation: null }).catch(e => alert('Errore: ' + e.message));
+};
+
 // ── "Info & Costi": hotel/costi/biglietti/risparmio, guidati da TRIP_DATA ──────────
 // Prima era markup scritto a mano dentro la shell condivisa con i dati reali di
 // Cilento: copiando la shell su un nuovo viaggio (es. polignano-2026) quel contenuto
@@ -627,6 +692,7 @@ function renderInfoCosts() {
   const el = document.getElementById('info-content'); if (!el) return;
   const acc = TRIP_DATA.accommodation, cost = TRIP_DATA.costEstimate;
   const tickets = TRIP_DATA.tickets || [], tips = TRIP_DATA.savingTips || [];
+  const resolvedAcc = resolveAccommodationCost();
   let html = '';
   if (acc) {
     html += `<div class="sec-head"><h2>Gli Hotel</h2><p>${acc.subtitle||''}</p></div>`;
@@ -634,12 +700,27 @@ function renderInfoCosts() {
       <div class="ih-head"><div><div class="ih-name">${b.name}</div><div class="ih-loc">${b.location}</div></div><div class="ih-badge" style="background:${b.badgeBg};color:${b.badgeColor};">${b.badge}</div></div>
       ${b.options.map(o => `<div class="ih-opt"><div class="ih-oname">${o.name}</div><div class="ih-price">${o.price}</div><div class="ih-desc">${o.desc}</div>${o.note?`<div class="ih-note">${o.note}</div>`:''}</div>`).join('')}
     </div>`).join('');
+    html += renderConfirmedBookingBlock(resolvedAcc);
   }
   if (acc && cost) html += `<div class="divider"></div>`;
   if (cost) {
+    // La riga Alloggio diventa il valore risolto (confermato/Pianifica) quando esiste, invece
+    // dell'intervallo indicativo scritto a mano: il totale si ricalcola di conseguenza sommando
+    // gli intervalli di tutte le righe, non resta un numero statico ormai disallineato.
+    const rows = cost.rows.map(r => {
+      if (r.kind === 'accommodation' && resolvedAcc) {
+        const perPerson = resolvedAcc.amount / 2;
+        const statusTxt = resolvedAcc.status === 'confirmed' ? 'confermato' : 'automatico da Pianifica, non ancora confermato';
+        const linkTxt = resolvedAcc.link ? ` · <a href="${escHtml(resolvedAcc.link)}" target="_blank" rel="noopener noreferrer">link</a>` : '';
+        return { label:r.label, desc:`${escHtml(resolvedAcc.label)} — ${statusTxt}${linkTxt}`, amount:`${CURRENCY_SYMBOL}${perPerson.toFixed(2)}`, _range:[perPerson,perPerson] };
+      }
+      return { label:r.label, desc:r.desc, amount:r.amount, _range:parseCostRange(r.amount) };
+    });
+    const lo = rows.reduce((s,r)=>s+r._range[0],0), hi = rows.reduce((s,r)=>s+r._range[1],0);
+    const totalTxt = lo===hi ? `${CURRENCY_SYMBOL}${lo.toFixed(2)}` : `${CURRENCY_SYMBOL}${lo.toFixed(0)}-${hi.toFixed(0)}`;
     html += `<div class="sec-head"><h2>Stima Costi</h2><p>${cost.subtitle||''}</p></div>
-      <div class="cost-tbl">${cost.rows.map(r => `<div class="cost-row"><div class="cost-inf"><div class="cost-lbl">${r.label}</div>${r.desc?`<div class="cost-desc">${r.desc}</div>`:''}</div><div class="cost-amt">${r.amount}</div></div>`).join('')}</div>
-      <div class="cost-total"><div class="ct-lbl">Totale stimato per persona</div><div><div class="ct-amt">${cost.total.amount}</div><div class="ct-sub">${cost.total.sub}</div></div></div>`;
+      <div class="cost-tbl">${rows.map(r => `<div class="cost-row"><div class="cost-inf"><div class="cost-lbl">${r.label}</div>${r.desc?`<div class="cost-desc">${r.desc}</div>`:''}</div><div class="cost-amt">${r.amount}</div></div>`).join('')}</div>
+      <div class="cost-total"><div class="ct-lbl">Totale stimato per persona</div><div><div class="ct-amt">${totalTxt}</div><div class="ct-sub">${cost.total.sub}</div></div></div>`;
   }
   if (tickets.length) {
     html += `<div class="sec-head"><h2>Biglietti e Ingressi</h2></div>
@@ -960,12 +1041,16 @@ function parsePrice(str) {
 }
 
 function computePlanningCosts() {
-  let flights = 0, flightsCount = 0, stays = 0, staysCount = 0;
-  Object.values(S.planning).forEach(day => {
-    (day.flights||[]).forEach(f => { flights += parsePrice(f.price); flightsCount++; });
-    (day.stays||[]).forEach(s => { stays += parsePrice(s.total_price); staysCount++; });
-  });
-  return { flights, flightsCount, stays, staysCount, total: flights + stays };
+  let flights = 0, flightsCount = 0;
+  Object.values(S.planning).forEach(day => (day.flights||[]).forEach(f => { flights += parsePrice(f.price); flightsCount++; }));
+  // L'alloggio usa la stessa gerarchia di risoluzione di "Info & Costi" (resolveAccommodationCost),
+  // non una somma indipendente di S.planning.stays: altrimenti un alloggio confermato (es. via
+  // Booking.com, fuori da Pianifica) e uno eventualmente salvato da Pianifica si sommerebbero,
+  // contando due volte lo stesso soggiorno invece di uno o l'altro.
+  const resolvedAcc = resolveAccommodationCost();
+  const stays = resolvedAcc ? resolvedAcc.amount : 0;
+  const staysCount = resolvedAcc ? resolvedAcc.count : 0;
+  return { flights, flightsCount, stays, staysCount, staysStatus: resolvedAcc?.status || null, total: flights + stays };
 }
 
 function renderCostsDashboard() {
@@ -990,10 +1075,10 @@ function renderCostsDashboard() {
     </div>
 
     <div class="costs-card">
-      <div class="costs-card-ttl">Costi automatici (da Pianifica)</div>
-      <div class="costs-auto-row"><span>Voli salvati (${auto.flightsCount})</span><strong>${CURRENCY_SYMBOL} ${auto.flights.toFixed(2)}</strong></div>
-      <div class="costs-auto-row"><span>Alloggi salvati (${auto.staysCount})</span><strong>${CURRENCY_SYMBOL} ${auto.stays.toFixed(2)}</strong></div>
-      <p class="costs-hint">Si aggiorna da solo ogni volta che salvi un risultato nella scheda Pianifica su un giorno.</p>
+      <div class="costs-card-ttl">Costi automatici</div>
+      <div class="costs-auto-row"><span>Voli salvati da Pianifica (${auto.flightsCount})</span><strong>${CURRENCY_SYMBOL} ${auto.flights.toFixed(2)}</strong></div>
+      <div class="costs-auto-row"><span>Alloggio${auto.staysStatus==='confirmed'?' (prenotazione confermata)':auto.staysStatus==='pianifica'?` (${auto.staysCount} salvato/i da Pianifica, non confermato)`:' (nessuno confermato o salvato)'}</span><strong>${CURRENCY_SYMBOL} ${auto.stays.toFixed(2)}</strong></div>
+      <p class="costs-hint">Voli: si aggiornano salvando un risultato in Pianifica. Alloggio: usa la prenotazione confermata in "Info & Costi" se presente, altrimenti quanto salvato da Pianifica.</p>
     </div>
 
     <div class="costs-card">

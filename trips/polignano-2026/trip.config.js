@@ -8,9 +8,11 @@
  * Nota di onestà sui contenuti: la prima stesura di questo file (giorni, ristoranti,
  * consigli) veniva da conoscenza generale, non da una ricerca dedicata. Una seconda
  * passata (2026-07-13, ricerca web sequenziale su richiesta esplicita dell'utente) ha
- * verificato con fonti reali e citabili: la sosta a Bari (Giorno 1), Grotta Palazzese
- * e Pescaria (Giorno 2), le spiagge meno affollate di Ostuni e Monopoli (Giorni 4 e 5).
- * Le fonti sono citate in un commento accanto a ogni sezione toccata. Le voci
+ * verificato con fonti reali e citabili, ORA VISIBILI COME LINK CLICCABILI dentro
+ * l'app stessa (non solo in questi commenti): la sosta a Bari (Giorno 1, scheda
+ * Itinerario), Grotta Palazzese e Pescaria (Giorno 2 e scheda Ristoranti), le spiagge
+ * meno affollate di Ostuni e Monopoli (Giorni 4 e 5), il consumo reale dell'Alfa Romeo
+ * Giulietta diesel usato per il carburante in costEstimate. Le voci
  * ristoranti di Alberobello e Ostuni restano indicative (tipo di cucina, non un nome
  * verificato), non ancora coperte da questa seconda passata.
  */
@@ -281,20 +283,27 @@ export const TRIP_DATA = {
     ]
   },
 
-  // Alloggio/carburante: stime indicative (non ricercate). Pasti/Biglietti: somma delle stime
-  // cf/ca già scritte in ogni giorno sopra, quindi coerenti con quei valori, non un numero a sé.
-  // Carburante: Civitanova-Bari-Polignano A/R (~924 km) calcolato con OSRM in sessione, più una
-  // stima approssimativa (non calcolata) per gli spostamenti locali tra le tappe pugliesi.
+  // Alloggio: indicativo, non ricercato (Alloggio diventa dinamico se confermi una prenotazione
+  // reale o salvi un alloggio da Pianifica, vedi renderInfoCosts/resolveAccommodationCost in
+  // public/index.html — questa riga resta solo il valore di partenza). Pasti/Biglietti: somma
+  // delle stime cf/ca già scritte in ogni giorno sopra, coerenti con quei valori.
+  // Carburante: ricalcolato con dati reali (2026-07-13), non più una stima approssimativa —
+  // distanze via OSRM (Civitanova-Bari-Polignano A/R 924,4 km; Polignano-Alberobello A/R 60,2 km;
+  // Polignano-Ostuni A/R 98,8 km; Polignano-Monopoli A/R 22,8 km — totale 1106,2 km), consumo
+  // reale Alfa Romeo Giulietta 1.6 JTD diesel (2019) da fonti citate: 4,7-5,0 L/100km ciclo misto
+  // ufficiale (test reali spesso migliori, ~4L/100km). Fonti:
+  // https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/
+  // https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/
   costEstimate: {
     subtitle: "Per persona, camera doppia condivisa — stima indicativa",
     rows: [
-      { label:"Alloggio", desc:"5 notti a Polignano a Mare, alta stagione agosto (indicativo, non verificato)", amount:"€225-400" },
+      { label:"Alloggio", desc:"5 notti a Polignano a Mare, alta stagione agosto (indicativo, non verificato — diventa reale se confermi una prenotazione o salvi un alloggio da Pianifica)", amount:"€225-400", kind:"accommodation" },
       { label:"Pasti", desc:"Somma delle stime giornaliere sopra (Giorni 1-6)", amount:"€120-225" },
       { label:"Biglietti e attività", desc:"Grotta Palazzese/Pescaria escluse (già in Pasti se scelte), Trullo Sovrano incluso", amount:"€15-35" },
-      { label:"Carburante diesel", desc:"~924 km A/R Civitanova-Bari-Polignano (reali) + spostamenti locali stimati, 6L/100km, €1.65/L, diviso tra 2 persone", amount:"€45-70" },
+      { label:"Carburante diesel", desc:"1106 km reali (Civitanova-Bari-Polignano A/R + spostamenti locali), Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone", amount:"€43-46" },
       { label:"Extra e imprevisti", amount:"€50-100" },
     ],
-    total: { amount:"€455-830", sub:"6 giorni, tutto incluso" }
+    total: { sub:"6 giorni, tutto incluso" }
   },
 
   tickets: [

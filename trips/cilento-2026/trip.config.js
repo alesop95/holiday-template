@@ -385,13 +385,16 @@ export const TRIP_DATA = {
   costEstimate: {
     subtitle: "Per persona, camera doppia condivisa",
     rows: [
-      { label:"Alloggio", desc:"4 notti Marina di Camerota + 2 notti Caserta", amount:"€160-290" },
+      { label:"Alloggio", desc:"4 notti Marina di Camerota + 2 notti Caserta", amount:"€160-290", kind:"accommodation" },
       { label:"Pasti", desc:"Colazioni (parte incluse), 3 pranzi al sacco, 5 cene", amount:"€200-300" },
       { label:"Biglietti e attività", desc:"Barca Palinuro, Paestum, Grotte, Reggia", amount:"€57-82" },
       { label:"Carburante diesel", desc:"~800 km, 6L/100km, €1.65/L, diviso tra 2 persone", amount:"€20-40" },
       { label:"Extra e imprevisti", amount:"€50-100" },
     ],
-    total: { amount:"€490-810", sub:"7 giorni, tutto incluso" }
+    // "amount" del totale non e' piu' un campo: si ricalcola sempre sommando le righe sopra
+    // (public/index.html, renderInfoCosts), cosi' non resta disallineato se una riga cambia
+    // (es. Alloggio sostituito da una prenotazione confermata o da un salvataggio Pianifica).
+    total: { sub:"7 giorni, tutto incluso" }
   },
 
   tickets: [

@@ -350,4 +350,64 @@ export const TRIP_DATA = {
       { t:"Foto in ogni tappa dell'itinerario" },
     ]},
   ],
+
+  // Banner "Cambio Hotel" mostrato in Itinerario subito prima del giorno indicato. Assente
+  // per un viaggio a base unica: qui presente perché Cilento cambia base al Giorno 5.
+  hotelChange: {
+    afterDayId: 5,
+    title: "Cambio Hotel - Giorno 5",
+    text: "Check-out da Marina di Camerota. Castellabate e Paestum sono lungo la strada verso Caserta: nessuna deviazione. Check-in Caserta la sera.",
+  },
+
+  accommodation: {
+    subtitle: "Un solo cambio - 4 notti + 2 notti",
+    bases: [
+      {
+        name: "Base 1 - Marina di Camerota", location: "Cilento Sud, SA - Giorni 1-4 (4 notti)",
+        badge: "Base principale", badgeBg: "#E3F7EE", badgeColor: "#1DAD70",
+        options: [
+          { name:"Park Hotel Cilento (3 stelle)", price:"€75-120 / notte (doppia)", desc:"Circondato da uliveti nel Parco Nazionale, con piscina e ristorante. Colazione a buffet.", note:"Via Sirene 26 - Tel. 0974 932154" },
+          { name:"Albergo Tirreno (3 stelle)", price:"€65-100 / notte (doppia)", desc:"Tra porto e spiaggia, tutto a piedi. Gestione familiare, terrazza panoramica." },
+          { name:"Alternativa - Airbnb bilocale", price:"€80-140 / notte", desc:"Con cucina propria per colazioni e pranzi al sacco." },
+        ]
+      },
+      {
+        name: "Base 2 - Caserta", location: "Caserta Città - Giorni 5-6 (2 notti)",
+        badge: "Finale", badgeBg: "#F5F0FA", badgeColor: "#7B4F9E",
+        options: [
+          { name:"Hotel Vanvitelli (4 stelle)", price:"€80-130 / notte (doppia)", desc:"A pochi minuti dalla Reggia." },
+          { name:"Hotel Amadeus (3 stelle)", price:"€60-90 / notte (doppia)", desc:"Buon rapporto qualità/prezzo, vicino a stazione e Reggia." },
+        ]
+      },
+    ]
+  },
+
+  costEstimate: {
+    subtitle: "Per persona, camera doppia condivisa",
+    rows: [
+      { label:"Alloggio", desc:"4 notti Marina di Camerota + 2 notti Caserta", amount:"€160-290" },
+      { label:"Pasti", desc:"Colazioni (parte incluse), 3 pranzi al sacco, 5 cene", amount:"€200-300" },
+      { label:"Biglietti e attività", desc:"Barca Palinuro, Paestum, Grotte, Reggia", amount:"€57-82" },
+      { label:"Carburante diesel", desc:"~800 km, 6L/100km, €1.65/L, diviso tra 2 persone", amount:"€20-40" },
+      { label:"Extra e imprevisti", amount:"€50-100" },
+    ],
+    total: { amount:"€490-810", sub:"7 giorni, tutto incluso" }
+  },
+
+  tickets: [
+    { name:"Trekking Baia degli Infreschi", price:"Gratuito", free:true },
+    { name:"Barca Infreschi (alternativa)", price:"~€35" },
+    { name:"Palinuro - Tour costa completo", price:"€25-35" },
+    { name:"Gole Sammaro + Roscigno Vecchia", price:"Gratuito", free:true },
+    { name:"Castellabate (borgo)", price:"Gratuito", free:true },
+    { name:"Paestum - Area arch. + Museo", price:"€10" },
+    { name:"Grotte di Pertosa-Auletta", price:"€18-19" },
+    { name:"Reggia di Caserta (Appart. + Parco)", price:"€14-18" },
+  ],
+
+  savingTips: [
+    "Prima domenica del mese: Paestum e Reggia di Caserta gratuiti",
+    "Hotel con colazione inclusa: risparmio €8-15/giorno a persona",
+    "Pranzi al sacco nei giorni di trekking (risparmio €15-25 a pasto)",
+  ],
 };

@@ -85,7 +85,7 @@ export const TRIP_DATA = {
         { t:"Sosta a Bari - Bari Vecchia",
           tx:"Percorso a piedi consigliato: <b>Piazza del Ferrarese</b> come punto di partenza, poi dentro il centro storico verso la <b>Basilica di San Nicola</b> (tappa centrale). <b>Via dell'Arco Basso</b>, la \"strada della pasta\": le massaie preparano a mano le orecchiette sugli usci di casa, si può comprare pasta fresca o solo guardare. <b>Piazza Mercantile</b> per una sosta caffè/pranzo veloce. 2-3 ore bastano per il percorso essenziale." },
         { t:"Parcheggio a Bari",
-          tx:"L'intera Bari Vecchia è <b>ZTL</b> (zona a traffico limitato): non entrare in auto. Per una sosta breve, le strisce blu lato mare (Zona D) costano ~€1/ora; in alternativa il parcheggio Cesare Battisti (sotterraneo, quartiere Murat, da ~€1,90/ora) è a pochi minuti a piedi dal centro storico." },
+          tx:"L'intera Bari Vecchia è <b>ZTL</b> (zona a traffico limitato): non entrare in auto. Per una sosta breve, le strisce blu lato mare (Zona D) costano ~€1/ora; in alternativa il parcheggio Cesare Battisti (sotterraneo, quartiere Murat, da ~€1,90/ora) è a pochi minuti a piedi dal centro storico. Fonti: <a href=\"https://www.regionepuglia.org/itinerario-bari-mezza-giornata/\" target=\"_blank\" rel=\"noopener noreferrer\">itinerario mezza giornata</a>, <a href=\"https://www.bariexperience.com/en/what-to-do-in-bari/parking-in-bari-where-to-park-your-car-parkride-multi-storey-car-park-ztl-paid-parking/\" target=\"_blank\" rel=\"noopener noreferrer\">parcheggi a Bari</a>." },
         { t:"Arrivo a Polignano & Check-in",
           tx:"Ultimi 35 minuti di guida da Bari. Arrivo indicativo a Polignano a Mare nel primo pomeriggio. Sistemazione in hotel/appartamento — una sola base per tutto il soggiorno, nessun cambio alloggio nei giorni successivi." },
         { t:"Sera - Centro storico di Polignano",
@@ -144,7 +144,7 @@ export const TRIP_DATA = {
         { t:"Mattino - Il centro storico",
           tx:"Ostuni è nota come <b>la Città Bianca</b> per il centro storico interamente imbiancato a calce, arroccato su una collina con vista sulla piana degli ulivi e sul mare. Vicoli stretti, scalinate, la <b>Concattedrale di Ostuni</b> con il grande rosone gotico." },
         { t:"Pomeriggio - Mare, meno affollato",
-          tx:"Sulla costa di Ostuni, <b>Torre Pozzelle</b> ha una serie di calette selvagge tra gli scogli, e <b>Costa Merlata</b> insenature rocciose meno battute delle spiagge principali — alternative valide a Rosa Marina se si cerca meno folla." },
+          tx:"Sulla costa di Ostuni, <b>Torre Pozzelle</b> ha una serie di calette selvagge tra gli scogli, e <b>Costa Merlata</b> insenature rocciose meno battute delle spiagge principali — alternative valide a Rosa Marina se si cerca meno folla. Fonte: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>." },
       ],
       tips:["Il centro storico è ripido e acciottolato: scarpe comode","Vista migliore sulla città bianca dalla strada che arriva da sud"],
       cf:"20-35", ca:"0"
@@ -160,7 +160,7 @@ export const TRIP_DATA = {
         { t:"Centro storico & Porto",
           tx:"Monopoli ha un centro storico bianco simile a Polignano ma più esteso, cinto da mura, con un <b>porto peschereccio</b> ancora attivo pieno di barche colorate. Il <b>Castello di Carlo V</b>, sul mare, domina il porto vecchio." },
         { t:"Mare, meno affollato",
-          tx:"A sud del centro, <b>Spiaggia di Porto Ghiacciolo</b> (5 minuti in auto) è segnalata come la spiaggia migliore della zona, sabbia dorata e acqua limpida. Più selvagge: <b>Port'Alga</b> (Scoglio dell'Eremita) e <b>Torre Incina</b>, buone per lo snorkeling; <b>Cala Verde</b>, dietro il campeggio Santo Stefano, è la più remota e meno frequentata." },
+          tx:"A sud del centro, <b>Spiaggia di Porto Ghiacciolo</b> (5 minuti in auto) è segnalata come la spiaggia migliore della zona, sabbia dorata e acqua limpida. Più selvagge: <b>Port'Alga</b> (Scoglio dell'Eremita) e <b>Torre Incina</b>, buone per lo snorkeling; <b>Cala Verde</b>, dietro il campeggio Santo Stefano, è la più remota e meno frequentata. Fonti: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>, <a href=\"https://roamandthrive.com/best-beaches-monopoli-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Roam & Thrive</a>." },
       ],
       tips:["Giornata volutamente leggera, vicina alla base: buon giorno per riposare dagli spostamenti"],
       cf:"20-35", ca:"0"
@@ -191,8 +191,8 @@ export const TRIP_DATA = {
       { nm:"Via dell'Arco Basso", tags:["Street food","$"], note:"Non un ristorante ma una strada: le massaie di Bari Vecchia preparano orecchiette a mano davanti casa, vendute fresche. Esperienza autentica più che un pasto vero e proprio.", sp:"Sosta breve, non un pranzo completo" },
     ]},
     { area:"Polignano a Mare", days:"Giorni 1, 2, 6", items:[
-      { nm:"Grotta Palazzese", tags:["Pesce","$$$$"], note:"Ristorante scavato in una grotta naturale a picco sul mare. Prezzo reale almeno €200/persona, tavolo vista mare non garantito anche prenotando, recensioni discordanti (3,4/5 Tripadvisor) — dettaglio completo nel Giorno 2.", sp:"Esperienza per l'ambiente, non il miglior pasto del viaggio" },
-      { nm:"Pescaria", tags:["Pesce","Street food","$"], note:"Piazza Aldo Moro 6-8. Il primo fast food di pesce d'Italia, nato qui a Polignano: panini di mare, tartare di tonno, fish and chips. Informale, senza prenotazione. 4,8/5 su Restaurant Guru, #10 su 205 ristoranti di Polignano su Tripadvisor.", sp:"Ottima alternativa economica a Grotta Palazzese" },
+      { nm:"Grotta Palazzese", tags:["Pesce","$$$$"], note:"Ristorante scavato in una grotta naturale a picco sul mare. Prezzo reale almeno €200/persona, tavolo vista mare non garantito anche prenotando, recensioni discordanti (3,4/5 Tripadvisor) — dettaglio completo nel Giorno 2. Fonte: <a href=\"https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/\" target=\"_blank\" rel=\"noopener noreferrer\">Dissapore</a>, <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>.", sp:"Esperienza per l'ambiente, non il miglior pasto del viaggio" },
+      { nm:"Pescaria", tags:["Pesce","Street food","$"], note:"Piazza Aldo Moro 6-8. Il primo fast food di pesce d'Italia, nato qui a Polignano: panini di mare, tartare di tonno, fish and chips. Informale, senza prenotazione. 4,8/5 su Restaurant Guru, #10 su 205 ristoranti di Polignano su Tripadvisor. Fonte: <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>, <a href=\"https://www.yelp.com/biz/pescaria-polignano-a-mare\" target=\"_blank\" rel=\"noopener noreferrer\">Yelp</a>.", sp:"Ottima alternativa economica a Grotta Palazzese" },
     ]},
     { area:"Alberobello", days:"Giorno 3 pranzo", items:[
       { nm:"Trattoria in un trullo", tags:["Valle d'Itria","$-$$"], note:"Voce indicativa: diversi ristoranti del centro storico occupano trulli veri. Orecchiette, verdure sott'olio, formaggi locali." },
@@ -260,5 +260,54 @@ export const TRIP_DATA = {
       { t:"Foto tra i trulli di Alberobello" },
       { t:"Foto in ogni tappa dell'itinerario" },
     ]},
+  ],
+
+  // Nessun hotelChange: una sola base per tutto il soggiorno, niente banner di cambio hotel.
+
+  // Onestà: a differenza delle voci sopra (Bari, Grotta Palazzese, Pescaria, spiagge), qui non
+  // ho fatto una ricerca dedicata su hotel/B&B reali di Polignano: prezzi e nomi sono indicativi,
+  // da verificare su Booking/Airbnb prima di prenotare (agosto è alta stagione).
+  accommodation: {
+    subtitle: "Una sola base per tutto il soggiorno — prezzi indicativi, non verificati",
+    bases: [
+      {
+        name: "Polignano a Mare", location: "Giorni 1-6 (5 notti)",
+        badge: "Unica base", badgeBg: "#E3F7EE", badgeColor: "#1DAD70",
+        options: [
+          { name:"Hotel/B&B nel centro storico", price:"indicativo €90-160 / notte (doppia, alta stagione agosto)", desc:"Voce non verificata con una ricerca dedicata: controllare prezzi e disponibilità reali su Booking/Airbnb, prenotare con largo anticipo per agosto." },
+          { name:"Alternativa - Airbnb/appartamento", price:"indicativo €100-180 / notte", desc:"Con cucina propria, utile per colazioni o pranzi più economici." },
+        ]
+      },
+    ]
+  },
+
+  // Alloggio/carburante: stime indicative (non ricercate). Pasti/Biglietti: somma delle stime
+  // cf/ca già scritte in ogni giorno sopra, quindi coerenti con quei valori, non un numero a sé.
+  // Carburante: Civitanova-Bari-Polignano A/R (~924 km) calcolato con OSRM in sessione, più una
+  // stima approssimativa (non calcolata) per gli spostamenti locali tra le tappe pugliesi.
+  costEstimate: {
+    subtitle: "Per persona, camera doppia condivisa — stima indicativa",
+    rows: [
+      { label:"Alloggio", desc:"5 notti a Polignano a Mare, alta stagione agosto (indicativo, non verificato)", amount:"€225-400" },
+      { label:"Pasti", desc:"Somma delle stime giornaliere sopra (Giorni 1-6)", amount:"€120-225" },
+      { label:"Biglietti e attività", desc:"Grotta Palazzese/Pescaria escluse (già in Pasti se scelte), Trullo Sovrano incluso", amount:"€15-35" },
+      { label:"Carburante diesel", desc:"~924 km A/R Civitanova-Bari-Polignano (reali) + spostamenti locali stimati, 6L/100km, €1.65/L, diviso tra 2 persone", amount:"€45-70" },
+      { label:"Extra e imprevisti", amount:"€50-100" },
+    ],
+    total: { amount:"€455-830", sub:"6 giorni, tutto incluso" }
+  },
+
+  tickets: [
+    { name:"Basilica di San Nicola (Bari)", price:"Gratuito", free:true },
+    { name:"Bari Vecchia (passeggiata)", price:"Gratuito", free:true },
+    { name:"Trullo Sovrano (Alberobello)", price:"€1-2" },
+    { name:"Centro storico Ostuni", price:"Gratuito", free:true },
+    { name:"Centro storico Monopoli", price:"Gratuito", free:true },
+  ],
+
+  savingTips: [
+    "Pescaria è un'alternativa economica di qualità a Grotta Palazzese per un pasto di pesce, senza il conto da occasione speciale",
+    "Aia Piccola ad Alberobello ha gli stessi trulli di Rione Monti, meno negozi per turisti",
+    "Spiagge libere (Torre Pozzelle, Porto Ghiacciolo, Cala Verde) invece di stabilimenti a pagamento",
   ],
 };

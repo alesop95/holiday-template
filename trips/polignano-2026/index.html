@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  /* Palette ispirata a WeRoad (corallo #FF4758, verde #1DAD70, neutri quasi-neri),
+     verificata dai colori reali di weroad.it invece che a memoria. Vive qui perche'
+     ogni nuovo viaggio copia questa shell: aggiornarla qui la propaga a tutti. */
+  --sea:#171717;--sea2:#FF4758;--teal:#1DAD70;--terra:#FF4758;
+  --sand:#F5F5F5;--sand2:#EBEBEB;--white:#FFFFFF;
+  --text:#171717;--muted:#737373;--border:#E5E5E5;
+  --sh:rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;}
+#overlay{position:fixed;inset:0;background:var(--sand);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:14px;transition:opacity .4s;}
+.load-spinner{width:38px;height:38px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--sea2);animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:1.3rem;color:var(--sea);}
+#load-status{font-size:12.5px;color:var(--muted);}
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#4CAF50;position:fixed;bottom:18px;right:18px;z-index:300;animation:syncp 2.5s infinite;}
+@keyframes syncp{0%{box-shadow:0 0 0 0 rgba(76,175,80,.4)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hero{background:linear-gradient(155deg,var(--sea) 0%,var(--sea2) 100%);padding:2.8rem 1.4rem 2.2rem;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:100px;padding:4px 14px;font-size:11.5px;color:rgba(255,255,255,.85);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.9rem;}
+.hero-edit-btn{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:100px;padding:6px 13px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;cursor:pointer;z-index:2;}
+.hero-edit-btn:hover{background:rgba(255,255,255,.25);}
+.hero-edit-panel{max-width:760px;margin:0 auto;padding:1.2rem 1rem 0;}
+.hero-edit-card{background:var(--white);border-radius:14px;padding:16px;box-shadow:0 2px 12px var(--sh);}
+.hero-edit-field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px;}
+.hero-edit-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.hero-edit-field input{padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);outline:none;}
+.hero-edit-field input:focus{border-color:var(--sea2);}
+.hero-edit-stats-row{display:flex;gap:7px;margin-bottom:7px;}
+.hero-edit-stats-row input{flex:1;}
+.hero-edit-rm-btn{background:var(--sand);border:1.5px solid var(--border);border-radius:8px;color:var(--terra);font-size:14px;font-weight:700;cursor:pointer;width:36px;flex-shrink:0;}
+.hero-edit-add-btn{background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--muted);font-size:12px;padding:7px;width:100%;cursor:pointer;margin-bottom:11px;}
+.hero-edit-actions{display:flex;gap:8px;margin-top:5px;}
+.hero-edit-save{flex:1;padding:10px;border:none;border-radius:100px;background:var(--sea2);color:#fff;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;}
+.hero-edit-cancel{padding:10px 16px;border:1.5px solid var(--border);border-radius:100px;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13.5px;cursor:pointer;}
+.hero h1{font-family:'Poppins',sans-serif;font-size:clamp(2rem,6.5vw,3.4rem);font-weight:700;color:#fff;line-height:1.1;margin-bottom:.5rem;}
+.hero-sub{font-family:'DM Sans',sans-serif;font-size:clamp(.95rem,2.6vw,1.15rem);font-weight:400;color:rgba(255,255,255,.72);margin-bottom:1.6rem;}
+.hero-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;}
+.hero-stat{background:rgba(255,255,255,.13);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:7px 13px;font-size:12px;color:rgba(255,255,255,.9);font-weight:500;}
+.nav-wrap{position:sticky;top:0;z-index:200;background:var(--white);border-bottom:1px solid var(--border);box-shadow:0 2px 10px var(--sh);}
+.nav{display:flex;overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-btn{flex:none;padding:13px 17px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:color .2s,border-color .2s;}
+.nav-btn.active{color:var(--sea2);border-bottom-color:var(--sea2);font-weight:600;}
+.main{max-width:760px;margin:0 auto;padding:1.4rem 1rem 5rem;}
+.panel{display:none;}
+.panel.active{display:block;animation:fu .28s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.sec-head{margin-bottom:1.2rem;}
+.sec-head h2{font-family:'Poppins',sans-serif;font-size:1.4rem;font-weight:600;color:var(--sea);margin-bottom:3px;}
+.sec-head p{font-size:13px;color:var(--muted);line-height:1.55;}
+.change-banner{background:linear-gradient(100deg,var(--sea),var(--sea2));border-radius:14px;padding:14px 18px;color:#fff;margin:10px 0;}
+.change-banner h4{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:600;margin-bottom:2px;}
+.change-banner p{font-size:12px;opacity:.8;line-height:1.4;}
+.day-card{background:var(--white);border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 12px var(--sh);border:2px solid transparent;transition:border-color .2s,opacity .3s;}
+.day-card.open{border-color:var(--dc,#2B5C8A);}
+.day-card.day-done{opacity:.7;}
+.day-hdr{display:flex;align-items:center;gap:13px;padding:15px 17px;cursor:pointer;user-select:none;}
+.day-ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:700;font-size:1.05rem;color:#fff;flex-shrink:0;}
+.day-meta{flex:1;min-width:0;}
+.day-lbl{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px;}
+.day-ttl{font-family:'Poppins',sans-serif;font-size:1.02rem;font-weight:600;color:var(--text);line-height:1.25;}
+.day-done .day-ttl{text-decoration:line-through;opacity:.6;}
+.day-pl{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.done-badge{background:#E3F7EE;color:#1DAD70;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:100px;display:none;white-space:nowrap;}
+.day-chv{color:var(--muted);font-size:11px;transition:transform .25s;}
+.day-card.open .day-chv{transform:rotate(180deg);}
+.day-body{display:none;padding:0 17px 17px;border-top:1px solid rgba(0,0,0,.06);}
+.day-card.open .day-body{display:block;animation:fu .22s ease;}
+.sec-blk{margin-top:15px;}
+.sec-ttl{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.sec-txt{font-size:13.5px;color:#4A4540;line-height:1.7;}
+.tips-box{margin-top:15px;background:var(--sand);border-left:3px solid var(--dc,#ccc);border-radius:0 10px 10px 0;padding:11px 13px;}
+.tips-ttl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.tip{font-size:12.5px;color:#5A5048;margin-bottom:4px;padding-left:12px;position:relative;line-height:1.5;}
+.tip::before{content:'\203A';position:absolute;left:0;color:var(--terra);font-weight:700;}
+.dcosts{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;}
+.cpill{font-size:12px;padding:4px 11px;border-radius:100px;font-weight:500;}
+.cf{background:#E3F7EE;color:#1DAD70;}.ca{background:#F0ECF8;color:#6B4F9A;}.cg{background:#EAF5EA;color:#2E7D32;}
+.day-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.act-btn{padding:7px 14px;border:1.5px solid var(--border);background:var(--sand);border-radius:100px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;color:var(--muted);transition:all .2s;font-weight:500;}
+.act-btn:hover{border-color:var(--dc,#ccc);color:var(--dc,#ccc);}
+.act-btn.btn-done-active{background:#E3F7EE;border-color:#1DAD70;color:#1DAD70;}
+.note-area{margin-top:10px;}
+.note-area textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:#FDFAF6;resize:vertical;min-height:80px;outline:none;transition:border-color .2s;line-height:1.6;}
+.note-area textarea:focus{border-color:var(--dc,#2B5C8A);}
+.note-area textarea::placeholder{color:#B0A898;}
+.note-saved{font-size:11px;color:#4CAF50;margin-top:4px;display:none;}
+#map{width:100%;height:370px;border-radius:14px;margin-bottom:1.2rem;box-shadow:0 4px 20px var(--sh);}
+.map-leg{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.leg-item{display:flex;align-items:center;gap:8px;background:var(--white);border-radius:10px;padding:9px 11px;font-size:12.5px;box-shadow:0 1px 6px var(--sh);}
+.leg-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.leg-lbl{font-weight:500;line-height:1.2;}
+.leg-day{font-size:11px;color:var(--muted);}
+.rest-area{margin-bottom:1.8rem;}
+.rest-area-ttl{font-family:'Poppins',sans-serif;font-size:1.15rem;font-weight:600;color:var(--sea);margin-bottom:3px;}
+.rest-area-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.rest-grid{display:flex;flex-direction:column;gap:9px;}
+.rest-card{background:var(--white);border-radius:12px;padding:13px 15px;box-shadow:0 2px 10px var(--sh);}
+.rest-nm{font-weight:600;font-size:13.5px;color:var(--text);margin-bottom:3px;}
+.rest-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px;}
+.rtag{font-size:10.5px;padding:2px 8px;border-radius:100px;background:var(--sand);color:var(--muted);font-weight:500;}
+.rtag.p{background:#E3F7EE;color:var(--teal);}
+.rest-note{font-size:12.5px;color:#5A5048;line-height:1.55;}
+.rest-sp{font-size:12px;color:var(--terra);font-weight:500;margin-top:4px;}
+.ck-prog{background:var(--white);border-radius:12px;padding:15px;margin-bottom:1.4rem;box-shadow:0 2px 10px var(--sh);}
+.ck-prog-lbl{display:flex;justify-content:space-between;font-size:13px;font-weight:500;margin-bottom:9px;}
+.ck-bar{height:7px;background:var(--sand2);border-radius:100px;overflow:hidden;}
+.ck-fill{height:100%;background:linear-gradient(to right,var(--teal),var(--sea2));border-radius:100px;transition:width .4s ease;}
+.ck-cat{margin-bottom:1.4rem;}
+.ck-cat-ttl{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--terra);padding:7px 13px;background:var(--sand2);border-radius:8px;margin-bottom:7px;}
+.ck-list{display:flex;flex-direction:column;gap:4px;}
+.ck-item{display:flex;align-items:center;gap:11px;padding:10px 13px;background:var(--white);border-radius:10px;cursor:pointer;transition:background .15s;box-shadow:0 1px 4px var(--sh);}
+.ck-item:hover{background:#F5F0E8;}
+.ck-item.done{opacity:.5;}
+.ck-item.done .ck-lbl{text-decoration:line-through;color:var(--muted);}
+.ck-box{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .15s;}
+.ck-item.done .ck-box{background:var(--teal);border-color:var(--teal);color:#fff;}
+.ck-lbl{font-size:13.5px;color:var(--text);flex:1;}
+.ck-note{font-size:11px;color:var(--muted);flex-shrink:0;text-align:right;}
+.info-hotel{background:var(--white);border-radius:14px;padding:17px;margin-bottom:12px;box-shadow:0 2px 10px var(--sh);}
+.ih-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.ih-name{font-family:'Poppins',sans-serif;font-size:1.02rem;font-weight:600;}
+.ih-badge{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:100px;}
+.ih-loc{font-size:12.5px;color:var(--muted);margin-bottom:7px;}
+.ih-opt{background:var(--sand);border-radius:10px;padding:11px 13px;margin-bottom:8px;}
+.ih-opt:last-child{margin-bottom:0;}
+.ih-oname{font-weight:600;font-size:13.5px;margin-bottom:2px;}
+.ih-price{font-size:14px;font-weight:600;color:var(--sea);}
+.ih-desc{font-size:12.5px;color:#4A4540;line-height:1.6;margin-top:6px;}
+.ih-note{font-size:11.5px;color:var(--terra);font-weight:500;margin-top:5px;}
+.cost-tbl{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px var(--sh);margin-bottom:1.4rem;}
+.cost-row{display:flex;align-items:center;gap:13px;padding:13px 17px;border-bottom:1px solid var(--border);}
+.cost-row:last-child{border-bottom:none;}
+.cost-inf{flex:1;min-width:0;}
+.cost-lbl{font-size:13.5px;font-weight:500;}
+.cost-desc{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.cost-amt{font-size:13.5px;font-weight:700;color:var(--sea);text-align:right;flex-shrink:0;}
+.cost-total{background:linear-gradient(135deg,var(--sea),var(--sea2));color:#fff;padding:18px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem;}
+.ct-lbl{font-family:'DM Sans',sans-serif;font-size:1rem;opacity:.9;}
+.ct-amt{font-family:'Poppins',sans-serif;font-size:1.8rem;font-weight:700;}
+.ct-sub{font-size:11px;opacity:.72;text-align:right;margin-top:2px;}
+.bgl-tbl{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px var(--sh);margin-bottom:1.4rem;}
+.bg-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);}
+.bg-row:last-child{border-bottom:none;}
+.bg-name{flex:1;font-size:13px;color:var(--text);}
+.bg-price{font-size:13px;font-weight:700;}
+.info-tips{background:#FFF1F2;border:1px solid #FFD3D7;border-radius:14px;padding:15px 17px;}
+.it-ttl{font-size:12px;font-weight:700;color:var(--terra);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;}
+.divider{height:1px;background:var(--border);margin:1.8rem 0;}
+.costs-card{background:var(--white);border-radius:14px;padding:15px 17px;box-shadow:0 2px 10px var(--sh);margin-bottom:12px;}
+.costs-card-ttl{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:600;color:var(--sea);margin-bottom:10px;}
+.costs-participants{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+.costs-chip{display:inline-flex;align-items:center;gap:6px;background:var(--sand);border-radius:100px;padding:5px 6px 5px 13px;font-size:12.5px;color:var(--text);}
+.costs-chip button{background:none;border:none;color:var(--terra);font-size:14px;font-weight:700;cursor:pointer;width:20px;height:20px;border-radius:50%;}
+.costs-empty,.costs-hint{font-size:12.5px;color:var(--muted);}
+.costs-add-row{display:flex;gap:7px;}
+.costs-add-row input{flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;}
+.costs-add-btn{padding:8px 14px;border:none;border-radius:100px;background:var(--sea2);color:#fff;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.costs-auto-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13.5px;color:var(--text);}
+.costs-expense-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.costs-expense-row:first-child{border-top:none;}
+.costs-expense-lbl{font-size:13.5px;color:var(--text);}
+.costs-expense-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.costs-expense-amt{font-weight:700;color:var(--sea);font-size:13.5px;white-space:nowrap;}
+.costs-rm-btn{background:none;border:none;color:var(--terra);font-size:16px;font-weight:700;cursor:pointer;flex-shrink:0;}
+.costs-expense-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.costs-expense-form input,.costs-expense-form select{padding:8px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;}
+.costs-expense-form input:first-child{grid-column:1/-1;}
+.costs-expense-form button{grid-column:1/-1;}
+.costs-summary{background:linear-gradient(135deg,var(--sea),var(--sea2));color:#fff;border-radius:14px;padding:17px;}
+.costs-summary-row{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;}
+.costs-summary-row strong{font-family:'Poppins',sans-serif;font-size:1.05rem;}
+.costs-balance-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-top:1px solid rgba(255,255,255,.2);margin-top:5px;padding-top:8px;}
+.costs-balance.pos{color:#B7F5D8;font-weight:600;}
+.costs-balance.neg{color:#FFD3D7;font-weight:600;}
+.plan-form{display:grid;grid-template-columns:1fr 1fr;gap:9px;background:var(--white);border-radius:14px;padding:15px;box-shadow:0 2px 10px var(--sh);margin-bottom:1.2rem;}
+.plan-field{display:flex;flex-direction:column;gap:3px;}
+.plan-field.full{grid-column:1/-1;}
+.airport-field{position:relative;}
+.airport-ac-list{position:absolute;top:100%;left:0;right:0;background:var(--white);border:1.5px solid var(--border);border-radius:9px;box-shadow:0 6px 18px var(--sh);z-index:50;max-height:220px;overflow-y:auto;margin-top:2px;}
+.airport-ac-item{padding:8px 11px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);}
+.airport-ac-item:last-child{border-bottom:none;}
+.airport-ac-item:hover{background:var(--sand);}
+.airport-ac-item strong{color:var(--sea);}
+.airport-ac-item span{display:block;font-size:11px;color:var(--muted);margin-top:1px;}
+.airport-ac-confirm{font-size:11px;color:var(--teal);margin-top:3px;min-height:14px;}
+.zone-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.zone-suggestions:empty{margin-top:0;}
+.zone-chip{background:var(--sand);border:1.5px solid var(--border);border-radius:100px;padding:4px 12px;font-size:12px;color:var(--sea);cursor:pointer;}
+.zone-chip:hover{background:var(--sand2);border-color:var(--sea2);}
+.plan-map-price-pin{background:var(--sea2);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff;transform:translate(-50%,-50%);}
+.plan-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.plan-field input{padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.plan-field input:focus{border-color:var(--sea2);}
+.plan-submit{grid-column:1/-1;padding:11px;border:none;border-radius:100px;background:var(--sea2);color:#fff;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:opacity .2s;}
+.plan-submit:disabled{opacity:.55;cursor:default;}
+.plan-msg{font-size:12.5px;color:var(--muted);padding:8px 0;}
+.plan-retry-btn{margin-left:6px;padding:3px 11px;border:1.5px solid var(--border);background:var(--white);border-radius:100px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--sea);}
+.plan-msg.err{color:var(--terra);}
+.plan-group{margin-bottom:1.4rem;}
+.plan-group-ttl{font-family:'Poppins',sans-serif;font-size:1.02rem;font-weight:600;color:var(--sea);margin-bottom:8px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;}
+.plan-group-ttl::-webkit-details-marker{display:none;}
+.plan-group-ttl::before{content:'▸';font-size:.75em;display:inline-block;transition:transform .15s;}
+.plan-group[open]>.plan-group-ttl::before{transform:rotate(90deg);}
+.plan-filters{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:10px;}
+.plan-filters select{padding:6px 9px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);background:var(--white);}
+.plan-filters label{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;}
+.plan-item{background:var(--white);border-radius:12px;padding:12px 14px;box-shadow:0 2px 10px var(--sh);margin-bottom:8px;}
+.plan-item-hd{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;}
+.plan-item-nm{font-weight:600;font-size:13.5px;color:var(--text);}
+.plan-item-price{font-size:13.5px;font-weight:700;color:var(--sea);white-space:nowrap;}
+.plan-item-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;}
+.plan-item-link{display:inline-block;font-size:12px;color:var(--sea2);font-weight:600;margin-top:6px;text-decoration:none;}
+.plan-item-link:hover{text-decoration:underline;}
+.plan-item-save{display:flex;gap:7px;margin-top:9px;align-items:center;}
+.plan-item-save-lbl{font-size:11px;color:var(--muted);white-space:nowrap;}
+.plan-item-save select{flex:1;padding:7px 9px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);}
+.plan-save-btn{padding:7px 13px;border:none;border-radius:100px;background:var(--sand2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.plan-save-btn.saved{background:#E3F7EE;color:#1DAD70;}
+.plan-saved-day{background:var(--white);border-radius:12px;padding:13px 15px;box-shadow:0 2px 10px var(--sh);margin-bottom:9px;}
+.plan-saved-day-ttl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;}
+.plan-saved-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--border);}
+.plan-saved-item:first-of-type{border-top:none;}
+.plan-saved-nm{font-size:12.5px;color:var(--text);}
+.plan-saved-total{text-align:right;font-size:12.5px;font-weight:700;color:var(--sea);padding-top:8px;margin-top:2px;border-top:1.5px solid var(--border);}
+.day-planning{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
+.day-planning-ttl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+.route-btn{margin-top:10px;}
+.day-route{margin-top:8px;}
+.route-summary{font-size:12px;font-weight:700;color:var(--sea);margin-bottom:6px;}
+.route-step{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text);padding:4px 0;}
+.route-step-n{width:20px;height:20px;border-radius:50%;background:var(--sea);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.plan-rm-btn{background:none;border:none;color:var(--terra);font-size:12px;cursor:pointer;flex-shrink:0;}
+@media(min-width:600px){.map-leg{grid-template-columns:1fr 1fr 1fr;}}
+
+/* ── Esportazione/stampa dell'itinerario ("Esporta / Stampa itinerario", tab Itinerario) ────────
+   window.print() nativo invece di una libreria PDF caricata da CDN: zero dipendenza nuova, e il
+   dialogo di stampa del browser offre gia' "Salva come PDF" su ogni sistema operativo moderno,
+   coprendo sia "PDF" sia "stampa pulita" con lo stesso meccanismo. Forza sempre la vista
+   Itinerario indipendentemente dalla scheda attiva sullo schermo (un'esportazione e' un'azione
+   dedicata, non "stampa quello che vedi ora"), ed espande ogni day-card anche se collassata a
+   schermo (.day-body e' display:none di default, controllato da JS su clic): senza questa
+   regola l'esportazione mostrerebbe solo i giorni che l'utente aveva gia' aperto manualmente. */
+@media print {
+  .nav-wrap, .hero-edit-btn, .hero-edit-panel, #export-print-btn,
+  .day-actions, .day-chv, .plan-rm-btn, .route-btn { display: none !important; }
+  .panel { display: none !important; }
+  #itinerario { display: block !important; }
+  .day-body { display: block !important; }
+  .day-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+  .hero { background: none !important; color: #111; }
+  .hero h1 { color: #111; }
+  .hero-sub, .hero-stat { color: #333 !important; }
+  .hero-badge { background: none; border-color: #111; color: #111; }
+  .hero-stat { background: none; border: 1px solid #999; }
+}
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div class="load-spinner"></div>
+  <div class="load-title">Caricamento...</div>
+  <div id="load-status">Connessione a Firebase...</div>
+</div>
+
+<div class="sync-dot" title="Connesso - sincronizzazione attiva"></div>
+
+<!-- Hero: renderizzato dinamicamente da S.meta (Firestore, con fallback a TRIP_META) -->
+<div id="hero-root" class="hero"></div>
+<div id="hero-edit-panel" class="hero-edit-panel" style="display:none"></div>
+
+<div class="nav-wrap">
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showTab('itinerario',this)">Itinerario</button>
+    <button class="nav-btn" onclick="showTab('mappa',this)">Mappa</button>
+    <button class="nav-btn" onclick="showTab('ristoranti',this)">Ristoranti</button>
+    <button class="nav-btn" onclick="showTab('valigia',this)">Valigia</button>
+    <button class="nav-btn" onclick="showTab('info',this)">Info &amp; Costi</button>
+    <button class="nav-btn" onclick="showTab('pianifica',this)">Pianifica</button>
+    <button class="nav-btn" onclick="showTab('costi',this)">Costi</button>
+  </nav>
+</div>
+
+<div class="main">
+  <div id="itinerario" class="panel active">
+    <div class="sec-head">
+      <h2>Il Programma</h2>
+      <p>4 notti a Marina di Camerota, Castellabate e Paestum lungo il percorso, 2 notti a Caserta. Un solo cambio hotel, tutto visto.</p>
+      <button class="act-btn" id="export-print-btn" onclick="window.print()">Esporta / Stampa itinerario</button>
+    </div>
+    <div id="days-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
+  </div>
+  <div id="mappa" class="panel">
+    <div class="sec-head"><h2>Mappa del Viaggio</h2><p>Tutte le tappe in ordine. Tocca i marker per i dettagli.</p></div>
+    <div id="map"></div>
+    <div class="map-leg" id="map-legend"></div>
+  </div>
+  <div id="ristoranti" class="panel">
+    <div class="sec-head"><h2>Dove Mangiare</h2><p>Selezione per ogni zona del viaggio.</p></div>
+    <div id="rest-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
+  </div>
+  <div id="valigia" class="panel">
+    <div class="sec-head"><h2>Lista Valigia</h2><p>Sincronizzata in tempo reale: se tu spunti qualcosa, lei lo vede subito.</p></div>
+    <div class="ck-prog">
+      <div class="ck-prog-lbl"><span id="prog-status">Preparazione</span><span id="prog-txt">0 / 0</span></div>
+      <div class="ck-bar"><div class="ck-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div id="ck-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
+  </div>
+  <div id="info" class="panel">
+    <div class="sec-head"><h2>Gli Hotel</h2><p>Un solo cambio - 4 notti + 2 notti</p></div>
+    <div class="info-hotel">
+      <div class="ih-head"><div><div class="ih-name">Base 1 - Marina di Camerota</div><div class="ih-loc">Cilento Sud, SA - Giorni 1-4 (4 notti)</div></div><div class="ih-badge" style="background:#E3F7EE;color:#1DAD70;">Base principale</div></div>
+      <div class="ih-opt"><div class="ih-oname">Park Hotel Cilento (3 stelle)</div><div class="ih-price">€75-120 / notte (doppia)</div><div class="ih-desc">Circondato da uliveti nel Parco Nazionale, con piscina e ristorante. Colazione a buffet.</div><div class="ih-note">Via Sirene 26 - Tel. 0974 932154</div></div>
+      <div class="ih-opt"><div class="ih-oname">Albergo Tirreno (3 stelle)</div><div class="ih-price">€65-100 / notte (doppia)</div><div class="ih-desc">Tra porto e spiaggia, tutto a piedi. Gestione familiare, terrazza panoramica.</div></div>
+      <div class="ih-opt"><div class="ih-oname">Alternativa - Airbnb bilocale</div><div class="ih-price">€80-140 / notte</div><div class="ih-desc">Con cucina propria per colazioni e pranzi al sacco.</div></div>
+    </div>
+    <div class="info-hotel">
+      <div class="ih-head"><div><div class="ih-name">Base 2 - Caserta</div><div class="ih-loc">Caserta Città - Giorni 5-6 (2 notti)</div></div><div class="ih-badge" style="background:#F5F0FA;color:#7B4F9E;">Finale</div></div>
+      <div class="ih-opt"><div class="ih-oname">Hotel Vanvitelli (4 stelle)</div><div class="ih-price">€80-130 / notte (doppia)</div><div class="ih-desc">A pochi minuti dalla Reggia.</div></div>
+      <div class="ih-opt"><div class="ih-oname">Hotel Amadeus (3 stelle)</div><div class="ih-price">€60-90 / notte (doppia)</div><div class="ih-desc">Buon rapporto qualità/prezzo, vicino a stazione e Reggia.</div></div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec-head"><h2>Stima Costi</h2><p>Per persona, camera doppia condivisa</p></div>
+    <div class="cost-tbl">
+      <div class="cost-row"><div class="cost-inf"><div class="cost-lbl">Alloggio</div><div class="cost-desc">4 notti Marina di Camerota + 2 notti Caserta</div></div><div class="cost-amt">€160-290</div></div>
+      <div class="cost-row"><div class="cost-inf"><div class="cost-lbl">Pasti</div><div class="cost-desc">Colazioni (parte incluse), 3 pranzi al sacco, 5 cene</div></div><div class="cost-amt">€200-300</div></div>
+      <div class="cost-row"><div class="cost-inf"><div class="cost-lbl">Biglietti e attività</div><div class="cost-desc">Barca Palinuro, Paestum, Grotte, Reggia</div></div><div class="cost-amt">€57-82</div></div>
+      <div class="cost-row"><div class="cost-inf"><div class="cost-lbl">Carburante diesel</div><div class="cost-desc">~800 km, 6L/100km, €1.65/L, diviso tra 2 persone</div></div><div class="cost-amt">€20-40</div></div>
+      <div class="cost-row"><div class="cost-inf"><div class="cost-lbl">Extra e imprevisti</div></div><div class="cost-amt">€50-100</div></div>
+    </div>
+    <div class="cost-total"><div class="ct-lbl">Totale stimato per persona</div><div><div class="ct-amt">€490-810</div><div class="ct-sub">7 giorni, tutto incluso</div></div></div>
+    <div class="sec-head"><h2>Biglietti e Ingressi</h2></div>
+    <div class="bgl-tbl">
+      <div class="bg-row"><div class="bg-name">Trekking Baia degli Infreschi</div><div class="bg-price" style="color:var(--teal)">Gratuito</div></div>
+      <div class="bg-row"><div class="bg-name">Barca Infreschi (alternativa)</div><div class="bg-price">~€35</div></div>
+      <div class="bg-row"><div class="bg-name">Palinuro - Tour costa completo</div><div class="bg-price">€25-35</div></div>
+      <div class="bg-row"><div class="bg-name">Gole Sammaro + Roscigno Vecchia</div><div class="bg-price" style="color:var(--teal)">Gratuito</div></div>
+      <div class="bg-row"><div class="bg-name">Castellabate (borgo)</div><div class="bg-price" style="color:var(--teal)">Gratuito</div></div>
+      <div class="bg-row"><div class="bg-name">Paestum - Area arch. + Museo</div><div class="bg-price">€10</div></div>
+      <div class="bg-row"><div class="bg-name">Grotte di Pertosa-Auletta</div><div class="bg-price">€18-19</div></div>
+      <div class="bg-row"><div class="bg-name">Reggia di Caserta (Appart. + Parco)</div><div class="bg-price">€14-18</div></div>
+    </div>
+    <div class="info-tips">
+      <div class="it-ttl">Come Risparmiare</div>
+      <div class="tip">Prima domenica del mese: Paestum e Reggia di Caserta gratuiti</div>
+      <div class="tip" style="margin-top:6px">Hotel con colazione inclusa: risparmio €8-15/giorno a persona</div>
+      <div class="tip" style="margin-top:6px">Pranzi al sacco nei giorni di trekking (risparmio €15-25 a pasto)</div>
+    </div>
+  </div>
+  <div id="pianifica" class="panel">
+    <div class="sec-head"><h2>Cerca e Confronta</h2><p>Voli, alloggi e punti di interesse dal comparatore. Gli aeroporti sono facoltativi: lasciali vuoti per un viaggio in auto o comunque senza volo, la ricerca copre solo alloggi e punti di interesse. Non incide sull'itinerario finché non salvi un risultato su un giorno.</p></div>
+    <div class="plan-form">
+      <div class="plan-field airport-field"><label>Aeroporto partenza (opzionale)</label>
+        <input id="pf-origin" placeholder="Città, aeroporto o codice IATA" autocomplete="off" oninput="onAirportInput('origin')" onfocus="onAirportInput('origin')" onblur="setTimeout(()=>hideAirportSuggestions('origin'),150)">
+        <div id="pf-origin-list" class="airport-ac-list" style="display:none"></div>
+        <div id="pf-origin-confirm" class="airport-ac-confirm"></div>
+      </div>
+      <div class="plan-field airport-field"><label>Aeroporto arrivo (opzionale)</label>
+        <input id="pf-dest-air" placeholder="Città, aeroporto o codice IATA" autocomplete="off" oninput="onAirportInput('dest')" onfocus="onAirportInput('dest')" onblur="setTimeout(()=>hideAirportSuggestions('dest'),150)">
+        <div id="pf-dest-air-list" class="airport-ac-list" style="display:none"></div>
+        <div id="pf-dest-air-confirm" class="airport-ac-confirm"></div>
+      </div>
+      <div class="plan-field full"><label>Città / zona (alloggi e POI)</label><input id="pf-dest-loc" placeholder="Es. Marina di Camerota">
+        <div id="pf-zone-suggestions" class="zone-suggestions"></div>
+      </div>
+      <div class="plan-field"><label>Andata</label><input id="pf-dep" type="date"></div>
+      <div class="plan-field"><label>Ritorno</label><input id="pf-ret" type="date"></div>
+      <div class="plan-field"><label>Adulti</label><input id="pf-adults" type="number" min="1" max="9" value="2"></div>
+      <div class="plan-field"><label id="pf-budget-label">Budget alloggio (EUR, totale)</label><input id="pf-budget" type="number" min="0" value="500"></div>
+      <button class="plan-submit" id="pf-submit" onclick="searchPlan()">Cerca</button>
+    </div>
+    <div id="plan-msg"></div>
+    <div id="plan-map" style="display:none;height:260px;border-radius:14px;margin-bottom:1rem;box-shadow:0 4px 20px var(--sh);"></div>
+    <div id="plan-results"></div>
+    <div class="divider"></div>
+    <div class="sec-head"><h2>Salvati nell'itinerario</h2><p>Risultati salvati su un giorno specifico, sincronizzati come il resto dell'app.</p></div>
+    <div id="plan-saved"><p style="color:var(--muted);font-size:13px;">Nessun elemento salvato ancora.</p></div>
+  </div>
+  <div id="costi" class="panel">
+    <div class="sec-head"><h2>Costi Reali e Divisione tra Persone</h2><p>Somma i voli e gli alloggi salvati nella scheda Pianifica più le spese aggiunte a mano, poi divide la quota tra i partecipanti (la stima in Info &amp; Costi resta fissa, non collegata a questa).</p></div>
+    <div id="costs-dashboard"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script type="module">
+// ── Importa SDK Firebase e configurazione del viaggio ─────────────────────────
+import { initializeApp }                                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { FIREBASE_CONFIG, TRIP_META, TRIP_DATA, MAP_LOCATIONS, TRIP_ID, TRIP_PLANNER_URL, ROUTING_PROFILE, CURRENCY_CODE, CURRENCY_SYMBOL }  from './trip.config.js';
+
+// ── Stato applicativo in memoria ──────────────────────────────────────────────
+const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc', poiFeeOnly:false };
+const S = { days:[], restaurants:[], checklist:[], ckState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, planLastSearch:null, meta:null, metaEditing:false, costs:null, planFilters:{...PLAN_FILTERS_DEFAULT}, airports:null, airportZones:null };
+let db;
+
+// ── Punto di ingresso ─────────────────────────────────────────────────────────
+async function init() {
+  renderHero(); // non richiede Firebase, renderizza subito
+  // Etichetta statica in HTML (non rigenerata da un render()): l'unico punto dove riflettere
+  // CURRENCY_CODE è impostarla qui una volta, non serve un listener perché il valore è un
+  // import statico immutabile per tutta la sessione.
+  const budgetLabel = document.getElementById('pf-budget-label');
+  if (budgetLabel) budgetLabel.textContent = `Budget alloggio (${CURRENCY_CODE}, totale)`;
+
+  if (FIREBASE_CONFIG.apiKey === 'REPLACE_ME') {
+    setStatus('Configura Firebase: sostituisci i valori REPLACE_ME in trip.config.js');
+    return;
+  }
+  try {
+    setStatus('Connessione a Firebase...');
+    const app = initializeApp(FIREBASE_CONFIG);
+    db = getFirestore(app);
+
+    setStatus('Verifica dati...');
+    await seedIfNeeded();
+
+    setStatus('Caricamento itinerario...');
+    await loadContent();
+    await loadMeta();
+    await loadCosts();
+
+    setStatus('Attivazione sync in tempo reale...');
+    listenRealtime();
+
+    renderAll();
+    hideLoading();
+  } catch (e) {
+    setStatus('Errore: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ── Hero dinamico da S.meta (Firestore, editabile), con fallback a TRIP_META ─────
+// TRIP_META resta l'unica fonte finché lo stato Firestore non e' stato letto (primo
+// render, prima ancora della connessione), e resta il seed iniziale per ogni nuovo
+// viaggio: da li' in avanti l'utente puo' modificare titolo/badge/tag dall'app senza
+// toccare trip.config.js. escHtml perche' da questo momento e' contenuto scritto da un
+// utente reale, non solo dallo sviluppatore in trip.config.js.
+function renderHero() {
+  const m = S.meta || TRIP_META;
+  document.getElementById('hero-root').innerHTML = `
+    <button class="hero-edit-btn" onclick="toggleMetaEdit()">${S.metaEditing?'Chiudi':'Modifica'}</button>
+    <div class="hero-badge">${escHtml(m.badge)}</div>
+    <h1>${escHtml(m.title)}</h1>
+    <p class="hero-sub">${escHtml(m.subtitle)}</p>
+    <div class="hero-stats">
+      ${m.stats.map(s => `<div class="hero-stat">${escHtml(s)}</div>`).join('')}
+    </div>`;
+}
+
+// ── Seed automatico al primo avvio ────────────────────────────────────────────
+async function seedIfNeeded() {
+  const snap = await getDoc(doc(db, 'trips', TRIP_ID, 'content', 'days'));
+  if (snap.exists()) return;
+  await Promise.all([
+    setDoc(doc(db, 'trips', TRIP_ID, 'content', 'days'),        { data: TRIP_DATA.days }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'content', 'restaurants'), { data: TRIP_DATA.restaurants }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'content', 'checklist'),   { data: TRIP_DATA.checklist }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'checklist'),   { items: {} }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'notes'),       { days: {}, completed: {} }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'planning'),    { byDay: {} }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'meta'),        { ...TRIP_META }),
+    setDoc(doc(db, 'trips', TRIP_ID, 'state',   'costs'),       { participants: [], expenses: [] }),
+  ]);
+}
+
+// ── Lettura contenuto da Firestore ────────────────────────────────────────────
+async function loadContent() {
+  const [d, r, c] = await Promise.all([
+    getDoc(doc(db, 'trips', TRIP_ID, 'content', 'days')),
+    getDoc(doc(db, 'trips', TRIP_ID, 'content', 'restaurants')),
+    getDoc(doc(db, 'trips', TRIP_ID, 'content', 'checklist')),
+  ]);
+  S.days = d.data().data; S.restaurants = r.data().data; S.checklist = c.data().data;
+}
+
+// Viaggi seminati prima che state/meta esistesse (vedi seedIfNeeded) non hanno questo
+// documento: fallback a TRIP_META, self-healing al primo salvataggio (writeMeta usa
+// setDoc, non updateDoc, quindi crea il documento se assente).
+async function loadMeta() {
+  const snap = await getDoc(doc(db, 'trips', TRIP_ID, 'state', 'meta'));
+  S.meta = snap.exists() ? snap.data() : { ...TRIP_META };
+}
+
+// Stesso fallback self-healing di loadMeta: un viaggio seminato prima che questa feature
+// esistesse non ha 'costs', riparte da un dashboard vuoto invece di rompersi.
+async function loadCosts() {
+  const snap = await getDoc(doc(db, 'trips', TRIP_ID, 'state', 'costs'));
+  S.costs = snap.exists() ? snap.data() : { participants: [], expenses: [] };
+}
+
+// ── Listener real-time per stato condiviso ────────────────────────────────────
+function listenRealtime() {
+  onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'checklist'), snap => {
+    if (!snap.exists()) return;
+    S.ckState = snap.data().items || {};
+    updateCkUI();
+  });
+  onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'notes'), snap => {
+    if (!snap.exists()) return;
+    S.notes = snap.data().days || {}; S.completed = snap.data().completed || {};
+    updateNotesUI();
+  });
+  onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'planning'), snap => {
+    S.planning = snap.exists() ? (snap.data().byDay || {}) : {};
+    renderPlanSaved();
+    renderDayPlanningAll();
+  });
+  onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'meta'), snap => {
+    if (!snap.exists()) return;
+    S.meta = snap.data();
+    if (!S.metaEditing) renderHero();  // non sovrascrive una modifica in corso sull'altro dispositivo
+  });
+  onSnapshot(doc(db, 'trips', TRIP_ID, 'state', 'costs'), snap => {
+    S.costs = snap.exists() ? snap.data() : { participants: [], expenses: [] };
+    renderCostsDashboard();
+  });
+}
+
+// ── Scritture su Firestore ────────────────────────────────────────────────────
+async function writeCk(key, val)       { await updateDoc(doc(db,'trips',TRIP_ID,'state','checklist'), { [`items.${key}`]: val }); }
+async function writeNote(id, text)     { await setDoc(doc(db,'trips',TRIP_ID,'state','notes'), { days: { [id]: text } }, { merge:true }); }
+async function writeCompleted(id, val) { await setDoc(doc(db,'trips',TRIP_ID,'state','notes'), { completed: { [id]: val } }, { merge:true }); }
+// merge:true crea il documento e le mappe annidate se assenti (vale anche per un viaggio
+// gia' seminato prima che 'planning' esistesse, vedi seedIfNeeded): stesso pattern di writeNote.
+async function writePlanDay(dayId, kind, arr) { await setDoc(doc(db,'trips',TRIP_ID,'state','planning'), { byDay: { [dayId]: { [kind]: arr } } }, { merge:true }); }
+async function writeMeta(meta) { await setDoc(doc(db,'trips',TRIP_ID,'state','meta'), meta); }
+async function writeCosts(costs) { await setDoc(doc(db,'trips',TRIP_ID,'state','costs'), costs); }
+
+// ── Pannello di modifica hero (badge/titolo/sottotitolo/tag) ─────────────────────
+// Bozza locale separata da S.meta: onSnapshot su state/meta non deve poter cancellare
+// modifiche non ancora salvate mentre il pannello e' aperto (vedi listenRealtime).
+let _metaDraft = null;
+
+function renderMetaEditPanel() {
+  const panel = document.getElementById('hero-edit-panel');
+  if (!S.metaEditing) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
+  const m = _metaDraft;
+  panel.style.display = 'block';
+  panel.innerHTML = `<div class="hero-edit-card">
+    <div class="hero-edit-field"><label>Badge</label><input id="me-badge" value="${escHtml(m.badge)}"></div>
+    <div class="hero-edit-field"><label>Titolo</label><input id="me-title" value="${escHtml(m.title)}"></div>
+    <div class="hero-edit-field"><label>Sottotitolo</label><input id="me-subtitle" value="${escHtml(m.subtitle)}"></div>
+    <div class="hero-edit-field"><label>Tag (vincoli/caratteristiche del viaggio)</label></div>
+    ${m.stats.map((s,i) => `<div class="hero-edit-stats-row"><input id="me-stat-${i}" value="${escHtml(s)}"><button class="hero-edit-rm-btn" onclick="removeMetaStatField(${i})">&times;</button></div>`).join('')}
+    <button class="hero-edit-add-btn" onclick="addMetaStatField()">+ Aggiungi tag</button>
+    <div class="hero-edit-actions">
+      <button class="hero-edit-save" onclick="saveMeta()">Salva</button>
+      <button class="hero-edit-cancel" onclick="toggleMetaEdit()">Annulla</button>
+    </div>
+  </div>`;
+}
+
+function _readMetaDraftFromInputs() {
+  // Legge lo stato corrente dei campi prima di ri-renderizzare (add/remove tag), cosi'
+  // non si perde quello che l'utente ha gia' digitato negli altri campi.
+  if (!_metaDraft) return;
+  const badgeEl = document.getElementById('me-badge');
+  if (!badgeEl) return; // pannello non ancora renderizzato la prima volta
+  _metaDraft.badge = badgeEl.value;
+  _metaDraft.title = document.getElementById('me-title').value;
+  _metaDraft.subtitle = document.getElementById('me-subtitle').value;
+  _metaDraft.stats = _metaDraft.stats.map((_,i) => document.getElementById(`me-stat-${i}`).value);
+}
+
+window.toggleMetaEdit = () => {
+  if (S.metaEditing) { S.metaEditing = false; }
+  else { _metaDraft = JSON.parse(JSON.stringify(S.meta || TRIP_META)); S.metaEditing = true; }
+  renderHero();
+  renderMetaEditPanel();
+};
+
+window.addMetaStatField = () => {
+  _readMetaDraftFromInputs();
+  _metaDraft.stats.push('');
+  renderMetaEditPanel();
+  document.getElementById(`me-stat-${_metaDraft.stats.length - 1}`).focus();
+};
+
+window.removeMetaStatField = (i) => {
+  _readMetaDraftFromInputs();
+  _metaDraft.stats.splice(i, 1);
+  renderMetaEditPanel();
+};
+
+window.saveMeta = () => {
+  _readMetaDraftFromInputs();
+  const meta = {
+    badge: _metaDraft.badge.trim(), title: _metaDraft.title.trim(), subtitle: _metaDraft.subtitle.trim(),
+    stats: _metaDraft.stats.map(s => s.trim()).filter(Boolean),
+  };
+  writeMeta(meta).then(() => {
+    S.meta = meta; S.metaEditing = false; renderHero(); renderMetaEditPanel();
+  }).catch(e => alert('Errore salvataggio: ' + e.message));
+};
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderAll() { renderHero(); renderDays(); renderRest(); renderCk(); renderPlanSaved(); renderCostsDashboard(); }
+
+function renderDays() {
+  const c = document.getElementById('days-container'); let html = '';
+  S.days.forEach((d, i) => {
+    if (i === 4) html += `<div class="change-banner"><h4>Cambio Hotel - Giorno 5</h4><p>Check-out da Marina di Camerota. Castellabate e Paestum sono lungo la strada verso Caserta: nessuna deviazione. Check-in Caserta la sera.</p></div>`;
+    const done = S.completed[d.id] || false;
+    html += `<div class="day-card${done?' day-done':''}" id="dc${d.id}" style="--dc:${d.color}">
+      <div class="day-hdr" onclick="tog(${d.id})">
+        <div class="day-ico" style="background:${d.color}">${d.id}</div>
+        <div class="day-meta"><div class="day-lbl" style="color:${d.color}">${d.label}</div><div class="day-ttl">${d.title}</div><div class="day-pl">${d.places}</div></div>
+        <div class="hdr-right"><div class="done-badge" id="done-badge-${d.id}" style="${done?'display:flex':'display:none'}">✓ Fatto</div><div class="day-chv">▼</div></div>
+      </div>
+      <div class="day-body">
+        ${d.sections.map(s=>`<div class="sec-blk"><div class="sec-ttl" style="color:${d.color}">${s.t}</div><div class="sec-txt">${s.tx}</div></div>`).join('')}
+        ${d.tips?`<div class="tips-box" style="border-left-color:${d.color}"><div class="tips-ttl" style="color:${d.color}">Consigli Pratici</div>${d.tips.map(t=>`<div class="tip">${t}</div>`).join('')}</div>`:''}
+        <div class="dcosts"><div class="cpill cf">Pasti: ${CURRENCY_SYMBOL}${d.cf}/pers.</div>${d.ca==='0'?'<div class="cpill cg">Attività: Gratuito</div>':`<div class="cpill ca">Attività: ${CURRENCY_SYMBOL}${d.ca}/pers.</div>`}</div>
+        <div class="day-planning" id="day-planning-${d.id}" style="display:none"></div>
+        <div class="day-actions">
+          <button class="act-btn${done?' btn-done-active':''}" id="done-btn-${d.id}" onclick="markDone(${d.id})">${done?'✓ Fatto!':'○ Segna come fatto'}</button>
+          <button class="act-btn" onclick="toggleNote(${d.id})">Note</button>
+        </div>
+        <div class="note-area" id="note-area-${d.id}" style="display:${S.notes[d.id]?'block':'none'}">
+          <textarea id="note-ta-${d.id}" placeholder="Aggiungi una nota condivisa..." onblur="saveNote(${d.id},this.value)">${S.notes[d.id]||''}</textarea>
+          <div class="note-saved" id="note-saved-${d.id}">✓ Salvato</div>
+        </div>
+      </div></div>`;
+  });
+  c.innerHTML = html;
+  renderDayPlanningAll();
+}
+
+function renderRest() {
+  document.getElementById('rest-container').innerHTML = S.restaurants.map(a=>`
+    <div class="rest-area"><div class="rest-area-ttl">${a.area}</div><div class="rest-area-sub">${a.days}</div>
+    <div class="rest-grid">${a.items.map(r=>`<div class="rest-card"><div class="rest-nm">${r.nm}</div><div class="rest-tags">${r.tags.map(t=>`<span class="rtag${t.startsWith('$')?' p':''}">${t}</span>`).join('')}</div><div class="rest-note">${r.note}</div>${r.sp?`<div class="rest-sp">${r.sp}</div>`:''}</div>`).join('')}</div></div>`).join('');
+}
+
+function renderCk() {
+  S.checklist.forEach((cat,ci)=>cat.items.forEach((_,ii)=>{ const k=`${ci}-${ii}`; if(!(k in S.ckState)) S.ckState[k]=false; }));
+  document.getElementById('ck-container').innerHTML = S.checklist.map((cat,ci)=>`
+    <div class="ck-cat"><div class="ck-cat-ttl">${cat.cat}</div><div class="ck-list">
+    ${cat.items.map((item,ii)=>{ const k=`${ci}-${ii}`;const done=S.ckState[k]||false;
+      return `<div class="ck-item${done?' done':''}" data-key="${k}" onclick="ckTog('${k}',this)"><div class="ck-box">${done?'✓':''}</div><div class="ck-lbl">${item.t}</div>${item.n?`<div class="ck-note">${item.n}</div>`:''}</div>`;
+    }).join('')}</div></div>`).join('');
+  updateCkProgress();
+}
+
+function updateCkUI() {
+  Object.entries(S.ckState).forEach(([k,v])=>{
+    const el=document.querySelector(`.ck-item[data-key="${k}"]`); if(!el) return;
+    el.classList.toggle('done',v); const box=el.querySelector('.ck-box'); if(box) box.textContent=v?'✓':'';
+  }); updateCkProgress();
+}
+
+function updateCkProgress() {
+  const total=Object.keys(S.ckState).length, done=Object.values(S.ckState).filter(Boolean).length, pct=total>0?Math.round(done/total*100):0;
+  const t=document.getElementById('prog-txt'),f=document.getElementById('prog-fill'),e=document.getElementById('prog-status');
+  if(t) t.textContent=`${done} / ${total}`; if(f) f.style.width=pct+'%';
+  if(e) e.textContent=pct===100?'Tutto pronto!':pct>60?'Quasi pronti':pct>0?'In preparazione':'Preparazione';
+}
+
+function updateNotesUI() {
+  S.days.forEach(d=>{
+    const area=document.getElementById(`note-area-${d.id}`), ta=document.getElementById(`note-ta-${d.id}`);
+    const badge=document.getElementById(`done-badge-${d.id}`), btn=document.getElementById(`done-btn-${d.id}`);
+    const card=document.getElementById(`dc${d.id}`), note=S.notes[d.id]||'', done=S.completed[d.id]||false;
+    if(area&&note) area.style.display='block';
+    if(ta&&ta!==document.activeElement&&note) ta.value=note;
+    if(badge) badge.style.display=done?'flex':'none';
+    if(btn){ btn.textContent=done?'✓ Fatto!':'○ Segna come fatto'; btn.classList.toggle('btn-done-active',done); }
+    if(card) card.classList.toggle('day-done',done);
+  });
+}
+
+// ── Pianifica: comparatore voli/alloggi/POI (services/trip-planner/) ─────────────
+// Chiama il backend Python locale via fetch semplice (nessun SDK Firebase coinvolto
+// in questa parte): S.planResults tiene solo l'ultima ricerca, non persistita finche'
+// l'utente non salva un risultato su un giorno. Il salvataggio invece passa da
+// Firestore (writePlanDay), stesso canale di sincronizzazione realtime del resto
+// dell'app: un risultato salvato appare sull'altro dispositivo come una nota o una
+// spunta della valigia.
+const PLAN_API_KEY = { flights: 'flights', stays: 'stays', pois: 'points_of_interest' };
+const PLAN_KIND_LABEL = { flights: 'Volo', stays: 'Alloggio', pois: 'Punto di interesse' };
+
+// FlightOffer.source (services/flight-search/app/schemas.py) non porta un link di prenotazione
+// per singola offerta: né fast_flights né Kiwi Tequila espongono un booking_token verificato in
+// questa sessione (vedi README del servizio). Per fast_flights l'unico link onesto è una ricerca
+// generica su Google Flights sulla stessa rotta/date (non l'itinerario esatto), verificata dal
+// vivo in sessione (200, pagina di ricerca valida). Per kiwi, non ancora verificato live (manca
+// la chiave), nessun link finché non lo è: solo l'etichetta della fonte.
+const FLIGHT_SOURCE_LABEL = { fast_flights: 'Google Flights', kiwi: 'Kiwi.com' };
+function googleFlightsSearchUrl(origin, dest, dep, ret) {
+  const q = ret ? `Flights from ${origin} to ${dest} on ${dep} through ${ret}` : `Flights from ${origin} to ${dest} on ${dep}`;
+  return 'https://www.google.com/travel/flights?q=' + encodeURIComponent(q);
+}
+
+// Voli/alloggi/POI vengono da fonti esterne scrapate (Airbnb, Google Flights, OpenStreetMap), non
+// da trip.config.js scritto dallo sviluppatore: a differenza del resto della shell, questi valori
+// vanno sempre passati per escHtml prima di finire in innerHTML.
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── Mappetta prezzi alloggi (Pianifica) ───────────────────────────────────────
+// Solo gli alloggi hanno coordinate (StayOffer.lat/lon, verificate live contro l'API reale
+// Airbnb): i voli non hanno una coordinata sensata da mostrare, i POI non hanno prezzo. Istanza
+// Leaflet separata da quella della scheda "Mappa" (renderMap): quella e' persistente per tutta
+// la sessione, questa va ricreata a ogni nuova ricerca (i marker cambiano), quindi richiede
+// .remove() esplicito prima di ricreare — Leaflet non permette due L.map() sullo stesso div.
+let planMapInstance = null;
+
+function renderPlanPriceMap() {
+  const el = document.getElementById('plan-map'); if (!el) return;
+  const stays = (S.planResults?.stays || []).filter(s => s.lat && s.lon);
+  if (!stays.length) {
+    el.style.display = 'none';
+    if (planMapInstance) { planMapInstance.remove(); planMapInstance = null; }
+    return;
+  }
+  el.style.display = 'block';
+  setTimeout(() => {
+    if (planMapInstance) { planMapInstance.remove(); planMapInstance = null; }
+    planMapInstance = L.map('plan-map').setView([stays[0].lat, stays[0].lon], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(planMapInstance);
+    const bounds = [];
+    stays.forEach(s => {
+      const icon = L.divIcon({ html: `<div class="plan-map-price-pin">${escHtml(s.total_price)}</div>`, className: '' });
+      L.marker([s.lat, s.lon], { icon }).addTo(planMapInstance).bindPopup(`<strong>${escHtml(s.name)}</strong><br>${escHtml(s.total_price)}`);
+      bounds.push([s.lat, s.lon]);
+    });
+    if (bounds.length > 1) planMapInstance.fitBounds(bounds, { padding: [24,24] });
+  }, 120);
+}
+
+// Menu "Aggiungi al giorno": i giorni del viaggio sono sempre gli stessi (TRIP_DATA.days, scritti
+// dallo sviluppatore), ma l'ordine in cui compaiono per ciascun tipo (volo/alloggio/POI) riflette
+// cosa quel giorno ha gia' — un giorno che ha gia' un volo salvato va in fondo, non e' piu'
+// probabile che serva un secondo volo lo stesso giorno. Non nasconde nessun giorno (resta scelta
+// manuale dell'utente, l'app non conosce la destinazione di un giorno per bloccare scelte
+// incoerenti), solo lo rende meno probabile per disattenzione.
+function dayOptsForKind(kind) {
+  return S.days
+    .map(d => ({ d, has: ((S.planning[d.id] || {})[kind] || []).length > 0 }))
+    .sort((a, b) => (a.has === b.has ? 0 : a.has ? 1 : -1))
+    .map(({ d, has }) => `<option value="${d.id}">${escHtml(d.label)} · ${escHtml(d.title)}${has ? ' (già presente)' : ''}</option>`)
+    .join('');
+}
+
+function renderPlanResults() {
+  const p = S.planResults; const el = document.getElementById('plan-results'); if (!p || !el) return;
+  const pf = S.planFilters;
+  // Ogni item porta con se' l'indice originale in S.planResults: filtrare/ordinare non deve mai
+  // rompere savePlanItem, che legge S.planResults[chiave][idx] per indice, non per riferimento.
+  const withIndex = arr => arr.map((item, origIndex) => ({ item, origIndex }));
+
+  let flights = withIndex(p.flights || []);
+  if (pf.flightsDirectOnly) flights = flights.filter(x => x.item.stops === 0);
+  flights.sort((a,b) => (pf.flightsSort === 'price-desc' ? -1 : 1) * (parsePrice(a.item.price) - parsePrice(b.item.price)));
+
+  let stays = withIndex(p.stays || []).filter(x => (x.item.rating || 0) >= pf.staysMinRating);
+  stays.sort((a,b) => {
+    if (pf.staysSort === 'rating-desc') return (b.item.rating || 0) - (a.item.rating || 0);
+    if (pf.staysSort === 'price-desc') return parsePrice(b.item.total_price) - parsePrice(a.item.total_price);
+    return parsePrice(a.item.total_price) - parsePrice(b.item.total_price);
+  });
+
+  const poiCategories = [...new Set((p.points_of_interest || []).map(o => o.category))].sort();
+  let pois = withIndex(p.points_of_interest || []);
+  if (pf.poiCategory) pois = pois.filter(x => x.item.category === pf.poiCategory);
+  // "a pagamento" e' un giudizio best-effort sul tag OSM fee grezzo: qualunque valore diverso da
+  // "no" (compreso "yes" o una nota libera) conta come pagamento presunto. Un POI senza il tag
+  // fee non entra in questo filtro: assenza del dato non e' la stessa cosa di "gratuito".
+  if (pf.poiFeeOnly) pois = pois.filter(x => x.item.fee && x.item.fee !== 'no');
+  pois.sort((a,b) => pf.poiSort === 'name-desc' ? b.item.name.localeCompare(a.item.name) : a.item.name.localeCompare(b.item.name));
+
+  const groups = [
+    { key:'flights', label:'Voli', originalCount:(p.flights||[]).length, pairs:flights,
+      // S.planLastSearch e' non-null solo se questa ricerca ha davvero incluso aeroporti: serve a
+      // distinguere "non ho chiesto voli" (sezione nascosta, comportamento invariato) da "li ho
+      // chiesti ma la fonte non ha restituito nulla" (messaggio esplicito invece del silenzio
+      // totale di prima — un utente non puo' distinguere i due casi senza questo messaggio).
+      emptyMsg: S.planLastSearch ? 'Nessun volo trovato per questa rotta e queste date. Puo\' essere una rotta senza voli in quel periodo, oppure la fonte (Google Flights) non ha risposto: non e\' necessariamente un errore del comparatore.' : null,
+      view:f=>{
+        const src = FLIGHT_SOURCE_LABEL[f.source] || f.source;
+        const ls = S.planLastSearch;
+        const link = (f.source === 'fast_flights' && ls) ? googleFlightsSearchUrl(ls.origin, ls.destAir, ls.dep, ls.ret) : '';
+        return {nm:escHtml(f.airline),price:escHtml(f.price),
+          sub:`${escHtml(f.departure)} → ${escHtml(f.arrival)} · ${escHtml(f.duration)} · ${f.stops===0?'diretto':escHtml(f.stops)+' scalo/i'}${f.is_best?' · consigliato':''} · fonte: ${escHtml(src)}`,
+          link, linkLabel:'Cerca su Google Flights →'};
+      },
+      controls:`<div class="plan-filters">
+        <label><input type="checkbox" ${pf.flightsDirectOnly?'checked':''} onchange="setPlanFilter('flightsDirectOnly',this.checked)"> Solo diretti</label>
+        <select onchange="setPlanFilter('flightsSort',this.value)">
+          <option value="price-asc" ${pf.flightsSort==='price-asc'?'selected':''}>Prezzo crescente</option>
+          <option value="price-desc" ${pf.flightsSort==='price-desc'?'selected':''}>Prezzo decrescente</option>
+        </select></div>` },
+    { key:'stays', label:'Alloggi', originalCount:(p.stays||[]).length, pairs:stays,
+      view:s=>({nm:escHtml(s.name),price:escHtml(s.total_price),sub:`${escHtml(s.listing_type||'Alloggio')}${s.rating>0?' · '+escHtml(s.rating)+' ('+escHtml(s.review_count)+' recensioni)':' · senza recensioni'}`,link:s.url||'',linkLabel:'Vedi e prenota su Airbnb →'}),
+      controls:`<div class="plan-filters">
+        <select onchange="setPlanFilter('staysMinRating',parseFloat(this.value))">
+          <option value="0" ${pf.staysMinRating===0?'selected':''}>Qualsiasi valutazione</option>
+          <option value="3" ${pf.staysMinRating===3?'selected':''}>3+ stelle</option>
+          <option value="4" ${pf.staysMinRating===4?'selected':''}>4+ stelle</option>
+          <option value="4.5" ${pf.staysMinRating===4.5?'selected':''}>4.5+ stelle</option>
+        </select>
+        <select onchange="setPlanFilter('staysSort',this.value)">
+          <option value="price-asc" ${pf.staysSort==='price-asc'?'selected':''}>Prezzo crescente</option>
+          <option value="price-desc" ${pf.staysSort==='price-desc'?'selected':''}>Prezzo decrescente</option>
+          <option value="rating-desc" ${pf.staysSort==='rating-desc'?'selected':''}>Valutazione più alta</option>
+        </select></div>` },
+    { key:'pois', label:'Punti di interesse', originalCount:(p.points_of_interest||[]).length, pairs:pois,
+      // fee/price_hint vengono dai tag OSM fee/charge, copertura reale bassa (verificato in
+      // sessione: 0/30 su un'area rurale, 5/100 con un prezzo vero su un'area museale densa) —
+      // per questo qui e' solo informativo, mai sommato nel totale automatico dei costi.
+      view:o=>{
+        const feeTxt = o.price_hint ? `Ingresso: ${o.price_hint}` : (o.fee === 'no' ? 'Ingresso gratuito' : (o.fee ? 'Ingresso a pagamento' : ''));
+        return {nm:escHtml(o.name), price:'', sub:`${escHtml(o.category)}${feeTxt?' · '+escHtml(feeTxt):''}`, link:''};
+      },
+      controls: `<div class="plan-filters">
+        ${poiCategories.length > 1 ? `<select onchange="setPlanFilter('poiCategory',this.value)">
+          <option value="">Tutte le categorie</option>
+          ${poiCategories.map(c => `<option value="${escHtml(c)}" ${pf.poiCategory===c?'selected':''}>${escHtml(c)}</option>`).join('')}
+        </select>` : ''}
+        <label><input type="checkbox" ${pf.poiFeeOnly?'checked':''} onchange="setPlanFilter('poiFeeOnly',this.checked)"> Solo a pagamento</label>
+      </div>
+      <p class="costs-hint">Il dato ingresso viene da OpenStreetMap ed è spesso assente anche quando il posto è davvero a pagamento: non conteggiato nel totale automatico dei costi per questo motivo.</p>` },
+  ];
+
+  const html = groups.map(g => {
+    if (!g.originalCount) {
+      // g.emptyMsg distingue "sezione non pertinente a questa ricerca" (torna '', comportamento
+      // invariato) da "pertinente ma zero risultati dalla fonte" (messaggio esplicito, vedi
+      // definizione del gruppo "flights" sopra per il caso d'uso reale che l'ha motivato).
+      return g.emptyMsg ? `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (0)</summary><p class="costs-hint">${escHtml(g.emptyMsg)}</p></details>` : '';
+    }
+    const countLbl = g.pairs.length !== g.originalCount ? `${g.pairs.length} di ${g.originalCount}` : `${g.originalCount}`;
+    if (!g.pairs.length) return `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (${countLbl})</summary>${g.controls}<p class="costs-hint">Nessun risultato con i filtri scelti.</p></details>`;
+    const dayOpts = dayOptsForKind(g.key);
+    return `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (${countLbl})</summary>${g.controls}
+      ${g.pairs.map(({item, origIndex}) => { const v = g.view(item);
+        return `<div class="plan-item"><div class="plan-item-hd"><div class="plan-item-nm">${v.nm}</div>${v.price?`<div class="plan-item-price">${v.price}</div>`:''}</div><div class="plan-item-sub">${v.sub}</div>${v.link?`<a class="plan-item-link" href="${escHtml(v.link)}" target="_blank" rel="noopener noreferrer">${escHtml(v.linkLabel||'Vedi →')}</a>`:''}
+        <div class="plan-item-save"><span class="plan-item-save-lbl">Aggiungi al giorno</span><select>${dayOpts}</select><button class="plan-save-btn" onclick="savePlanItem('${g.key}',${origIndex},this)">Salva</button></div></div>`;
+      }).join('')}</details>`;
+  }).join('');
+  el.innerHTML = html || '<p style="color:var(--muted);font-size:13px;">Nessun risultato per questa ricerca.</p>';
+}
+
+// Riga di una singola prenotazione salvata: condivisa tra la scheda "Pianifica" (renderPlanSaved,
+// raggruppata per giorno) e il blocco "Prenotato" dentro ogni day-card di "Itinerario"
+// (renderDayPlanning), cosi' le due viste non duplicano la stessa logica di formattazione.
+function planSavedRowHtml(dayId, kind, item, i) {
+  const nm = kind==='flights' ? `${escHtml(item.airline)} · ${escHtml(item.price)} · ${escHtml(FLIGHT_SOURCE_LABEL[item.source]||item.source)}` : kind==='stays' ? `${escHtml(item.name)} · ${escHtml(item.total_price)}` : escHtml(item.name);
+  const link = kind==='stays' && item.url ? ` <a class="plan-item-link" href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer">Airbnb →</a>` : '';
+  return `<div class="plan-saved-item"><div class="plan-saved-nm">${PLAN_KIND_LABEL[kind]}: ${nm}${link}</div><button class="plan-rm-btn" onclick="removePlanItem('${dayId}','${kind}',${i})">Rimuovi</button></div>`;
+}
+
+// Il totale combinato volo+alloggio di un giorno ha senso solo se ci sono entrambi, altrimenti
+// e' solo il prezzo del singolo elemento gia' visibile sopra, ridondante. Condiviso per lo
+// stesso motivo di planSavedRowHtml.
+function planSavedTotalHtml(dayPlanning) {
+  const dayFlights = dayPlanning.flights || [], dayStays = dayPlanning.stays || [];
+  if (!dayFlights.length || !dayStays.length) return '';
+  const total = dayFlights.reduce((s,f)=>s+parsePrice(f.price),0) + dayStays.reduce((s,st)=>s+parsePrice(st.total_price),0);
+  return `<div class="plan-saved-total">Totale volo + alloggio: ${total.toFixed(2)} ${CURRENCY_CODE}</div>`;
+}
+
+function renderDayPlanningAll() { S.days.forEach(d => renderDayPlanning(d.id)); }
+
+function renderDayPlanning(dayId) {
+  const el = document.getElementById(`day-planning-${dayId}`); if (!el) return;
+  const day = S.planning[dayId] || {};
+  const rows = [];
+  ['flights','stays','pois'].forEach(kind => (day[kind]||[]).forEach((item,i) => rows.push(planSavedRowHtml(String(dayId), kind, item, i))));
+  if (!rows.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  // L'ottimizzazione ha senso solo con almeno due POI con coordinate: un solo punto (o nessuno)
+  // non ha un ordine da scegliere. L'alloggio del giorno, se presente, si aggiunge come punto di
+  // partenza dentro optimizeDayRoute, non qui: non conta per la soglia dei due POI.
+  const poisWithCoords = (day.pois||[]).filter(p => p.lat != null && p.lon != null);
+  const routeBlk = poisWithCoords.length >= 2
+    ? `<button class="act-btn route-btn" onclick="optimizeDayRoute(${dayId})">Ottimizza percorso</button><div class="day-route" id="day-route-${dayId}"></div>`
+    : '';
+  el.style.display = 'block';
+  el.innerHTML = `<div class="day-planning-ttl">Prenotato da Pianifica</div>${rows.join('')}${planSavedTotalHtml(day)}${routeBlk}`;
+}
+
+// ── Ottimizzazione percorso giornaliero (Itinerario) ───────────────────────────
+// Server demo pubblico OSRM (router.project-osrm.org): gratuito, senza chiave, CORS aperto
+// (Access-Control-Allow-Origin: *, verificato dal vivo), nessun backend proprio necessario. I
+// suoi termini d'uso dichiarati limitano il server demo a "reasonable, non-commercial use", non
+// piu' di 1 richiesta al secondo e nessuna garanzia di uptime/latenza — coerente con un click
+// manuale occasionale dell'utente, mai con chiamate automatiche o in sequenza ravvicinata.
+window.optimizeDayRoute = async (dayId) => {
+  const el = document.getElementById(`day-route-${dayId}`); if (!el) return;
+  const day = S.planning[dayId] || {};
+  const pois = (day.pois || []).filter(p => p.lat != null && p.lon != null);
+  const stay = (day.stays || []).find(s => s.lat != null && s.lon != null);
+  const points = stay ? [stay, ...pois] : pois; // l'alloggio, se c'e', e' sempre il punto di partenza (source=first sotto)
+
+  el.innerHTML = '<p class="costs-hint">Calcolo percorso...</p>';
+  const coords = points.map(p => `${p.lon},${p.lat}`).join(';');
+  try {
+    const res = await fetch(`https://router.project-osrm.org/trip/v1/${ROUTING_PROFILE}/${coords}?source=first&roundtrip=false`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.code !== 'Ok' || !data.trips || !data.trips.length) throw new Error(data.message || data.code || 'risposta inattesa');
+    const trip = data.trips[0];
+    const ordered = data.waypoints
+      .map((w,i) => ({ point: points[i], order: w.waypoint_index }))
+      .sort((a,b) => a.order - b.order)
+      .map(w => w.point);
+    const mins = Math.round(trip.duration / 60), km = (trip.distance / 1000).toFixed(1);
+    const steps = ordered.map((p,i) => `<div class="route-step"><span class="route-step-n">${i+1}</span>${escHtml(p.name)}</div>`).join('');
+    el.innerHTML = `<div class="route-summary">${mins} min · ${km} km (stima stradale, non tiene conto di soste)</div>${steps}`;
+  } catch (e) {
+    el.innerHTML = `<p class="costs-hint">Percorso non calcolabile (${escHtml(e.message)}). Il servizio di routing è un demo pubblico gratuito, senza garanzia di disponibilità: riprova più tardi.</p>`;
+  }
+};
+
+function renderPlanSaved() {
+  const el = document.getElementById('plan-saved'); if (!el) return;
+  const dayIds = Object.keys(S.planning).filter(id => ['flights','stays','pois'].some(k => (S.planning[id][k]||[]).length));
+  if (!dayIds.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">Nessun elemento salvato ancora.</p>'; return; }
+  dayIds.sort((a,b) => (parseInt(a,10)||0) - (parseInt(b,10)||0));
+  el.innerHTML = dayIds.map(dayId => {
+    const dayInfo = S.days.find(d => String(d.id) === String(dayId));
+    const dayTitle = `${escHtml(dayInfo?.label||'')} · ${escHtml(dayInfo?.title||`Giorno ${dayId}`)}`;
+    const rows = [];
+    ['flights','stays','pois'].forEach(kind => {
+      (S.planning[dayId][kind]||[]).forEach((item,i) => rows.push(planSavedRowHtml(dayId, kind, item, i)));
+    });
+    return `<div class="plan-saved-day"><div class="plan-saved-day-ttl">${dayTitle}</div>${rows.join('')}${planSavedTotalHtml(S.planning[dayId])}</div>`;
+  }).join('');
+}
+
+// ── Dashboard costi reali e divisione tra persone ("Info & Costi") ───────────────
+// Fonte dei costi "automatici": tutto cio' che e' salvato in S.planning (voli/alloggi
+// scelti nella scheda Pianifica). I POI non hanno un prezzo (schema PointOfInterest,
+// vedi services/poi-search/), quindi non entrano nel totale. Le spese manuali (con un
+// pagatore opzionale) vivono solo in trips/{TRIP_ID}/state/costs, non in S.planning.
+function parsePrice(str) {
+  if (!str) return 0;
+  const m = String(str).match(/[\d]+(?:[.,]\d+)?/);
+  return m ? parseFloat(m[0].replace(',', '.')) : 0;
+}
+
+function computePlanningCosts() {
+  let flights = 0, flightsCount = 0, stays = 0, staysCount = 0;
+  Object.values(S.planning).forEach(day => {
+    (day.flights||[]).forEach(f => { flights += parsePrice(f.price); flightsCount++; });
+    (day.stays||[]).forEach(s => { stays += parsePrice(s.total_price); staysCount++; });
+  });
+  return { flights, flightsCount, stays, staysCount, total: flights + stays };
+}
+
+function renderCostsDashboard() {
+  const el = document.getElementById('costs-dashboard'); if (!el) return;
+  const c = S.costs || { participants: [], expenses: [] };
+  const auto = computePlanningCosts();
+  const manualTotal = c.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const grandTotal = auto.total + manualTotal;
+  const n = c.participants.length;
+  const perPerson = n > 0 ? grandTotal / n : 0;
+  const paidByPerson = {};
+  c.participants.forEach(p => paidByPerson[p] = 0);
+  c.expenses.forEach(e => { if (e.paidBy && paidByPerson.hasOwnProperty(e.paidBy)) paidByPerson[e.paidBy] += (e.amount || 0); });
+
+  el.innerHTML = `
+    <div class="costs-card">
+      <div class="costs-card-ttl">Partecipanti</div>
+      <div class="costs-participants">
+        ${c.participants.map((p,i) => `<span class="costs-chip">${escHtml(p)}<button onclick="removeCostParticipant(${i})">&times;</button></span>`).join('') || '<span class="costs-empty">Nessun partecipante ancora: aggiungine almeno uno per calcolare la quota a testa.</span>'}
+      </div>
+      <div class="costs-add-row"><input id="cp-new" placeholder="Nome partecipante" onkeydown="if(event.key==='Enter'){event.preventDefault();addCostParticipant();}"><button class="costs-add-btn" onclick="addCostParticipant()">+ Aggiungi</button></div>
+    </div>
+
+    <div class="costs-card">
+      <div class="costs-card-ttl">Costi automatici (da Pianifica)</div>
+      <div class="costs-auto-row"><span>Voli salvati (${auto.flightsCount})</span><strong>${CURRENCY_SYMBOL} ${auto.flights.toFixed(2)}</strong></div>
+      <div class="costs-auto-row"><span>Alloggi salvati (${auto.staysCount})</span><strong>${CURRENCY_SYMBOL} ${auto.stays.toFixed(2)}</strong></div>
+      <p class="costs-hint">Si aggiorna da solo ogni volta che salvi un risultato nella scheda Pianifica su un giorno.</p>
+    </div>
+
+    <div class="costs-card">
+      <div class="costs-card-ttl">Spese aggiunte a mano</div>
+      ${c.expenses.map(e => `<div class="costs-expense-row"><div><div class="costs-expense-lbl">${escHtml(e.label)}</div><div class="costs-expense-sub">${e.paidBy?'Pagato da '+escHtml(e.paidBy):'Nessun pagatore assegnato'}</div></div><div class="costs-expense-amt">${CURRENCY_SYMBOL} ${(e.amount||0).toFixed(2)}</div><button class="costs-rm-btn" onclick="removeCostExpense('${e.id}')">&times;</button></div>`).join('') || '<p class="costs-hint">Nessuna spesa manuale ancora (es. traghetto, benzina, biglietti pagati da uno solo).</p>'}
+      <div class="costs-expense-form">
+        <input id="ce-label" placeholder="Descrizione (es. Traghetto, benzina)">
+        <input id="ce-amount" type="number" min="0" step="0.01" placeholder="Importo ${CURRENCY_CODE}">
+        <select id="ce-paidby"><option value="">Nessun pagatore</option>${c.participants.map(p=>`<option value="${escHtml(p)}">${escHtml(p)}</option>`).join('')}</select>
+        <button class="costs-add-btn" onclick="addCostExpense()">+ Aggiungi spesa</button>
+      </div>
+    </div>
+
+    <div class="costs-summary">
+      <div class="costs-summary-row"><span>Totale complessivo</span><strong>${CURRENCY_SYMBOL} ${grandTotal.toFixed(2)}</strong></div>
+      ${n>0 ? `<div class="costs-summary-row"><span>Quota a testa (${n} persone)</span><strong>${CURRENCY_SYMBOL} ${perPerson.toFixed(2)}</strong></div>` : ''}
+      ${n>0 ? c.participants.map(p => {
+        const balance = paidByPerson[p] - perPerson;
+        const cls = balance >= 0 ? 'pos' : 'neg';
+        const txt = balance >= 0 ? `deve ricevere ${CURRENCY_SYMBOL} ${balance.toFixed(2)}` : `deve dare ${CURRENCY_SYMBOL} ${Math.abs(balance).toFixed(2)}`;
+        return `<div class="costs-balance-row"><span>${escHtml(p)}</span><span class="costs-balance ${cls}">${txt}</span></div>`;
+      }).join('') : ''}
+    </div>`;
+}
+
+window.addCostParticipant = () => {
+  const input = document.getElementById('cp-new'); const name = input.value.trim();
+  if (!name) return;
+  const c = S.costs || { participants: [], expenses: [] };
+  if (c.participants.includes(name)) { input.value = ''; return; }
+  const updated = { ...c, participants: [...c.participants, name] };
+  writeCosts(updated).then(() => { S.costs = updated; renderCostsDashboard(); }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.removeCostParticipant = (i) => {
+  const c = S.costs; const name = c.participants[i];
+  const updated = {
+    participants: c.participants.filter((_,idx) => idx !== i),
+    expenses: c.expenses.map(e => e.paidBy === name ? { ...e, paidBy: '' } : e),  // spesa resta, perde solo il pagatore rimosso
+  };
+  writeCosts(updated).then(() => { S.costs = updated; renderCostsDashboard(); }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.addCostExpense = () => {
+  const label = document.getElementById('ce-label').value.trim();
+  const amount = parseFloat(document.getElementById('ce-amount').value);
+  const paidBy = document.getElementById('ce-paidby').value;
+  if (!label || !amount || amount <= 0) { alert('Inserisci una descrizione e un importo valido (maggiore di zero).'); return; }
+  const c = S.costs || { participants: [], expenses: [] };
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  const updated = { ...c, expenses: [...c.expenses, { id, label, amount, paidBy }] };
+  writeCosts(updated).then(() => { S.costs = updated; renderCostsDashboard(); }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.removeCostExpense = (id) => {
+  const c = S.costs;
+  const updated = { ...c, expenses: c.expenses.filter(e => e.id !== id) };
+  writeCosts(updated).then(() => { S.costs = updated; renderCostsDashboard(); }).catch(e => alert('Errore: ' + e.message));
+};
+
+// ── Mappa Leaflet ─────────────────────────────────────────────────────────────
+function renderMap() {
+  setTimeout(()=>{
+    if(S.mapDone) return; S.mapDone=true;
+    const map=L.map('map').setView([40.55,15.1],7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'© OpenStreetMap', maxZoom:18 }).addTo(map);
+    MAP_LOCATIONS.forEach(loc=>{
+      const ico=L.divIcon({ html:`<div style="width:26px;height:26px;border-radius:50%;background:${loc.c};border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);"></div>`, className:'', iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-15] });
+      L.marker([loc.lat,loc.lng],{icon:ico}).addTo(map).bindPopup(`<strong>${loc.nm}</strong><br><span style="color:#666;font-size:11px">${loc.sub}</span>`);
+    });
+    L.polyline(MAP_LOCATIONS.map(l=>[l.lat,l.lng]),{color:'#FF4758',weight:2,dashArray:'8,10',opacity:.55}).addTo(map);
+    document.getElementById('map-legend').innerHTML = MAP_LOCATIONS.map(l=>`<div class="leg-item"><div class="leg-dot" style="background:${l.c}"></div><div><div class="leg-lbl">${l.nm}</div><div class="leg-day">${l.sub}</div></div></div>`).join('');
+  },120);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function hideLoading() { const o=document.getElementById('overlay'); if(o){ o.style.opacity='0'; setTimeout(()=>o.style.display='none',400); } }
+function setStatus(msg) { const el=document.getElementById('load-status'); if(el) el.textContent=msg; }
+
+// ── Esportazioni verso il DOM (handler onclick nell'HTML) ─────────────────────
+window.showTab = (id,btn) => {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active'); btn.classList.add('active');
+  if(id==='mappa') renderMap();
+  if(id==='pianifica') { ensureAirportsLoaded(); warmupBackend(); }
+};
+window.tog = id => document.getElementById(`dc${id}`).classList.toggle('open');
+window.ckTog = (key,el) => {
+  const v=!S.ckState[key]; S.ckState[key]=v;
+  el.classList.toggle('done',v); const box=el.querySelector('.ck-box'); if(box) box.textContent=v?'✓':''; updateCkProgress();
+  writeCk(key,v).catch(e=>{ S.ckState[key]=!v; el.classList.toggle('done',!v); if(box) box.textContent=!v?'✓':''; updateCkProgress(); console.error(e); });
+};
+window.toggleNote = id => {
+  const area=document.getElementById(`note-area-${id}`); if(!area) return;
+  const show=area.style.display==='none'||area.style.display===''; area.style.display=show?'block':'none';
+  if(show){ const ta=area.querySelector('textarea'); if(ta){ if(S.notes[id]) ta.value=S.notes[id]; ta.focus(); } }
+};
+window.saveNote = (id,text) => {
+  writeNote(id,text).then(()=>{ const s=document.getElementById(`note-saved-${id}`); if(s){ s.style.display='block'; setTimeout(()=>s.style.display='none',2000); } }).catch(console.error);
+};
+window.markDone = id => { const c=S.completed[id]||false; writeCompleted(id,!c).catch(console.error); };
+
+// ── Autocompletamento aeroporti (public/airports.json, dataset OurAirports) ─────
+// Caricato una sola volta, al primo accesso alla scheda Pianifica (lazy: 4562 aeroporti,
+// ~380KB, non serve scaricarlo se l'utente non apre mai questa scheda). L'input mantiene
+// sempre il codice IATA come value (compatibilita' con searchPlan, che legge 3 lettere),
+// il nome leggibile va nella label di conferma sotto il campo, non nel campo stesso.
+async function ensureAirportsLoaded() {
+  if (!S.airports) {
+    try {
+      const res = await fetch('./airports.json');
+      S.airports = await res.json();
+    } catch (e) {
+      S.airports = [];
+      console.error('Impossibile caricare airports.json', e);
+    }
+  }
+  if (!S.airportZones) {
+    try {
+      const res = await fetch('./airport-zones.json');
+      S.airportZones = await res.json();
+    } catch (e) {
+      S.airportZones = [];
+      console.error('Impossibile caricare airport-zones.json', e);
+    }
+  }
+}
+
+// Punteggio di rilevanza, non solo "contiene": digitando il codice esatto ("FUE") l'aeroporto
+// giusto deve comparire primo, non dopo altri con "fue" come sottostringa casuale del nome
+// (es. Cienfuegos) - verificato con un caso reale in sessione, non un'ipotesi.
+function _airportScore(a, q) {
+  const iata = a.iata.toLowerCase(), city = a.city.toLowerCase(), name = a.name.toLowerCase();
+  if (iata === q) return 0;
+  if (iata.startsWith(q)) return 1;
+  if (city.startsWith(q)) return 2;
+  if (name.startsWith(q)) return 3;
+  if (city.includes(q)) return 4;
+  if (name.includes(q)) return 5;
+  return 9;
+}
+
+window.onAirportInput = (fieldKey) => {
+  const inputId = fieldKey === 'origin' ? 'pf-origin' : 'pf-dest-air';
+  const input = document.getElementById(inputId);
+  const listEl = document.getElementById(`${inputId}-list`);
+  const confirmEl = document.getElementById(`${inputId}-confirm`);
+  const q = input.value.trim();
+  if (!S.airports || q.length < 2) { listEl.style.display = 'none'; return; }
+
+  const exact = S.airports.find(a => a.iata === q.toUpperCase());
+  confirmEl.textContent = exact ? `${escHtml(exact.city)} — ${escHtml(exact.name)}` : '';
+
+  const ql = q.toLowerCase();
+  const matches = S.airports.map(a => ({ a, score: _airportScore(a, ql) })).filter(x => x.score < 9).sort((x,y) => x.score - y.score).slice(0, 8).map(x => x.a);
+  if (!matches.length) { listEl.style.display = 'none'; return; }
+  listEl.innerHTML = matches.map(a => `<div class="airport-ac-item" onmousedown="selectAirport('${fieldKey}','${a.iata}')"><strong>${escHtml(a.iata)}</strong> — ${escHtml(a.city)}<span>${escHtml(a.name)}</span></div>`).join('');
+  listEl.style.display = 'block';
+};
+
+window.hideAirportSuggestions = (fieldKey) => {
+  const inputId = fieldKey === 'origin' ? 'pf-origin' : 'pf-dest-air';
+  document.getElementById(`${inputId}-list`).style.display = 'none';
+};
+
+window.selectAirport = (fieldKey, iata) => {
+  const inputId = fieldKey === 'origin' ? 'pf-origin' : 'pf-dest-air';
+  const input = document.getElementById(inputId);
+  const airport = S.airports.find(a => a.iata === iata);
+  input.value = iata;
+  document.getElementById(`${inputId}-confirm`).textContent = airport ? `${escHtml(airport.city)} — ${escHtml(airport.name)}` : '';
+  document.getElementById(`${inputId}-list`).style.display = 'none';
+  // Suggerisce la citta'/zona per alloggi e POI solo se l'utente non ha gia' scritto la sua:
+  // e' un punto di partenza plausibile (comune dell'aeroporto), non sempre la zona turistica
+  // giusta (es. FUE -> "El Matorral", non "Corralejo"), quindi non sovrascrive mai un valore
+  // presente.
+  if (fieldKey === 'dest' && airport) {
+    const destLoc = document.getElementById('pf-dest-loc');
+    if (!destLoc.value.trim()) destLoc.value = airport.city;
+    // Zone turistiche note (public/airport-zones.json), verificate una per una con ricerca web
+    // reale, non a memoria: coprono solo aeroporti "leisure" dove il comune amministrativo e'
+    // notoriamente diverso dalla zona turistica (isole, destinazioni balneari). Un clic sostituisce
+    // sempre il valore corrente: e' una scelta esplicita dell'utente, a differenza del comune
+    // sopra che non sovrascrive mai.
+    const zoneEntry = (S.airportZones || []).find(z => z.iata === iata);
+    const zoneEl = document.getElementById('pf-zone-suggestions');
+    // data-zone, non un letterale dentro onclick: alcuni nomi reali contengono un apostrofo
+    // (es. "Playa d'en Bossa", Ibiza) che romperebbe una stringa JS incorporata nell'attributo.
+    // this.dataset.zone arriva gia' decodificato dal browser, nessun escaping manuale necessario.
+    zoneEl.innerHTML = zoneEntry
+      ? `<span class="airport-ac-confirm" style="width:100%">Zone turistiche note:</span>${zoneEntry.zones.map(z => `<span class="zone-chip" data-zone="${escHtml(z)}" onclick="pickZoneSuggestion(this.dataset.zone)">${escHtml(z)}</span>`).join('')}`
+      : '';
+  }
+};
+
+window.pickZoneSuggestion = (zoneName) => {
+  document.getElementById('pf-dest-loc').value = zoneName;
+};
+
+// Il cold start concorrente dei tre servizi a valle (flight/stay/poi-search) puo' superare anche
+// i 90s di margine gia' coperti dal retry di trip-planner (verificato dal vivo in sessione): li
+// si sveglia in anticipo, appena si apre questa scheda, cosi' il tempo speso a compilare il form
+// diventa tempo di risveglio gratuito invece di attesa durante "Cerca". Fire-and-forget: non si
+// aspetta la risposta e non si blocca l'interfaccia, un fallimento qui non è mai un errore per
+// l'utente (la ricerca vera ha comunque il proprio retry indipendente).
+let backendWarmed = false;
+function warmupBackend() {
+  if (backendWarmed) return;
+  backendWarmed = true;
+  fetch(`${TRIP_PLANNER_URL}/api/warmup`, { method: 'POST' }).catch(() => {});
+}
+
+window.searchPlan = async () => {
+  const btn = document.getElementById('pf-submit'), msgEl = document.getElementById('plan-msg');
+  const origin = document.getElementById('pf-origin').value.trim().toUpperCase();
+  const destAir = document.getElementById('pf-dest-air').value.trim().toUpperCase();
+  const destLoc = document.getElementById('pf-dest-loc').value.trim();
+  const dep = document.getElementById('pf-dep').value, ret = document.getElementById('pf-ret').value;
+  const adults = parseInt(document.getElementById('pf-adults').value,10) || 1;
+  const budget = parseInt(document.getElementById('pf-budget').value,10) || 0;
+
+  if (!destLoc || !dep || !ret) {
+    msgEl.innerHTML = '<div class="plan-msg err">Compila almeno città, andata e ritorno.</div>';
+    return;
+  }
+  const wantsFlight = origin.length>0 || destAir.length>0;
+  if (wantsFlight && (origin.length!==3 || destAir.length!==3)) {
+    msgEl.innerHTML = '<div class="plan-msg err">Aeroporti: 3 lettere in entrambi i campi, oppure lasciali vuoti per non cercare voli.</div>';
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Ricerca in corso...';
+  msgEl.innerHTML = '<div class="plan-msg">Interrogo alloggi e punti di interesse' + (wantsFlight?' e voli':'') + '...</div>';
+  document.getElementById('plan-results').innerHTML = '';
+  document.getElementById('plan-map').style.display = 'none';
+  try {
+    const payload = {
+      destination_location: destLoc, departure_date: dep, return_date: ret,
+      adults, price_max_stay: budget, poi_limit: 20, currency: CURRENCY_CODE,
+    };
+    if (wantsFlight) { payload.origin_airport = origin; payload.destination_airport = destAir; }
+    const res = await fetch(`${TRIP_PLANNER_URL}/api/trip-plan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const plan = await res.json();
+    S.planResults = plan;
+    // Serve solo a costruire il link "Cerca su Google Flights" per fonte fast_flights: la
+    // FlightOffer non porta origine/destinazione/date, solo l'ultima ricerca fatta le ha.
+    S.planLastSearch = wantsFlight ? { origin, destAir, dep, ret } : null;
+    S.planFilters = { ...PLAN_FILTERS_DEFAULT };  // ogni nuova ricerca riparte pulita, niente filtri della ricerca precedente
+    // Un 429/502/503 qui e' quasi sempre cold start concorrente dei servizi Render (piano free):
+    // trip-planner ha gia' ritentato per 90s prima di arrendersi, ma un secondo tentativo a
+    // freddo puo' ancora fallire se i servizi non erano ancora svegli — un pulsante "Riprova"
+    // evita di dover ridigitare tutto il form per il tentativo successivo, quasi sempre risolutivo.
+    msgEl.innerHTML = (plan.errors && plan.errors.length) ? `<div class="plan-msg err">Parziale: ${plan.errors.join(' · ')} <button class="plan-retry-btn" onclick="searchPlan()">Riprova</button></div>` : '';
+    renderPlanResults();
+    renderPlanPriceMap();
+  } catch (e) {
+    msgEl.innerHTML = `<div class="plan-msg err">Comparatore non raggiungibile (${e.message}). Se i servizi si stanno solo risvegliando (cold start su Render), riprova. <button class="plan-retry-btn" onclick="searchPlan()">Riprova</button></div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Cerca';
+  }
+};
+
+window.setPlanFilter = (key, value) => { S.planFilters[key] = value; renderPlanResults(); };
+
+window.savePlanItem = (kind, idx, btn) => {
+  const item = S.planResults[PLAN_API_KEY[kind]][idx];
+  const sel = btn.previousElementSibling, dayId = sel.value;
+  const orig = btn.textContent; btn.disabled = true; btn.textContent = 'Salvo...';
+  const current = (S.planning[dayId] && S.planning[dayId][kind]) || [];
+  writePlanDay(dayId, kind, [...current, item]).then(() => {
+    btn.textContent = 'Salvato'; btn.classList.add('saved');
+    setTimeout(() => { btn.disabled = false; btn.textContent = orig; btn.classList.remove('saved'); }, 1500);
+  }).catch(e => { btn.disabled = false; btn.textContent = orig; alert('Errore salvataggio: ' + e.message); });
+};
+
+window.removePlanItem = (dayId, kind, idx) => {
+  const arr = (S.planning[dayId] && S.planning[dayId][kind]) || [];
+  writePlanDay(dayId, kind, arr.filter((_,i) => i !== idx)).catch(e => alert('Errore rimozione: ' + e.message));
+};
+
+init();
+</script>
+</body>
+</html>

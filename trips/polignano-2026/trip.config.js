@@ -20,6 +20,15 @@
  * non assumere che abbia riaperto) e Monopoli (Castello di Carlo V, Piazza Giuseppe
  * Garibaldi). Le voci ristoranti di Alberobello e Ostuni restano indicative (tipo di
  * cucina, non un nome verificato), non coperte da nessuna delle passate finora.
+ *
+ * Una quarta passata (2026-07-13) integra un'esperienza diretta e reale dell'utente,
+ * che questi luoghi li ha già visitati: Super Mago del Gelo e il consiglio sull'orario
+ * di Alberobello (Giorno 1 e 3), il molo e il panino al polpo di Monopoli (Giorno 5),
+ * il giro con l'ape calessino sotto le mura di Ostuni (Giorno 4), la rassicurazione su
+ * Bari (Giorno 1) e le gite extra sulla via del ritorno o se restano giorni liberi
+ * (Trani, Locorotondo, Grotte di Castellana, Lecce, Brindisi, Otranto — Giorno 6). Non
+ * è una fonte web citabile con un link: è testimonianza diretta di chi scrive questo
+ * file, marcata come tale ovunque compare, non presentata come dato di una guida.
  */
 
 // ─── IDENTIFICATIVO DEL VIAGGIO ────────────────────────────────────────────────
@@ -103,8 +112,10 @@ export const TRIP_DATA = {
           tx:"Ultimi 35 minuti di guida da Bari. Arrivo indicativo a Polignano a Mare nel primo pomeriggio. Sistemazione in hotel/appartamento — una sola base per tutto il soggiorno, nessun cambio alloggio nei giorni successivi." },
         { t:"Sera - Centro storico di Polignano",
           tx:"Passeggiata nel centro storico, un dedalo di vicoli bianchi a picco sul mare. Sosta a <b>Lama Monachile</b>, la piccola insenatura tra le scogliere che è l'immagine simbolo del paese, e alla statua dedicata a <b>Domenico Modugno</b>, nato qui. Cena in centro storico, vista scogliera se possibile. Costo indicativo: €25-40 a persona." },
+        { t:"Tre cose da non perdere, tutte a due passi",
+          tx:"Testimonianza diretta di chi ha già fatto questo viaggio, non da una guida: Lama Monachile, Pescaria (panino o frittura di pesce, un'experience tipica del posto) e <b>Super Mago del Gelo</b> (un caffè speciale che pare si trovi solo lì, gusto amaretto e agrumi — vale la sosta) si trovano tutti nel giro di 20 metri l'uno dall'altro. Il resto del centro storico si visita comodamente in un'oretta, non serve pianificarci sopra mezza giornata." },
       ],
-      tips:["Giornata lunga (guida + Bari + guida + arrivo): partire presto per non arrivare a Polignano troppo tardi","Bari Vecchia è ZTL: parcheggiare fuori e proseguire a piedi","Il tramonto da Lama Monachile è il momento migliore per le foto"],
+      tips:["Giornata lunga (guida + Bari + guida + arrivo): partire presto per non arrivare a Polignano troppo tardi","Bari Vecchia è ZTL: parcheggiare fuori e proseguire a piedi","Il tramonto da Lama Monachile è il momento migliore per le foto","Su Bari circolano allarmismi locali sui furti d'auto: nell'esperienza diretta di chi ha già fatto questo giro, parcheggiando nelle zone indicate sopra è stata una tappa tranquilla e vale assolutamente la sosta a Bari Vecchia"],
       cf:"25-40", ca:"0"
       // Fonti (ricerca web 2026-07-13): percorso Bari Vecchia e parcheggio da
       // https://www.regionepuglia.org/itinerario-bari-mezza-giornata/ e
@@ -132,19 +143,23 @@ export const TRIP_DATA = {
     },
     {
       id:3, color:"#C4832A", label:"Giorno 3",
-      title:"Alberobello, i Trulli",
+      title:"Alberobello, i Trulli (meglio di sera)",
       places:"Rione Monti · Aia Piccola · Trullo Sovrano",
       sections:[
         { t:"Come Arrivare",
           tx:"Da Polignano ad Alberobello: circa 35 km, 40-45 minuti in auto." },
+        { t:"Meglio la sera: testimonianza diretta",
+          tx:"Da chi ha già fatto questo viaggio (non da una guida): Alberobello vale la pena tenerla per la sera, quando i trulli si accendono con le lucine — è molto più bella così che di giorno, e in agosto significa anche non \"schiattare\" di caldo tra i vicoli senza ombra. È abbastanza una turistata (al 99% negozi di souvenir), ma comunque una tappa da fare una volta nella vita. Non essendoci mare, è una passeggiata che si presta bene a un orario serale invece che a mezza giornata di sole." },
         { t:"Rione Monti & Aia Piccola",
           tx:"Alberobello è patrimonio <b>UNESCO</b> per i suoi <b>trulli</b>, le caratteristiche case in pietra a secco con tetto conico bianco. <b>Rione Monti</b> (oltre 1.000 trulli) è il quartiere principale, denso di trulli — molti oggi negozi di souvenir — e molto affollato nelle ore centrali: meglio visitarlo presto la mattina o dopo cena. <b>Aia Piccola</b> (400 trulli), dall'altra parte del paese, è molto meno turistica — ancora abitazioni di famiglia vere, il nucleo più antico del paese — ed è particolarmente suggestiva la sera. Percorso consigliato: dal belvedere, scendere nel Rione Monti, poi Aia Piccola per capire la differenza tra la parte scenografica e quella vissuta. Fonte: <a href=\"https://www.marcotogni.it/cosa-vedere-alberobello/\" target=\"_blank\" rel=\"noopener noreferrer\">Marco Togni</a>." },
         { t:"Trullo Sovrano",
           tx:"L'unico trullo a due piani della città (fine XVIII secolo, monumento nazionale dal 1930), oggi piccolo museo con ambienti ricostruiti (panificio, camera da letto, cucina). Biglietto: <b>€2,50</b> (Piazza Sacramento 10). Fonte: <a href=\"https://www.trullosovrano.eu/ingresso-biglietti/\" target=\"_blank\" rel=\"noopener noreferrer\">sito ufficiale</a>." },
         { t:"Pranzo",
           tx:"Pranzo in una trattoria del centro storico: cucina della Valle d'Itria, orecchiette, verdure locali." },
+        { t:"Se avete tempo: Locorotondo e Grotte di Castellana",
+          tx:"Sempre da esperienza diretta, non da fonte web: <b>Locorotondo</b> è carina ma molto piccola, da aggiungere solo se restano ore libere nella giornata. Le <b>Grotte di Castellana</b> sono paragonabili alle Grotte di Frasassi (forse un po' meno spettacolari), e offrono un po' di fresco rispetto al caldo di agosto — non pare serva prenotare con grande anticipo, ma verificare comunque i posti disponibili visto il periodo estivo prima di contarci." },
       ],
-      tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo, poca ombra tra i trulli"],
+      tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo, poca ombra tra i trulli","Da testimonianza diretta: tenere Alberobello per il tardo pomeriggio/sera, sia per le lucine sui trulli sia per evitare il caldo peggiore"],
       cf:"20-35", ca:"5-10"
     },
     {
@@ -158,10 +173,12 @@ export const TRIP_DATA = {
           tx:"Il centro storico è in gran parte <b>ZTL</b>, strade strette e affollate in alta stagione: meglio lasciare l'auto in un parcheggio esterno a pagamento (es. Ostuni Parking Area1, o i parcheggi di Via Antonia Specchia) e proseguire a piedi. Fonte: <a href=\"https://www.ostunicentralparking.it/2025/06/20/cosa-vedere-a-ostuni-in-un-giorno-con-mappa-e-consigli-di-parcheggio/\" target=\"_blank\" rel=\"noopener noreferrer\">Ostuni Central Parking</a>." },
         { t:"Mattino - Il centro storico",
           tx:"Ostuni è nota come <b>la Città Bianca</b> per il centro storico interamente imbiancato a calce, arroccato su una collina con vista sulla piana degli ulivi e sul mare. Vicoli stretti, scalinate, molti vicoli ciechi. <b>Piazza della Libertà</b>, con la Colonna di Sant'Oronzo, è il punto d'incontro tra la città nuova e il borgo antico. <b>Attenzione</b>: la Concattedrale di Ostuni, con il suo rosone gotico, risulta <b>chiusa per lavori di ristrutturazione</b> secondo un aggiornamento di aprile 2026 — verificare sul posto se ha riaperto prima di contarci come tappa, non è detto che sia già visitabile ad agosto. Fonte: <a href=\"https://www.eleonoraongaro.it/ostuni-cosa-vedere/\" target=\"_blank\" rel=\"noopener noreferrer\">Sarà Perché Viaggio</a>." },
+        { t:"La vista dalle mura & il giro con l'ape calessino",
+          tx:"Testimonianza diretta, non da fonte web: sotto le mura c'è un tratto panoramico da cui si vede tutta Ostuni, la Città Bianca, in un colpo d'occhio — da non perdere. Da lì si può anche fare un giro con l'ape calessino (turistico e un po' \"da turisti basic\", ma ci sta). Questa tappa va vissuta di giorno, non di sera: il bianco della città risalta molto di più con la luce piena." },
         { t:"Pomeriggio - Mare, meno affollato",
           tx:"Sulla costa di Ostuni, <b>Torre Pozzelle</b> ha una serie di calette selvagge tra gli scogli, e <b>Costa Merlata</b> insenature rocciose meno battute delle spiagge principali — alternative valide a Rosa Marina se si cerca meno folla. Fonte: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>." },
       ],
-      tips:["Il centro storico è ripido e acciottolato: scarpe comode","Vista migliore sulla città bianca dalla strada che arriva da sud"],
+      tips:["Il centro storico è ripido e acciottolato: scarpe comode","Vista migliore sulla città bianca dalla strada che arriva da sud","Da testimonianza diretta: Ostuni va vista di giorno, non di sera, perché il bianco risalta con la luce"],
       cf:"20-35", ca:"0"
       // Fonte spiagge (ricerca web 2026-07-13): https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/
     },
@@ -174,6 +191,8 @@ export const TRIP_DATA = {
           tx:"Da Polignano a Monopoli: solo 12 km, 15-20 minuti in auto — la tappa più vicina, giornata più rilassata." },
         { t:"Centro storico & Porto",
           tx:"Monopoli ha un centro storico bianco simile a Polignano ma più esteso, cinto da mura, con un <b>porto peschereccio</b> ancora attivo — barche colorate (i tradizionali gozzi), pescatori che riparano le reti. Il <b>Castello di Carlo V</b> (XVI secolo), sul mare accanto al centro storico, domina il porto vecchio: non è visitabile ovunque all'interno (parte ospita uffici comunali), ma l'esterno vale comunque la sosta. Fonte: <a href=\"https://www.regionepuglia.org/monopoli/\" target=\"_blank\" rel=\"noopener noreferrer\">Regione Puglia</a>." },
+        { t:"Il molo con le barchette blu",
+          tx:"Testimonianza diretta, non da fonte web: Monopoli è bellissima tutta, ma soprattutto il molo con le barchette blu — molto colorato, da non perdere. Lì si trova ovunque il panino con il polpo fritto, uno street food diffuso in tutta la zona del porto. Il centro è pieno di locali per fare aperitivo, specialmente sul tardo pomeriggio/sera." },
         { t:"Mare, meno affollato",
           tx:"A sud del centro, <b>Spiaggia di Porto Ghiacciolo</b> (5 minuti in auto) è segnalata come la spiaggia migliore della zona, sabbia dorata e acqua limpida. Più selvagge: <b>Port'Alga</b> (Scoglio dell'Eremita) e <b>Torre Incina</b>, buone per lo snorkeling; <b>Cala Verde</b>, dietro il campeggio Santo Stefano, è la più remota e meno frequentata. Fonti: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>, <a href=\"https://roamandthrive.com/best-beaches-monopoli-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Roam & Thrive</a>." },
         { t:"Sera - Porto vecchio",
@@ -193,6 +212,10 @@ export const TRIP_DATA = {
           tx:"Ultima mattinata a Polignano a Mare: ultimo bagno o ultima passeggiata nel centro storico, secondo l'orario di partenza." },
         { t:"Check-out & Partenza",
           tx:"Check-out e partenza per il rientro." },
+        { t:"Sulla via del ritorno: Trani",
+          tx:"Testimonianza diretta, non da fonte web: se il percorso di rientro lo permette, una sosta a Trani vale la pena — ha un mercato del pesce molto famoso, con crudi di mare descritti come \"la fine del mondo\". Da valutare in base a quanto tempo/deviazione comporta rispetto al rientro." },
+        { t:"Se restano giorni liberi nell'itinerario",
+          tx:"Sempre da esperienza diretta: con più giorni a disposizione, quasi tutto qui intorno vale una visita perché le tappe sono piccole e il costo della vita è basso ovunque. <b>Lecce</b> ha un bel centro storico, un po' distante dalla base ma comunque consigliata se c'è tempo. <b>Brindisi</b> è invece sconsigliata senza mezzi termini: descritta come uno \"scenario post apocalittico\", niente da vedere. <b>Otranto e la Grotta della Poesia</b> sono decisamente fuori mano rispetto a questa base (più adatte a un futuro tour della Puglia centro/sud), non rientrano in questo itinerario." },
       ],
       tips:["Tenere conto del traffico estivo sulla statale se si parte nel weekend"],
       cf:"10-20", ca:"0"
@@ -212,6 +235,7 @@ export const TRIP_DATA = {
       // Nessun campo thefork per Grotta Palazzese: verificato che non ha una scheda su TheFork,
       // prenota solo dal proprio sito ufficiale (grottapalazzese.it) — non inventato un link.
       { nm:"Pescaria", tags:["Pesce","Street food","$"], note:"Piazza Aldo Moro 6-8. Il primo fast food di pesce d'Italia, nato qui a Polignano: panini di mare, tartare di tonno, fish and chips. Informale, senza prenotazione. 4,8/5 su Restaurant Guru, #10 su 205 ristoranti di Polignano su Tripadvisor. Fonte: <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>, <a href=\"https://www.yelp.com/biz/pescaria-polignano-a-mare\" target=\"_blank\" rel=\"noopener noreferrer\">Yelp</a>.", sp:"Ottima alternativa economica a Grotta Palazzese", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html", thefork:"https://www.thefork.it/ristorante/pescaria-polignano-r849503" },
+      { nm:"Super Mago del Gelo", tags:["Gelateria/Caffè","$"], note:"Testimonianza diretta, non da fonte web (nessun link verificato per questa voce): fa un caffè speciale che pare si trovi solo qui, gusto amaretto e agrumi. A due passi da Pescaria e Lama Monachile, nello stesso angolo di paese.", sp:"Vale la sosta anche solo per il caffè" },
     ]},
     { area:"Alberobello", days:"Giorno 3 pranzo", items:[
       { nm:"Trattoria in un trullo", tags:["Valle d'Itria","$-$$"], note:"Voce indicativa: diversi ristoranti del centro storico occupano trulli veri. Orecchiette, verdure sott'olio, formaggi locali." },
@@ -220,6 +244,8 @@ export const TRIP_DATA = {
       { nm:"Ristorante del centro storico", tags:["Pugliese","$-$$"], note:"Voce indicativa: cucina pugliese classica (fave e cicorie, orecchiette, carne alla brace) nel centro storico della città bianca." },
     ]},
     { area:"Monopoli", days:"Giorno 5", items:[
+      { nm:"Panino col polpo fritto (molo)", tags:["Street food","$"], note:"Testimonianza diretta, non da fonte web: street food diffuso ovunque intorno al molo con le barchette blu, non un singolo locale specifico." },
+      { nm:"Locali per aperitivo (centro)", tags:["Aperitivo","$-$$"], note:"Testimonianza diretta: il centro di Monopoli è pieno di locali per l'aperitivo, specialmente sul tardo pomeriggio/sera." },
       { nm:"Ristorante sul porto", tags:["Pesce","$$-$$$"], note:"Voce indicativa: il porto vecchio di Monopoli ha diversi ristoranti di pesce con vista sulle barche." },
     ]},
   ],

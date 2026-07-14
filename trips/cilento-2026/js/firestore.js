@@ -4,7 +4,7 @@ import { TRIP_ID, TRIP_META, TRIP_DATA } from '../trip.config.js';
 import { S, fb } from './state.js';
 import { renderHero } from './hero.js';
 import { updateCkUI, updateNotesUI, renderInfoCosts } from './itinerario.js';
-import { renderPlanSaved, renderDayPlanningAll } from './pianifica.js';
+import { renderPlanSaved, renderDayPlanningAll, renderPriceAlerts } from './pianifica.js';
 import { renderCostsDashboard } from './costs.js';
 
 export function initFirestore(app) {
@@ -35,6 +35,7 @@ export async function seedIfNeeded() {
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'planning'),  { byDay: {} }),
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'meta'),      { ...TRIP_META }),
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'costs'),     { participants: [], expenses: [] }),
+    setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'priceAlerts'), { items: [] }),
   ]);
 }
 
@@ -56,6 +57,13 @@ export async function loadMeta() {
 export async function loadCosts() {
   const snap = await getDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'costs'));
   S.costs = snap.exists() ? snap.data() : { participants: [], expenses: [] };
+}
+
+// Stesso fallback self-healing di loadCosts/loadMeta: un viaggio seminato prima che questa
+// feature esistesse non ha 'priceAlerts', riparte da una lista vuota invece di rompersi.
+export async function loadPriceAlerts() {
+  const snap = await getDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'priceAlerts'));
+  S.priceAlerts = snap.exists() ? (snap.data().items || []) : [];
 }
 
 // ── Listener real-time per stato condiviso ────────────────────────────────────
@@ -89,6 +97,10 @@ export function listenRealtime() {
     renderCostsDashboard();
     renderInfoCosts(); // confirmedAccommodation vive nello stesso documento: aggiorna anche "Info & Costi"
   });
+  onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'priceAlerts'), snap => {
+    S.priceAlerts = snap.exists() ? (snap.data().items || []) : [];
+    renderPriceAlerts();
+  });
 }
 
 // ── Scritture su Firestore ────────────────────────────────────────────────────
@@ -100,3 +112,4 @@ export async function writeCompleted(id, val) { await setDoc(doc(fb.db,'trips',T
 export async function writePlanDay(dayId, kind, arr) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','planning'), { byDay: { [dayId]: { [kind]: arr } } }, { merge:true }); }
 export async function writeMeta(meta) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','meta'), meta); }
 export async function writeCosts(costs) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','costs'), costs); }
+export async function writePriceAlerts(items) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','priceAlerts'), { items }); }

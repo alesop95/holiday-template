@@ -2,15 +2,15 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { FIREBASE_CONFIG, CURRENCY_CODE } from '../trip.config.js';
 import { S } from './state.js';
-import { initFirestore, seedIfNeeded, loadContent, loadMeta, loadCosts, listenRealtime, writeCk, writeNote, writeCompleted } from './firestore.js';
+import { initFirestore, seedIfNeeded, loadContent, loadMeta, loadCosts, loadPriceAlerts, listenRealtime, writeCk, writeNote, writeCompleted } from './firestore.js';
 import { renderHero } from './hero.js';
 import { renderDays, renderRest, renderCk, updateCkProgress, renderInfoCosts } from './itinerario.js';
-import { renderPlanSaved, ensureAirportsLoaded, warmupBackend } from './pianifica.js';
+import { renderPlanSaved, renderPriceAlerts, ensureAirportsLoaded, warmupBackend, checkPriceAlerts } from './pianifica.js';
 import { renderCostsDashboard } from './costs.js';
 import { renderMap } from './map.js';
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function renderAll() { renderHero(); renderDays(); renderRest(); renderCk(); renderPlanSaved(); renderCostsDashboard(); renderInfoCosts(); }
+function renderAll() { renderHero(); renderDays(); renderRest(); renderCk(); renderPlanSaved(); renderPriceAlerts(); renderCostsDashboard(); renderInfoCosts(); }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function hideLoading() { const o=document.getElementById('overlay'); if(o){ o.style.opacity='0'; setTimeout(()=>o.style.display='none',400); } }
@@ -41,6 +41,7 @@ async function init() {
     await loadContent();
     await loadMeta();
     await loadCosts();
+    await loadPriceAlerts();
 
     setStatus('Attivazione sync in tempo reale...');
     listenRealtime();
@@ -59,7 +60,7 @@ window.showTab = (id,btn) => {
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active'); btn.classList.add('active');
   if(id==='mappa') renderMap();
-  if(id==='pianifica') { ensureAirportsLoaded(); warmupBackend(); }
+  if(id==='pianifica') { ensureAirportsLoaded(); warmupBackend(); checkPriceAlerts(); }
 };
 window.tog = id => document.getElementById(`dc${id}`).classList.toggle('open');
 window.ckTog = (key,el) => {

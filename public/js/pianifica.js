@@ -7,7 +7,7 @@
 // spunta della valigia.
 import { TRIP_PLANNER_URL, ROUTING_PROFILE, CURRENCY_CODE } from '../trip.config.js';
 import { S, escHtml, parsePrice, PLAN_API_KEY, PLAN_KIND_LABEL, FLIGHT_SOURCE_LABEL, PLAN_FILTERS_DEFAULT } from './state.js';
-import { writePlanDay } from './firestore.js';
+import { writePlanDay, writePriceAlerts } from './firestore.js';
 
 // FlightOffer.source (services/flight-search/app/schemas.py) non porta un link di prenotazione
 // per singola offerta: né fast_flights né Kiwi Tequila espongono un booking_token verificato in
@@ -157,8 +157,11 @@ export function renderPlanResults() {
     const dayOpts = dayOptsForKind(g.key);
     return `<details class="plan-group" open><summary class="plan-group-ttl">${g.label} (${countLbl})</summary>${g.controls}
       ${g.pairs.map(({item, origIndex}) => { const v = g.view(item);
+        // Il controllo prezzo ha senso solo per voli/alloggi (le uniche due categorie con un
+        // prezzo, vedi PLAN_API_KEY): un POI non ha nulla da monitorare.
+        const watchBtn = g.key !== 'pois' ? `<button class="plan-save-btn" onclick="watchPlanItem('${g.key}',${origIndex},this)">👁 Sotto controllo</button>` : '';
         return `<div class="plan-item"><div class="plan-item-hd"><div class="plan-item-nm">${v.nm}</div>${v.price?`<div class="plan-item-price">${v.price}</div>`:''}</div><div class="plan-item-sub">${v.sub}</div>${v.link?`<a class="plan-item-link" href="${escHtml(v.link)}" target="_blank" rel="noopener noreferrer">${escHtml(v.linkLabel||'Vedi →')}</a>`:''}
-        <div class="plan-item-save"><span class="plan-item-save-lbl">Aggiungi al giorno</span><select>${dayOpts}</select><button class="plan-save-btn" onclick="savePlanItem('${g.key}',${origIndex},this)">Salva</button></div></div>`;
+        <div class="plan-item-save"><span class="plan-item-save-lbl">Aggiungi al giorno</span><select>${dayOpts}</select><button class="plan-save-btn" onclick="savePlanItem('${g.key}',${origIndex},this)">Salva</button>${watchBtn}</div></div>`;
       }).join('')}</details>`;
   }).join('');
   el.innerHTML = html || '<p style="color:var(--muted);font-size:13px;">Nessun risultato per questa ricerca.</p>';
@@ -389,6 +392,7 @@ window.searchPlan = async () => {
       adults, price_max_stay: budget, poi_limit: 20, currency: CURRENCY_CODE,
     };
     if (wantsFlight) { payload.origin_airport = origin; payload.destination_airport = destAir; }
+    S.planLastPayload = payload; // serve a "Tieni sotto controllo": rilancia la stessa ricerca esatta al ricontrollo
     const res = await fetch(`${TRIP_PLANNER_URL}/api/trip-plan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -432,3 +436,109 @@ window.removePlanItem = (dayId, kind, idx) => {
   const arr = (S.planning[dayId] && S.planning[dayId][kind]) || [];
   writePlanDay(dayId, kind, arr.filter((_,i) => i !== idx)).catch(e => alert('Errore rimozione: ' + e.message));
 };
+
+// ── Prezzi sotto controllo ────────────────────────────────────────────────────
+// Nessuna notifica push (richiederebbe un cron server-side sempre attivo e credenziali
+// server per l'invio, in contrasto con ADR-007: niente Admin SDK nel backend): il controllo
+// e' in-app, rilanciato quando l'utente riapre la scheda "Pianifica" o preme "Ricontrolla
+// ora". Il confronto e' sempre col prezzo osservato al momento del salvataggio (baseline),
+// non con una soglia impostata a mano.
+function priceAlertMatchKey(kind, item) {
+  return kind === 'flights' ? `${item.airline}|${item.departure}|${item.arrival}|${item.source}` : item.name;
+}
+
+window.watchPlanItem = (kind, idx, btn) => {
+  if (kind === 'pois' || !S.planResults) return; // i POI non hanno prezzo da monitorare
+  if (!S.planLastPayload) { alert('Nessuna ricerca attiva a cui agganciare il controllo prezzo.'); return; }
+  const item = S.planResults[PLAN_API_KEY[kind]][idx];
+  const matchKey = priceAlertMatchKey(kind, item);
+  const alerts = S.priceAlerts || [];
+  if (alerts.some(a => a.kind === kind && a.matchKey === matchKey)) {
+    btn.textContent = 'Già sotto controllo'; btn.disabled = true; return;
+  }
+  const priceRaw = kind === 'flights' ? item.price : item.total_price;
+  const nm = kind === 'flights' ? `${item.airline} · ${priceRaw}` : item.name;
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  const newAlert = {
+    id, kind, matchKey, nm, payload: S.planLastPayload,
+    baselinePrice: parsePrice(priceRaw), baselinePriceRaw: priceRaw,
+    lastCheckedAt: Date.now(), lastPrice: parsePrice(priceRaw), lastPriceRaw: priceRaw,
+  };
+  writePriceAlerts([...alerts, newAlert]).then(() => {
+    S.priceAlerts = [...alerts, newAlert]; renderPriceAlerts();
+    btn.textContent = '✓ Sotto controllo'; btn.disabled = true;
+  }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.removePriceAlert = (id) => {
+  const updated = (S.priceAlerts || []).filter(a => a.id !== id);
+  writePriceAlerts(updated).then(() => { S.priceAlerts = updated; renderPriceAlerts(); }).catch(e => alert('Errore: ' + e.message));
+};
+
+// Rilancia una sola ricerca per ogni combinazione unica di parametri (piu' elementi sotto
+// controllo nati dalla stessa ricerca condividono una sola chiamata al comparatore, non una
+// a testa), poi ritrova ogni elemento nei risultati freschi per matchKey. Se un'offerta non
+// compare piu' (fonte esterna cambiata), lastPrice torna null invece di mostrare un dato
+// vecchio spacciato per aggiornato: l'assenza si vede in renderPriceAlerts.
+export async function checkPriceAlerts() {
+  const alerts = S.priceAlerts || [];
+  if (!alerts.length) return;
+  const groups = new Map();
+  alerts.forEach(a => {
+    const key = JSON.stringify(a.payload);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(a);
+  });
+  const updated = [...alerts];
+  for (const [payloadJson, group] of groups) {
+    let plan;
+    try {
+      const res = await fetch(`${TRIP_PLANNER_URL}/api/trip-plan`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payloadJson,
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      plan = await res.json();
+    } catch (e) {
+      continue; // comparatore non raggiungibile ora: lascia l'ultimo prezzo noto, non azzerarlo
+    }
+    group.forEach(a => {
+      const list = plan[PLAN_API_KEY[a.kind]] || [];
+      const match = list.find(it => priceAlertMatchKey(a.kind, it) === a.matchKey);
+      const idx = updated.findIndex(u => u.id === a.id);
+      if (match) {
+        const priceRaw = a.kind === 'flights' ? match.price : match.total_price;
+        updated[idx] = { ...a, lastCheckedAt: Date.now(), lastPrice: parsePrice(priceRaw), lastPriceRaw: priceRaw };
+      } else {
+        updated[idx] = { ...a, lastCheckedAt: Date.now(), lastPrice: null, lastPriceRaw: null };
+      }
+    });
+  }
+  await writePriceAlerts(updated);
+  S.priceAlerts = updated;
+  renderPriceAlerts();
+}
+
+window.recheckPriceAlerts = () => {
+  const btn = document.getElementById('price-alerts-recheck-btn'); if (!btn) return;
+  const orig = btn.textContent; btn.disabled = true; btn.textContent = 'Ricontrollo...';
+  checkPriceAlerts().finally(() => { btn.disabled = false; btn.textContent = orig; });
+};
+
+export function renderPriceAlerts() {
+  const el = document.getElementById('price-alerts'); if (!el) return;
+  const alerts = S.priceAlerts || [];
+  if (!alerts.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">Nessun prezzo sotto controllo ancora.</p>'; return; }
+  el.innerHTML = alerts.map(a => {
+    const dropped = a.lastPrice != null && a.lastPrice < a.baselinePrice - 0.005;
+    const notFound = a.lastCheckedAt && a.lastPrice == null;
+    const lastTxt = a.lastCheckedAt ? new Date(a.lastCheckedAt).toLocaleString('it-IT', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : 'mai';
+    const statusTxt = dropped ? `<span class="price-drop-badge">sceso a ${escHtml(a.lastPriceRaw)}</span>`
+      : notFound ? 'non trovato nell\'ultimo controllo (offerta forse non più disponibile)'
+      : 'nessuna variazione';
+    return `<div class="plan-item">
+      <div class="plan-item-hd"><div class="plan-item-nm">${escHtml(a.nm)}</div><div class="plan-item-price">${escHtml(a.baselinePriceRaw)}</div></div>
+      <div class="plan-item-sub">${PLAN_KIND_LABEL[a.kind]} · prezzo di riferimento al salvataggio · ultimo controllo: ${lastTxt} · ${statusTxt}</div>
+      <div class="plan-item-save"><button class="plan-rm-btn" onclick="removePriceAlert('${a.id}')">Rimuovi</button></div>
+    </div>`;
+  }).join('');
+}

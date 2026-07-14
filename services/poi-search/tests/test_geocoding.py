@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from app.geocoding import BoundingBox, geocode
+from app.geocoding import _SEARCH_RADIUS_KM, _bbox_around, geocode
 
 
 class _FakeResponse:
@@ -18,15 +18,50 @@ class _FakeResponse:
         return self._payload
 
 
-def test_geocode_parses_real_nominatim_shape(monkeypatch):
+def test_bbox_around_at_equator_lat_and_lon_deltas_are_equal():
+    # All'equatore cos(0)=1: nessuna correzione di longitudine, quindi i due delta coincidono.
+    # Verifica la geometria di base senza dipendere dalla costante di raggio scelta altrove.
+    bbox = _bbox_around(lat=0.0, lon=10.0, radius_km=111.0)  # 111km = 1 grado esatto
+
+    assert bbox.ne_lat == pytest.approx(1.0)
+    assert bbox.sw_lat == pytest.approx(-1.0)
+    assert bbox.ne_long == pytest.approx(11.0)
+    assert bbox.sw_long == pytest.approx(9.0)
+
+
+def test_bbox_around_shrinks_longitude_delta_away_from_equator():
+    # A una latitudine reale (Polignano, ~41°N) un grado di longitudine copre meno km di un
+    # grado di latitudine: a parita' di raggio, il delta di longitudine dev'essere maggiore
+    # del delta di latitudine (serve piu' longitudine per coprire la stessa distanza reale).
+    bbox = _bbox_around(lat=41.0, lon=17.0, radius_km=5.0)
+
+    lat_delta = bbox.ne_lat - 41.0
+    lon_delta = bbox.ne_long - 17.0
+    assert lon_delta > lat_delta
+
+
+def test_geocode_uses_center_point_not_nominatim_admin_boundary(monkeypatch):
+    # Bug reale scoperto in sessione (2026-07-14): per "Polignano a mare" il primo risultato di
+    # Nominatim e' il confine amministrativo dell'intero comune (~15x10km), non il centro
+    # abitato — includeva zone di un comune diverso (Conversano). Il fix ignora il campo
+    # "boundingbox" della risposta e ricostruisce un riquadro di raggio fisso attorno al solo
+    # punto centrale (lat/lon), qui verificato con le coordinate reali di Polignano a Mare.
     payload = [{
-        "boundingbox": ["39.9801512", "40.0201512", "15.3537510", "15.3937510"],
+        "place_id": 56810860,
+        "lat": "40.9944463",
+        "lon": "17.2224879",
+        "name": "Polignano a Mare",
+        "boundingbox": ["40.8957620", "41.0367715", "17.1404562", "17.2593045"],  # ignorato di proposito
     }]
     monkeypatch.setattr("app.geocoding.httpx.get", lambda *a, **k: _FakeResponse(payload))
 
-    bbox = geocode("Marina di Camerota")
+    bbox = geocode("Polignano a mare")
 
-    assert bbox == BoundingBox(ne_lat=40.0201512, ne_long=15.3937510, sw_lat=39.9801512, sw_long=15.3537510)
+    assert bbox == _bbox_around(40.9944463, 17.2224879, _SEARCH_RADIUS_KM)
+    # Il punto di Conversano (comune diverso, comparso per errore nei risultati prima del fix)
+    # deve restituire un valore ovunque fuori da questo bounding box.
+    conversano_lat, conversano_lon = 40.9425719, 17.1569652
+    assert not (bbox.sw_lat <= conversano_lat <= bbox.ne_lat and bbox.sw_long <= conversano_lon <= bbox.ne_long)
 
 
 def test_geocode_returns_none_when_no_results(monkeypatch):
@@ -36,7 +71,7 @@ def test_geocode_returns_none_when_no_results(monkeypatch):
 
 
 def test_geocode_retries_on_transient_error_then_succeeds(monkeypatch):
-    payload = [{"boundingbox": ["39.9801512", "40.0201512", "15.3537510", "15.3937510"]}]
+    payload = [{"lat": "40.0001512", "lon": "15.3737510"}]
     responses = [_FakeResponse(status_code=429), _FakeResponse(status_code=503), _FakeResponse(payload)]
     calls = {"n": 0}
 
@@ -48,9 +83,9 @@ def test_geocode_retries_on_transient_error_then_succeeds(monkeypatch):
     monkeypatch.setattr("app.geocoding.httpx.get", _fake_get)
     monkeypatch.setattr("app.geocoding.time.sleep", lambda s: None)  # non rallentare i test
 
-    bbox = geocode("Polignano a Mare")
+    bbox = geocode("Marina di Camerota")
 
-    assert bbox == BoundingBox(ne_lat=40.0201512, ne_long=15.3937510, sw_lat=39.9801512, sw_long=15.3537510)
+    assert bbox == _bbox_around(40.0001512, 15.3737510, _SEARCH_RADIUS_KM)
     assert calls["n"] == 3  # due tentativi falliti (429, 503) + uno riuscito
 
 

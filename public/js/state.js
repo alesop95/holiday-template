@@ -6,7 +6,7 @@
 
 export const PLAN_FILTERS_DEFAULT = { flightsSort:'price-asc', flightsDirectOnly:false, staysSort:'price-asc', staysMinRating:0, poiCategory:'', poiSort:'name-asc', poiFeeOnly:false };
 
-export const S = { days:[], restaurants:[], checklist:[], ckState:{}, activityState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, planLastSearch:null, planLastPayload:null, meta:null, metaEditing:false, costs:null, priceAlerts:null, planFilters:{...PLAN_FILTERS_DEFAULT}, airports:null, airportZones:null };
+export const S = { days:[], restaurants:[], checklist:[], ckState:{}, activityState:{}, notes:{}, completed:{}, mapDone:false, planning:{}, planResults:null, planLastSearch:null, planLastPayload:null, meta:null, metaEditing:false, costs:null, priceAlerts:null, keepAlive:null, planFilters:{...PLAN_FILTERS_DEFAULT}, airports:null, airportZones:null };
 
 export const fb = { db: null };
 

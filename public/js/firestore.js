@@ -4,7 +4,7 @@ import { TRIP_ID, TRIP_META, TRIP_DATA } from '../trip.config.js';
 import { S, fb } from './state.js';
 import { renderHero } from './hero.js';
 import { updateCkUI, updateNotesUI, updateActivityUI, renderInfoCosts } from './itinerario.js';
-import { renderPlanSaved, renderDayPlanningAll, renderPriceAlerts } from './pianifica.js';
+import { renderPlanSaved, renderDayPlanningAll, renderPriceAlerts, renderKeepAlive } from './pianifica.js';
 import { renderCostsDashboard } from './costs.js';
 
 export function initFirestore(app) {
@@ -37,6 +37,7 @@ export async function seedIfNeeded() {
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'costs'),     { participants: [], expenses: [] }),
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'priceAlerts'), { items: [] }),
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'activities'), { items: {} }),
+    setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'keepAlive'), { activatedAt: null }),
   ]);
 }
 
@@ -65,6 +66,13 @@ export async function loadCosts() {
 export async function loadPriceAlerts() {
   const snap = await getDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'priceAlerts'));
   S.priceAlerts = snap.exists() ? (snap.data().items || []) : [];
+}
+
+// Stesso fallback self-healing: un viaggio seminato prima di questa feature riparte da
+// "mai attivato" invece di rompersi.
+export async function loadKeepAlive() {
+  const snap = await getDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'keepAlive'));
+  S.keepAlive = snap.exists() ? snap.data() : { activatedAt: null };
 }
 
 // ── Listener real-time per stato condiviso ────────────────────────────────────
@@ -106,6 +114,10 @@ export function listenRealtime() {
     S.priceAlerts = snap.exists() ? (snap.data().items || []) : [];
     renderPriceAlerts();
   });
+  onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'keepAlive'), snap => {
+    S.keepAlive = snap.exists() ? snap.data() : { activatedAt: null };
+    renderKeepAlive();
+  });
 }
 
 // ── Scritture su Firestore ────────────────────────────────────────────────────
@@ -124,3 +136,4 @@ export async function writePlanDay(dayId, kind, arr) { await setDoc(doc(fb.db,'t
 export async function writeMeta(meta) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','meta'), meta); }
 export async function writeCosts(costs) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','costs'), costs); }
 export async function writePriceAlerts(items) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','priceAlerts'), { items }); }
+export async function writeKeepAlive(activatedAt) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','keepAlive'), { activatedAt }); }

@@ -2,15 +2,15 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { FIREBASE_CONFIG, CURRENCY_CODE } from '../trip.config.js';
 import { S } from './state.js';
-import { initFirestore, seedIfNeeded, loadContent, loadMeta, loadCosts, loadPriceAlerts, listenRealtime, writeCk, writeActivity, writeNote, writeCompleted } from './firestore.js';
+import { initFirestore, seedIfNeeded, loadContent, loadMeta, loadCosts, loadPriceAlerts, loadKeepAlive, listenRealtime, writeCk, writeActivity, writeNote, writeCompleted } from './firestore.js';
 import { renderHero } from './hero.js';
 import { renderDays, renderRest, renderCk, updateCkProgress, renderInfoCosts } from './itinerario.js';
-import { renderPlanSaved, renderPriceAlerts, ensureAirportsLoaded, warmupBackend, checkPriceAlerts } from './pianifica.js';
+import { renderPlanSaved, renderPriceAlerts, renderKeepAlive, ensureAirportsLoaded, warmupBackend, checkPriceAlerts } from './pianifica.js';
 import { renderCostsDashboard } from './costs.js';
 import { renderMap } from './map.js';
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function renderAll() { renderHero(); renderDays(); renderRest(); renderCk(); renderPlanSaved(); renderPriceAlerts(); renderCostsDashboard(); renderInfoCosts(); }
+function renderAll() { renderHero(); renderDays(); renderRest(); renderCk(); renderPlanSaved(); renderPriceAlerts(); renderKeepAlive(); renderCostsDashboard(); renderInfoCosts(); }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function hideLoading() { const o=document.getElementById('overlay'); if(o){ o.style.opacity='0'; setTimeout(()=>o.style.display='none',400); } }
@@ -42,6 +42,7 @@ async function init() {
     await loadMeta();
     await loadCosts();
     await loadPriceAlerts();
+    await loadKeepAlive();
 
     setStatus('Attivazione sync in tempo reale...');
     listenRealtime();

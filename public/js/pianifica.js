@@ -7,7 +7,7 @@
 // spunta della valigia.
 import { TRIP_PLANNER_URL, ROUTING_PROFILE, CURRENCY_CODE } from '../trip.config.js';
 import { S, escHtml, parsePrice, PLAN_API_KEY, PLAN_KIND_LABEL, FLIGHT_SOURCE_LABEL, PLAN_FILTERS_DEFAULT } from './state.js';
-import { writePlanDay, writePriceAlerts } from './firestore.js';
+import { writePlanDay, writePriceAlerts, writeKeepAlive } from './firestore.js';
 
 // FlightOffer.source (services/flight-search/app/schemas.py) non porta un link di prenotazione
 // per singola offerta: né fast_flights né Kiwi Tequila espongono un booking_token verificato in
@@ -542,3 +542,41 @@ export function renderPriceAlerts() {
     </div>`;
   }).join('');
 }
+
+// ── Promemoria keep-alive Render ───────────────────────────────────────────────
+// Puramente informativo: l'app non sa se un cronjob esterno (cron-job.org) e' davvero
+// attivo, ne' puo' metterlo in pausa da qui (nessuna integrazione con la sua API, per non
+// introdurre un'altra chiave da gestire). Segna solo la data che l'utente stesso dichiara,
+// per ricordargli dopo un po' di giorni di controllare se serve ancora, evitando di
+// consumare inutilmente il monte ore gratuite di Render (vedi discussione su keep-alive).
+const KEEPALIVE_WARN_DAYS = 14;
+
+export function renderKeepAlive() {
+  const el = document.getElementById('keepalive-card'); if (!el) return;
+  const ka = S.keepAlive || { activatedAt: null };
+  if (!ka.activatedAt) {
+    el.innerHTML = `<div class="costs-card">
+      <div class="costs-card-ttl">Keep-alive non segnato come attivo</div>
+      <p class="costs-hint">Se hai appena creato il cronjob su cron-job.org, segna qui la data: dopo ${KEEPALIVE_WARN_DAYS} giorni ti ricordo di valutare se metterlo in pausa.</p>
+      <button class="costs-add-btn" onclick="markKeepAliveActive()">Ho attivato il keep-alive oggi</button>
+    </div>`;
+    return;
+  }
+  const days = Math.floor((Date.now() - ka.activatedAt) / 86400000);
+  const warn = days >= KEEPALIVE_WARN_DAYS;
+  el.innerHTML = `<div class="costs-card">
+    <div class="costs-card-ttl">Keep-alive attivo da ${days} giorno${days===1?'':'i'}</div>
+    <p class="costs-hint">Segnato come attivato il ${new Date(ka.activatedAt).toLocaleDateString('it-IT')}.</p>
+    ${warn ? `<div class="keepalive-warn">Sono passati ${days} giorni: se hai finito di pianificare, valuta di mettere in pausa il cronjob su cron-job.org (interruttore "Attiva cronjob" nella pagina del job).</div>` : ''}
+    <button class="act-btn" onclick="markKeepAliveInactive()" style="margin-top:9px">Segna come messo in pausa</button>
+  </div>`;
+}
+
+window.markKeepAliveActive = () => {
+  const now = Date.now();
+  writeKeepAlive(now).then(() => { S.keepAlive = { activatedAt: now }; renderKeepAlive(); }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.markKeepAliveInactive = () => {
+  writeKeepAlive(null).then(() => { S.keepAlive = { activatedAt: null }; renderKeepAlive(); }).catch(e => alert('Errore: ' + e.message));
+};

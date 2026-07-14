@@ -174,6 +174,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .costs-chip{display:inline-flex;align-items:center;gap:6px;background:var(--sand);border-radius:100px;padding:5px 6px 5px 13px;font-size:12.5px;color:var(--text);}
 .costs-chip button{background:none;border:none;color:var(--terra);font-size:14px;font-weight:700;cursor:pointer;width:20px;height:20px;border-radius:50%;}
 .costs-empty,.costs-hint{font-size:12.5px;color:var(--muted);}
+.keepalive-warn{background:#FDF1EF;border:1.5px solid var(--terra);border-radius:10px;padding:10px 13px;font-size:12.5px;color:var(--terra);margin-top:8px;line-height:1.5;}
 .costs-add-row{display:flex;gap:7px;}
 .costs-add-row input{flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;}
 .costs-add-btn{padding:8px 14px;border:none;border-radius:100px;background:var(--sea2);color:#fff;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
@@ -369,6 +370,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
       <button class="act-btn" id="price-alerts-recheck-btn" onclick="recheckPriceAlerts()">Ricontrolla ora</button>
     </div>
     <div id="price-alerts"><p style="color:var(--muted);font-size:13px;">Nessun prezzo sotto controllo ancora.</p></div>
+    <div class="divider"></div>
+    <div class="sec-head"><h2>Keep-alive Render</h2><p>Se hai attivato un cronjob esterno (es. cron-job.org) che pinga <code>/api/warmup</code> per tenere svegli i servizi, segna qui quando lo attivi: dopo un po' di giorni ti ricorda di valutare se metterlo in pausa, per non consumare inutilmente il monte ore gratuite di Render.</p></div>
+    <div id="keepalive-card"></div>
   </div>
   <div id="costi" class="panel">
     <div class="sec-head"><h2>Costi Reali e Divisione tra Persone</h2><p>Somma i voli e gli alloggi salvati nella scheda Pianifica più le spese aggiunte a mano, poi divide la quota tra i partecipanti (la stima in Info &amp; Costi resta fissa, non collegata a questa).</p>

@@ -1,7 +1,9 @@
 """Schema di richiesta e schema FlightOffer normalizzato, comune a tutte le fonti.
 
-Vedi .claude/context/roadmap.md, Fase 1, per il piano completo (Amadeus e Kiwi Tequila
-come fonti aggiuntive, non ancora implementate qui).
+fast_flights (Google Flights) resta l'unica fonte: sia Amadeus sia Kiwi Tequila, le due
+fonti aggiuntive originariamente previste (roadmap.md, Fase 1), si sono chiuse al
+self-service (Amadeus dismesso il 17/07/2026, Kiwi Tequila richiede ora approvazione
+manuale via affiliates@kiwi.com) — accantonate per lo stesso motivo di Trenitalia.
 """
 
 from typing import Optional

@@ -14,12 +14,12 @@ export const PLAN_API_KEY = { flights: 'flights', stays: 'stays', pois: 'points_
 export const PLAN_KIND_LABEL = { flights: 'Volo', stays: 'Alloggio', pois: 'Punto di interesse' };
 
 // FlightOffer.source (services/flight-search/app/schemas.py) non porta un link di prenotazione
-// per singola offerta: né fast_flights né Kiwi Tequila espongono un booking_token verificato in
-// questa sessione (vedi README del servizio). Per fast_flights l'unico link onesto è una ricerca
-// generica su Google Flights sulla stessa rotta/date (non l'itinerario esatto), verificata dal
-// vivo in sessione (200, pagina di ricerca valida). Per kiwi, non ancora verificato live (manca
-// la chiave), nessun link finché non lo è: solo l'etichetta della fonte.
-export const FLIGHT_SOURCE_LABEL = { fast_flights: 'Google Flights', kiwi: 'Kiwi.com' };
+// per singola offerta: fast_flights non espone un booking_token verificato in sessione (vedi
+// README del servizio). L'unico link onesto è una ricerca generica su Google Flights sulla
+// stessa rotta/date (non l'itinerario esatto), verificata dal vivo in sessione (200, pagina di
+// ricerca valida). Kiwi Tequila era prevista come seconda fonte ma è stata rimossa (self-service
+// chiuso, vedi README di flight-search): fast_flights resta l'unica voce di questa mappa.
+export const FLIGHT_SOURCE_LABEL = { fast_flights: 'Google Flights' };
 
 // Voli/alloggi/POI vengono da fonti esterne scrapate (Airbnb, Google Flights, OpenStreetMap), non
 // da trip.config.js scritto dallo sviluppatore: a differenza del resto della shell, questi valori

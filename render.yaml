@@ -9,9 +9,9 @@
 # dalla radice e propone la creazione dei quattro servizi sotto. Dettagli e limiti del piano free
 # in .claude/context/deployment.md e ADR-008 (.claude/memory/decisions.md).
 #
-# KIWI_TEQUILA_API_KEY e i tre *_URL di trip-planner non hanno un valore qui (sync: false): vanno
-# impostati a mano nel pannello Render dopo il primo deploy, quando gli URL pubblici dei tre
-# servizi a valle sono noti (dettaglio nel commento sotto ogni voce).
+# I tre *_URL di trip-planner non hanno un valore qui (sync: false): vanno impostati a mano nel
+# pannello Render dopo il primo deploy, quando gli URL pubblici dei tre servizi a valle sono noti
+# (dettaglio nel commento sotto ogni voce).
 
 services:
   - type: web
@@ -21,9 +21,6 @@ services:
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: KIWI_TEQUILA_API_KEY
-        sync: false   # opzionale: senza, l'adapter Kiwi si disattiva da solo (vedi README del servizio)
 
   - type: web
     name: stay-search

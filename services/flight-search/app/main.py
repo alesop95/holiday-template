@@ -5,7 +5,6 @@ Avvio di sviluppo:
     uvicorn app.main:app --reload --port 8001
 """
 
-import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
@@ -15,7 +14,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from .adapters.fast_flights_adapter import FastFlightsAdapter
-from .adapters.kiwi_adapter import KiwiAdapter
 from .cache import TTLCache
 from .schemas import FlightOffer, FlightSearchRequest
 
@@ -34,7 +32,6 @@ app.add_middleware(
 
 ADAPTERS = [
     FastFlightsAdapter(),
-    KiwiAdapter(api_key=os.environ.get("KIWI_TEQUILA_API_KEY")),
 ]
 
 # I prezzi voli cambiano rapidamente: TTL breve (roadmap.md, Fase 3). Vedi app/cache.py

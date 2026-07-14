@@ -10,11 +10,10 @@ import { S, escHtml, parsePrice, PLAN_API_KEY, PLAN_KIND_LABEL, FLIGHT_SOURCE_LA
 import { writePlanDay, writePriceAlerts, writeKeepAlive } from './firestore.js';
 
 // FlightOffer.source (services/flight-search/app/schemas.py) non porta un link di prenotazione
-// per singola offerta: né fast_flights né Kiwi Tequila espongono un booking_token verificato in
-// questa sessione (vedi README del servizio). Per fast_flights l'unico link onesto è una ricerca
-// generica su Google Flights sulla stessa rotta/date (non l'itinerario esatto), verificata dal
-// vivo in sessione (200, pagina di ricerca valida). Per kiwi, non ancora verificato live (manca
-// la chiave), nessun link finché non lo è: solo l'etichetta della fonte.
+// per singola offerta: fast_flights non espone un booking_token verificato in sessione (vedi
+// README del servizio). L'unico link onesto è una ricerca generica su Google Flights sulla
+// stessa rotta/date (non l'itinerario esatto), verificata dal vivo in sessione (200, pagina di
+// ricerca valida).
 function googleFlightsSearchUrl(origin, dest, dep, ret) {
   const q = ret ? `Flights from ${origin} to ${dest} on ${dep} through ${ret}` : `Flights from ${origin} to ${dest} on ${dep}`;
   return 'https://www.google.com/travel/flights?q=' + encodeURIComponent(q);

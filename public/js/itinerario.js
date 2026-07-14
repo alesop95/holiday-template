@@ -26,7 +26,16 @@ export function renderDays() {
         <div class="hdr-right"><div class="done-badge" id="done-badge-${d.id}" style="${done?'display:flex':'display:none'}">✓ Fatto</div><div class="day-chv">▼</div></div>
       </div>
       <div class="day-body">
-        ${d.sections.map(s=>`<div class="sec-blk"><div class="sec-ttl" style="color:${d.color}">${s.t}</div><div class="sec-txt">${s.tx}</div></div>`).join('')}
+        ${d.sections.map((s,si)=>{
+          // Checkbox per singola attivita' del giorno, indipendente dal toggle "Segna come fatto"
+          // sull'intero giorno sotto: chiave = giorno + indice sezione, stesso schema '${ci}-${ii}'
+          // gia' usato per la valigia, su un documento Firestore separato (state/activities).
+          const ak = `${d.id}-${si}`, adone = S.activityState[ak] || false;
+          return `<div class="sec-blk${adone?' sec-done':''}" data-key="${ak}">
+            <div class="sec-hdr" onclick="actTog('${ak}',this)"><div class="sec-box${adone?' done':''}">${adone?'✓':''}</div><div class="sec-ttl" style="color:${d.color}">${s.t}</div></div>
+            <div class="sec-txt">${s.tx}</div>
+          </div>`;
+        }).join('')}
         ${d.tips?`<div class="tips-box" style="border-left-color:${d.color}"><div class="tips-ttl" style="color:${d.color}">Consigli Pratici</div>${d.tips.map(t=>`<div class="tip">${t}</div>`).join('')}</div>`:''}
         <div class="dcosts"><div class="cpill cf">Pasti: ${CURRENCY_SYMBOL}${d.cf}/pers.</div>${d.ca==='0'?'<div class="cpill cg">Attività: Gratuito</div>':`<div class="cpill ca">Attività: ${CURRENCY_SYMBOL}${d.ca}/pers.</div>`}</div>
         <div class="day-planning" id="day-planning-${d.id}" style="display:none"></div>
@@ -45,7 +54,7 @@ export function renderDays() {
 }
 
 // Link esterni opzionali per ristorante (tripadvisor/thefork su ogni item di TRIP_DATA.
-// restaurants[].items[]): funzionalità di template generale, non specifica di un viaggio —
+// restaurants[].items[]): funzionalità di template generale, non specifica di un viaggio -
 // un item senza questi campi semplicemente non mostra la riga link, come per gli altri
 // campi opzionali già esistenti (sp, tags vuoti).
 export function renderRest() {
@@ -82,7 +91,7 @@ export function resolveAccommodationCost() {
 
 // Sconto opzionale di TRIP_DATA.costEstimate.discount: importo di coppia (non per persona),
 // applicato coerentemente sia in "Info & Costi" (diviso /2) sia nel totale reale di "Costi"
-// (per intero). Scaduto dopo validUntil: torna null, non si applica piu' automaticamente —
+// (per intero). Scaduto dopo validUntil: torna null, non si applica piu' automaticamente -
 // evita di mostrare uno sconto non piu' valido solo perche' nessuno ha aggiornato il file.
 export function activeDiscount() {
   const d = TRIP_DATA.costEstimate?.discount;
@@ -96,7 +105,7 @@ function renderConfirmedBookingBlock(resolvedAcc) {
   if (resolvedAcc && resolvedAcc.status === 'confirmed') {
     return `<div class="info-hotel">
       <div class="costs-card-ttl">Prenotazione confermata</div>
-      <div class="costs-auto-row"><span>${escHtml(resolvedAcc.label)} — ${CURRENCY_SYMBOL} ${resolvedAcc.amount.toFixed(2)} totale${resolvedAcc.paidBy?` · pagato da ${escHtml(resolvedAcc.paidBy)}`:' · nessun pagatore assegnato'}${resolvedAcc.link?` · <a href="${escHtml(resolvedAcc.link)}" target="_blank" rel="noopener noreferrer">link</a>`:''}</span>
+      <div class="costs-auto-row"><span>${escHtml(resolvedAcc.label)} - ${CURRENCY_SYMBOL} ${resolvedAcc.amount.toFixed(2)} totale${resolvedAcc.paidBy?` · pagato da ${escHtml(resolvedAcc.paidBy)}`:' · nessun pagatore assegnato'}${resolvedAcc.link?` · <a href="${escHtml(resolvedAcc.link)}" target="_blank" rel="noopener noreferrer">link</a>`:''}</span>
       <button class="costs-rm-btn" onclick="clearConfirmedAccommodation()">&times;</button></div>
     </div>`;
   }
@@ -159,7 +168,7 @@ export function renderInfoCosts() {
         const perPerson = resolvedAcc.amount / 2;
         const statusTxt = resolvedAcc.status === 'confirmed' ? 'confermato' : 'automatico da Pianifica, non ancora confermato';
         const linkTxt = resolvedAcc.link ? ` · <a href="${escHtml(resolvedAcc.link)}" target="_blank" rel="noopener noreferrer">link</a>` : '';
-        return { label:r.label, desc:`${escHtml(resolvedAcc.label)} — ${statusTxt}${linkTxt}`, amount:`${CURRENCY_SYMBOL}${perPerson.toFixed(2)}`, _range:[perPerson,perPerson] };
+        return { label:r.label, desc:`${escHtml(resolvedAcc.label)} - ${statusTxt}${linkTxt}`, amount:`${CURRENCY_SYMBOL}${perPerson.toFixed(2)}`, _range:[perPerson,perPerson] };
       }
       return { label:r.label, desc:r.desc, amount:r.amount, _range:parseCostRange(r.amount) };
     });
@@ -199,6 +208,17 @@ export function updateCkUI() {
     const el=document.querySelector(`.ck-item[data-key="${k}"]`); if(!el) return;
     el.classList.toggle('done',v); const box=el.querySelector('.ck-box'); if(box) box.textContent=v?'✓':'';
   }); updateCkProgress();
+}
+
+// Riflette lo stato di S.activityState nel DOM gia' renderizzato, senza un renderDays() completo:
+// stesso principio di updateCkUI, per un aggiornamento arrivato dall'altro dispositivo mentre
+// questo ha gia' la scheda Itinerario aperta.
+export function updateActivityUI() {
+  Object.entries(S.activityState).forEach(([k,v])=>{
+    const el=document.querySelector(`.sec-blk[data-key="${k}"]`); if(!el) return;
+    el.classList.toggle('sec-done',v);
+    const box=el.querySelector('.sec-box'); if(box){ box.classList.toggle('done',v); box.textContent=v?'✓':''; }
+  });
 }
 
 export function updateCkProgress() {

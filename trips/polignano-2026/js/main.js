@@ -2,7 +2,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { FIREBASE_CONFIG, CURRENCY_CODE } from '../trip.config.js';
 import { S } from './state.js';
-import { initFirestore, seedIfNeeded, loadContent, loadMeta, loadCosts, loadPriceAlerts, listenRealtime, writeCk, writeNote, writeCompleted } from './firestore.js';
+import { initFirestore, seedIfNeeded, loadContent, loadMeta, loadCosts, loadPriceAlerts, listenRealtime, writeCk, writeActivity, writeNote, writeCompleted } from './firestore.js';
 import { renderHero } from './hero.js';
 import { renderDays, renderRest, renderCk, updateCkProgress, renderInfoCosts } from './itinerario.js';
 import { renderPlanSaved, renderPriceAlerts, ensureAirportsLoaded, warmupBackend, checkPriceAlerts } from './pianifica.js';
@@ -67,6 +67,17 @@ window.ckTog = (key,el) => {
   const v=!S.ckState[key]; S.ckState[key]=v;
   el.classList.toggle('done',v); const box=el.querySelector('.ck-box'); if(box) box.textContent=v?'✓':''; updateCkProgress();
   writeCk(key,v).catch(e=>{ S.ckState[key]=!v; el.classList.toggle('done',!v); if(box) box.textContent=!v?'✓':''; updateCkProgress(); console.error(e); });
+};
+window.actTog = (key,el) => {
+  const v=!S.activityState[key]; S.activityState[key]=v;
+  const blk=el.closest('.sec-blk'); const box=el.querySelector('.sec-box');
+  if(blk) blk.classList.toggle('sec-done',v); if(box){ box.classList.toggle('done',v); box.textContent=v?'✓':''; }
+  const updated={...S.activityState};
+  writeActivity(updated).catch(e=>{
+    S.activityState[key]=!v;
+    if(blk) blk.classList.toggle('sec-done',!v); if(box){ box.classList.toggle('done',!v); box.textContent=!v?'✓':''; }
+    console.error(e);
+  });
 };
 window.toggleNote = id => {
   const area=document.getElementById(`note-area-${id}`); if(!area) return;

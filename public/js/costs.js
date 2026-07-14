@@ -10,7 +10,7 @@ import { resolveAccommodationCost, activeDiscount } from './itinerario.js';
 
 // Algoritmo greedy di settlement: da N saldi (positivo = deve ricevere, negativo = deve dare)
 // produce il minor numero ragionevole di trasferimenti "X deve dare a Y" invece di una riga di
-// saldo per persona — per due persone si riduce sempre a una sola riga, eliminando il caso
+// saldo per persona - per due persone si riduce sempre a una sola riga, eliminando il caso
 // "entrambi in debito" che non ha senso quando i soldi restano tra loro due.
 function computeSettlement(balances) {
   const creditors = balances.filter(b => b.balance > 0.005).map(b => ({ ...b })).sort((a,b) => b.balance - a.balance);
@@ -42,7 +42,7 @@ function computePlanningCosts() {
 }
 
 // "Dettaglio" (stile Splitwise): mostra i passaggi aritmetici del calcolo, non solo il
-// risultato finale — richiesto esplicitamente per poter verificare a occhio ogni conto invece
+// risultato finale - richiesto esplicitamente per poter verificare a occhio ogni conto invece
 // di fidarsi del solo totale, come e' gia' successo in sessione con un conto che sembrava
 // sbagliato e invece era corretto (confronto tra basi diverse).
 function renderCostsDetail(auto, c, manualTotal, disc, grandTotal, n, perPerson, paidByPerson) {
@@ -69,7 +69,7 @@ function renderCostsDetail(auto, c, manualTotal, disc, grandTotal, n, perPerson,
 }
 
 // Export CSV: stesso principio di "Esporta / Stampa itinerario" (nessuna libreria nuova, un
-// meccanismo nativo del browser) ma per le spese — un Blob scaricato come file, apribile in
+// meccanismo nativo del browser) ma per le spese - un Blob scaricato come file, apribile in
 // Excel/Fogli Google per una riconciliazione fuori dall'app.
 window.exportCostsCSV = () => {
   const c = S.costs || { participants: [], expenses: [] };
@@ -102,7 +102,7 @@ export function renderCostsDashboard() {
   const perPerson = n > 0 ? grandTotal / n : 0;
   // paidByPerson deve includere OGNI spesa reale attribuita a qualcuno, non solo quelle manuali:
   // prima l'alloggio confermato (spesso la voce piu' grande) non veniva mai accreditato a chi
-  // l'ha davvero pagato, quindi il saldo di nessuno tornava mai a zero tra due persone — un
+  // l'ha davvero pagato, quindi il saldo di nessuno tornava mai a zero tra due persone - un
   // conto che non può matematicamente risultare "entrambi in debito" per una spesa di coppia.
   const paidByPerson = {};
   const itemsByPerson = {};
@@ -148,7 +148,7 @@ export function renderCostsDashboard() {
     ${n>0 ? `<div class="costs-card">
       <div class="costs-card-ttl">Le spese di ciascuno</div>
       ${c.participants.map(p => `<div class="costs-person-block">
-        <div class="costs-person-name">${escHtml(p)} — totale pagato ${CURRENCY_SYMBOL} ${paidByPerson[p].toFixed(2)}</div>
+        <div class="costs-person-name">${escHtml(p)} - totale pagato ${CURRENCY_SYMBOL} ${paidByPerson[p].toFixed(2)}</div>
         ${itemsByPerson[p].length ? itemsByPerson[p].map(it => `<div class="costs-auto-row"><span>${escHtml(it.label)}</span><span>${CURRENCY_SYMBOL} ${it.amount.toFixed(2)}</span></div>`).join('') : '<p class="costs-hint">Nessuna spesa attribuita ancora.</p>'}
       </div>`).join('')}
     </div>` : ''}

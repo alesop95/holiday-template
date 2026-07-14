@@ -3,7 +3,7 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https:
 import { TRIP_ID, TRIP_META, TRIP_DATA } from '../trip.config.js';
 import { S, fb } from './state.js';
 import { renderHero } from './hero.js';
-import { updateCkUI, updateNotesUI, renderInfoCosts } from './itinerario.js';
+import { updateCkUI, updateNotesUI, updateActivityUI, renderInfoCosts } from './itinerario.js';
 import { renderPlanSaved, renderDayPlanningAll, renderPriceAlerts } from './pianifica.js';
 import { renderCostsDashboard } from './costs.js';
 
@@ -14,15 +14,15 @@ export function initFirestore(app) {
 // ── Seed automatico al primo avvio ────────────────────────────────────────────
 // days/restaurants/checklist NON sono piu' seminati su Firestore (erano "seed once": la prima
 // visita li scriveva su Firestore e ogni modifica successiva a TRIP_DATA restava invisibile
-// finche' qualcuno non cancellava i documenti a mano su Firebase Console — fonte reale di
+// finche' qualcuno non cancellava i documenti a mano su Firebase Console - fonte reale di
 // confusione, riscontrata piu' volte durante lo sviluppo di piu' viaggi). Sono contenuto
 // dello sviluppatore, mai modificato dall'app: si leggono sempre dal file, sullo stesso
 // modello gia' usato per hotelChange/accommodation/costEstimate/tickets/savingTips/
 // programSummary. Si perde la comodita' di editarli da Firebase Console senza redeploy
 // (documentata in precedenza in README.md, mai usata nella pratica), a favore di un solo
 // meccanismo coerente per tutto il contenuto statico del viaggio.
-// state/* resta seed-once (a differenza di content, e' dati reali dell'utente — checklist
-// spuntata, note, alloggi salvati, prenotazione confermata — che un reseed ripetuto
+// state/* resta seed-once (a differenza di content, e' dati reali dell'utente - checklist
+// spuntata, note, alloggi salvati, prenotazione confermata - che un reseed ripetuto
 // distruggerebbe: setDoc con un array vuoto sovrascrive per intero l'array esistente anche
 // con merge:true, Firestore non fa merge profondo sugli array). state/meta come sentinella
 // di "prima visita mai fatta", sullo stesso ruolo che content/days aveva prima.
@@ -36,6 +36,7 @@ export async function seedIfNeeded() {
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'meta'),      { ...TRIP_META }),
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'costs'),     { participants: [], expenses: [] }),
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'priceAlerts'), { items: [] }),
+    setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'activities'), { items: {} }),
   ]);
 }
 
@@ -73,6 +74,10 @@ export function listenRealtime() {
     S.ckState = snap.data().items || {};
     updateCkUI();
   });
+  onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'activities'), snap => {
+    S.activityState = snap.exists() ? (snap.data().items || {}) : {};
+    updateActivityUI();
+  });
   onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'notes'), snap => {
     if (!snap.exists()) return;
     S.notes = snap.data().days || {}; S.completed = snap.data().completed || {};
@@ -105,6 +110,12 @@ export function listenRealtime() {
 
 // ── Scritture su Firestore ────────────────────────────────────────────────────
 export async function writeCk(key, val)       { await updateDoc(doc(fb.db,'trips',TRIP_ID,'state','checklist'), { [`items.${key}`]: val }); }
+// A differenza di writeCk (updateDoc con path puntato, richiede che il documento esista gia'),
+// qui si scrive l'intera mappa con setDoc: 'state/activities' e' un doc nuovo, assente sui
+// viaggi gia' seminati prima che questa feature esistesse (seedIfNeeded non lo crea in quel
+// caso, vedi sopra), e updateDoc fallirebbe con "No document to update" al primo click. setDoc
+// crea il documento se assente, stesso principio gia' usato per writeCosts/writeMeta/writePriceAlerts.
+export async function writeActivity(items) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','activities'), { items }); }
 export async function writeNote(id, text)     { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','notes'), { days: { [id]: text } }, { merge:true }); }
 export async function writeCompleted(id, val) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','notes'), { completed: { [id]: val } }, { merge:true }); }
 // merge:true crea il documento e le mappe annidate se assenti (vale anche per un viaggio

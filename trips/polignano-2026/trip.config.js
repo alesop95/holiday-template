@@ -16,7 +16,7 @@
  * (2026-07-13, stessa modalità sequenziale) ha coperto Alberobello (Rione Monti/Aia
  * Piccola, orari consigliati, Trullo Sovrano con prezzo reale €2,50), Ostuni (Piazza
  * della Libertà, parcheggio ZTL, e un fatto rilevante: la Concattedrale risulta chiusa
- * per restauro secondo un aggiornamento di aprile 2026 — da riverificare sul posto,
+ * per restauro secondo un aggiornamento di aprile 2026 - da riverificare sul posto,
  * non assumere che abbia riaperto) e Monopoli (Castello di Carlo V, Piazza Giuseppe
  * Garibaldi). Le voci ristoranti di Alberobello e Ostuni restano indicative (tipo di
  * cucina, non un nome verificato), non coperte da nessuna delle passate finora.
@@ -26,7 +26,7 @@
  * di Alberobello (Giorno 1 e 3), il molo e il panino al polpo di Monopoli (Giorno 5),
  * il giro con l'ape calessino sotto le mura di Ostuni (Giorno 4), la rassicurazione su
  * Bari (Giorno 1) e le gite extra sulla via del ritorno o se restano giorni liberi
- * (Trani, Locorotondo, Grotte di Castellana, Lecce, Brindisi, Otranto — Giorno 6). Non
+ * (Trani, Locorotondo, Grotte di Castellana, Lecce, Brindisi, Otranto - Giorno 6). Non
  * è una fonte web citabile con un link: è testimonianza diretta di chi scrive questo
  * file, marcata come tale ovunque compare, non presentata come dato di una guida.
  */
@@ -90,7 +90,7 @@ export const MAP_LOCATIONS = [
 
 export const TRIP_DATA = {
 
-  // Prima era testo scritto a mano nella shell condivisa con la sintesi di Cilento — bug
+  // Prima era testo scritto a mano nella shell condivisa con la sintesi di Cilento - bug
   // template gia' corretto per "Cambio Hotel" e "Info & Costi", qui era sfuggito finche'
   // l'utente non l'ha notato sul sito live di Polignano.
   programSummary: "Sosta a Bari in itinere, poi 5 notti a Polignano a Mare con gite a Alberobello, Ostuni e Monopoli. Una sola base, nessun cambio hotel.",
@@ -103,17 +103,17 @@ export const TRIP_DATA = {
       places:"Bari Vecchia (sosta) · Centro storico Polignano · Lama Monachile",
       sections:[
         { t:"Il viaggio: perché fermarsi a Bari",
-          tx:"Da Via Aurora, Civitanova Marche Alta a Bari: <b>425 km, circa 4h 18min</b>. Da Bari a Polignano a Mare: altri <b>36 km, 35 min</b>. Il totale (4h 53min) è solo ~7 minuti più lungo del tragitto diretto Civitanova-Polignano (4h 46min, 460 km): Bari non è una deviazione, è sulla strada — calcolato con un routing reale, non stimato. Partire presto (indicativamente 6:00-6:30) per arrivare a Bari a metà mattina." },
+          tx:"Da Via Aurora, Civitanova Marche Alta a Bari: <b>425 km, circa 4h 18min</b>. Da Bari a Polignano a Mare: altri <b>36 km, 35 min</b>. Il totale (4h 53min) è solo ~7 minuti più lungo del tragitto diretto Civitanova-Polignano (4h 46min, 460 km): Bari non è una deviazione, è sulla strada - calcolato con un routing reale, non stimato. Partire presto (indicativamente 6:00-6:30) per arrivare a Bari a metà mattina." },
         { t:"Sosta a Bari - Bari Vecchia",
           tx:"Percorso a piedi consigliato: <b>Piazza del Ferrarese</b> come punto di partenza, poi dentro il centro storico verso la <b>Basilica di San Nicola</b> (tappa centrale). <b>Via dell'Arco Basso</b>, la \"strada della pasta\": le massaie preparano a mano le orecchiette sugli usci di casa, si può comprare pasta fresca o solo guardare. <b>Piazza Mercantile</b> per una sosta caffè/pranzo veloce. 2-3 ore bastano per il percorso essenziale." },
         { t:"Parcheggio a Bari",
           tx:"L'intera Bari Vecchia è <b>ZTL</b> (zona a traffico limitato): non entrare in auto. Per una sosta breve, le strisce blu lato mare (Zona D) costano ~€1/ora; in alternativa il parcheggio Cesare Battisti (sotterraneo, quartiere Murat, da ~€1,90/ora) è a pochi minuti a piedi dal centro storico. Fonti: <a href=\"https://www.regionepuglia.org/itinerario-bari-mezza-giornata/\" target=\"_blank\" rel=\"noopener noreferrer\">itinerario mezza giornata</a>, <a href=\"https://www.bariexperience.com/en/what-to-do-in-bari/parking-in-bari-where-to-park-your-car-parkride-multi-storey-car-park-ztl-paid-parking/\" target=\"_blank\" rel=\"noopener noreferrer\">parcheggi a Bari</a>." },
         { t:"Arrivo a Polignano & Check-in",
-          tx:"Ultimi 35 minuti di guida da Bari. Arrivo indicativo a Polignano a Mare nel primo pomeriggio. Sistemazione in hotel/appartamento — una sola base per tutto il soggiorno, nessun cambio alloggio nei giorni successivi." },
+          tx:"Ultimi 35 minuti di guida da Bari. Arrivo indicativo a Polignano a Mare nel primo pomeriggio. Sistemazione in hotel/appartamento - una sola base per tutto il soggiorno, nessun cambio alloggio nei giorni successivi." },
         { t:"Sera - Centro storico di Polignano",
           tx:"Passeggiata nel centro storico, un dedalo di vicoli bianchi a picco sul mare. Sosta a <b>Lama Monachile</b>, la piccola insenatura tra le scogliere che è l'immagine simbolo del paese, e alla statua dedicata a <b>Domenico Modugno</b>, nato qui. Cena in centro storico, vista scogliera se possibile. Costo indicativo: €25-40 a persona." },
         { t:"Tre cose da non perdere, tutte a due passi",
-          tx:"Testimonianza diretta di chi ha già fatto questo viaggio, non da una guida: Lama Monachile, Pescaria (panino o frittura di pesce, un'experience tipica del posto) e <b>Super Mago del Gelo</b> (un caffè speciale che pare si trovi solo lì, gusto amaretto e agrumi — vale la sosta) si trovano tutti nel giro di 20 metri l'uno dall'altro. Il resto del centro storico si visita comodamente in un'oretta, non serve pianificarci sopra mezza giornata." },
+          tx:"Testimonianza diretta di chi ha già fatto questo viaggio, non da una guida: Lama Monachile, Pescaria (panino o frittura di pesce, un'experience tipica del posto) e <b>Super Mago del Gelo</b> (un caffè speciale che pare si trovi solo lì, gusto amaretto e agrumi - vale la sosta) si trovano tutti nel giro di 20 metri l'uno dall'altro. Il resto del centro storico si visita comodamente in un'oretta, non serve pianificarci sopra mezza giornata." },
       ],
       tips:["Giornata lunga (guida + Bari + guida + arrivo): partire presto per non arrivare a Polignano troppo tardi","Bari Vecchia è ZTL: parcheggiare fuori e proseguire a piedi","Il tramonto da Lama Monachile è il momento migliore per le foto","Su Bari circolano allarmismi locali sui furti d'auto: nell'esperienza diretta di chi ha già fatto questo giro, parcheggiando nelle zone indicate sopra è stata una tappa tranquilla e vale assolutamente la sosta a Bari Vecchia"],
       cf:"25-40", ca:"0"
@@ -131,9 +131,9 @@ export const TRIP_DATA = {
         { t:"Mattino - Spiagge e grotte marine",
           tx:"Giornata dedicata al mare: <b>Cala Porto</b> e <b>Cala Paura</b>, le due calette principali sotto il centro storico. Le scogliere sono ricche di grotte marine visitabili in barca o kayak (noleggio sul posto)." },
         { t:"Grotta Palazzese - da sapere prima di prenotare",
-          tx:"Il ristorante <b>Grotta Palazzese</b>, scavato in una vera grotta naturale a picco sul mare (aperta da Pasqua a ottobre), è tra i luoghi più fotografati della Puglia — ma con alcune informazioni pratiche che è meglio conoscere prima di prenotare, non solo dopo. Prezzo reale: <b>almeno €200 a persona</b> per un menu degustazione senza bevande (una bottiglia d'acqua costa già ~€10). I tavoli si assegnano all'arrivo, non alla prenotazione: prenotare con anticipo non garantisce uno dei tavoli a strapiombo sul mare. Le recensioni sono discordanti (3,4/5 su Tripadvisor, migliaia di recensioni): l'atmosfera è elogiata, ma diversi ospiti segnalano servizio lento e cucina non all'altezza del prezzo." },
+          tx:"Il ristorante <b>Grotta Palazzese</b>, scavato in una vera grotta naturale a picco sul mare (aperta da Pasqua a ottobre), è tra i luoghi più fotografati della Puglia - ma con alcune informazioni pratiche che è meglio conoscere prima di prenotare, non solo dopo. Prezzo reale: <b>almeno €200 a persona</b> per un menu degustazione senza bevande (una bottiglia d'acqua costa già ~€10). I tavoli si assegnano all'arrivo, non alla prenotazione: prenotare con anticipo non garantisce uno dei tavoli a strapiombo sul mare. Le recensioni sono discordanti (3,4/5 su Tripadvisor, migliaia di recensioni): l'atmosfera è elogiata, ma diversi ospiti segnalano servizio lento e cucina non all'altezza del prezzo." },
         { t:"Sera",
-          tx:"Cena in centro storico, oppure Grotta Palazzese consapevoli del compromesso reale (prezzo/qualità) sopra — è un'esperienza da vivere per l'ambiente, non da aspettarsi come miglior pasto del viaggio." },
+          tx:"Cena in centro storico, oppure Grotta Palazzese consapevoli del compromesso reale (prezzo/qualità) sopra - è un'esperienza da vivere per l'ambiente, non da aspettarsi come miglior pasto del viaggio." },
       ],
       tips:["Se si prenota Grotta Palazzese, farlo sapendo che il tavolo vista mare non è garantito","Kayak e barca a noleggio sul porticciolo per vedere le grotte dal mare"],
       cf:"25-60", ca:"10-25"
@@ -149,15 +149,15 @@ export const TRIP_DATA = {
         { t:"Come Arrivare",
           tx:"Da Polignano ad Alberobello: circa 35 km, 40-45 minuti in auto." },
         { t:"Meglio la sera: testimonianza diretta",
-          tx:"Da chi ha già fatto questo viaggio (non da una guida): Alberobello vale la pena tenerla per la sera, quando i trulli si accendono con le lucine — è molto più bella così che di giorno, e in agosto significa anche non \"schiattare\" di caldo tra i vicoli senza ombra. È abbastanza una turistata (al 99% negozi di souvenir), ma comunque una tappa da fare una volta nella vita. Non essendoci mare, è una passeggiata che si presta bene a un orario serale invece che a mezza giornata di sole." },
+          tx:"Da chi ha già fatto questo viaggio (non da una guida): Alberobello vale la pena tenerla per la sera, quando i trulli si accendono con le lucine - è molto più bella così che di giorno, e in agosto significa anche non \"schiattare\" di caldo tra i vicoli senza ombra. È abbastanza una turistata (al 99% negozi di souvenir), ma comunque una tappa da fare una volta nella vita. Non essendoci mare, è una passeggiata che si presta bene a un orario serale invece che a mezza giornata di sole." },
         { t:"Rione Monti & Aia Piccola",
-          tx:"Alberobello è patrimonio <b>UNESCO</b> per i suoi <b>trulli</b>, le caratteristiche case in pietra a secco con tetto conico bianco. <b>Rione Monti</b> (oltre 1.000 trulli) è il quartiere principale, denso di trulli — molti oggi negozi di souvenir — e molto affollato nelle ore centrali: meglio visitarlo presto la mattina o dopo cena. <b>Aia Piccola</b> (400 trulli), dall'altra parte del paese, è molto meno turistica — ancora abitazioni di famiglia vere, il nucleo più antico del paese — ed è particolarmente suggestiva la sera. Percorso consigliato: dal belvedere, scendere nel Rione Monti, poi Aia Piccola per capire la differenza tra la parte scenografica e quella vissuta. Fonte: <a href=\"https://www.marcotogni.it/cosa-vedere-alberobello/\" target=\"_blank\" rel=\"noopener noreferrer\">Marco Togni</a>." },
+          tx:"Alberobello è patrimonio <b>UNESCO</b> per i suoi <b>trulli</b>, le caratteristiche case in pietra a secco con tetto conico bianco. <b>Rione Monti</b> (oltre 1.000 trulli) è il quartiere principale, denso di trulli - molti oggi negozi di souvenir - e molto affollato nelle ore centrali: meglio visitarlo presto la mattina o dopo cena. <b>Aia Piccola</b> (400 trulli), dall'altra parte del paese, è molto meno turistica - ancora abitazioni di famiglia vere, il nucleo più antico del paese - ed è particolarmente suggestiva la sera. Percorso consigliato: dal belvedere, scendere nel Rione Monti, poi Aia Piccola per capire la differenza tra la parte scenografica e quella vissuta. Fonte: <a href=\"https://www.marcotogni.it/cosa-vedere-alberobello/\" target=\"_blank\" rel=\"noopener noreferrer\">Marco Togni</a>." },
         { t:"Trullo Sovrano",
           tx:"L'unico trullo a due piani della città (fine XVIII secolo, monumento nazionale dal 1930), oggi piccolo museo con ambienti ricostruiti (panificio, camera da letto, cucina). Biglietto: <b>€2,50</b> (Piazza Sacramento 10). Fonte: <a href=\"https://www.trullosovrano.eu/ingresso-biglietti/\" target=\"_blank\" rel=\"noopener noreferrer\">sito ufficiale</a>." },
         { t:"Pranzo",
           tx:"Pranzo in una trattoria del centro storico: cucina della Valle d'Itria, orecchiette, verdure locali." },
         { t:"Se avete tempo: Locorotondo e Grotte di Castellana",
-          tx:"Sempre da esperienza diretta, non da fonte web: <b>Locorotondo</b> è carina ma molto piccola, da aggiungere solo se restano ore libere nella giornata. Le <b>Grotte di Castellana</b> sono paragonabili alle Grotte di Frasassi (forse un po' meno spettacolari), e offrono un po' di fresco rispetto al caldo di agosto — non pare serva prenotare con grande anticipo, ma verificare comunque i posti disponibili visto il periodo estivo prima di contarci." },
+          tx:"Sempre da esperienza diretta, non da fonte web: <b>Locorotondo</b> è carina ma molto piccola, da aggiungere solo se restano ore libere nella giornata. Le <b>Grotte di Castellana</b> sono paragonabili alle Grotte di Frasassi (forse un po' meno spettacolari), e offrono un po' di fresco rispetto al caldo di agosto - non pare serva prenotare con grande anticipo, ma verificare comunque i posti disponibili visto il periodo estivo prima di contarci." },
       ],
       tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo, poca ombra tra i trulli","Da testimonianza diretta: tenere Alberobello per il tardo pomeriggio/sera, sia per le lucine sui trulli sia per evitare il caldo peggiore"],
       cf:"20-35", ca:"5-10"
@@ -172,11 +172,11 @@ export const TRIP_DATA = {
         { t:"Parcheggio",
           tx:"Il centro storico è in gran parte <b>ZTL</b>, strade strette e affollate in alta stagione: meglio lasciare l'auto in un parcheggio esterno a pagamento (es. Ostuni Parking Area1, o i parcheggi di Via Antonia Specchia) e proseguire a piedi. Fonte: <a href=\"https://www.ostunicentralparking.it/2025/06/20/cosa-vedere-a-ostuni-in-un-giorno-con-mappa-e-consigli-di-parcheggio/\" target=\"_blank\" rel=\"noopener noreferrer\">Ostuni Central Parking</a>." },
         { t:"Mattino - Il centro storico",
-          tx:"Ostuni è nota come <b>la Città Bianca</b> per il centro storico interamente imbiancato a calce, arroccato su una collina con vista sulla piana degli ulivi e sul mare. Vicoli stretti, scalinate, molti vicoli ciechi. <b>Piazza della Libertà</b>, con la Colonna di Sant'Oronzo, è il punto d'incontro tra la città nuova e il borgo antico. <b>Attenzione</b>: la Concattedrale di Ostuni, con il suo rosone gotico, risulta <b>chiusa per lavori di ristrutturazione</b> secondo un aggiornamento di aprile 2026 — verificare sul posto se ha riaperto prima di contarci come tappa, non è detto che sia già visitabile ad agosto. Fonte: <a href=\"https://www.eleonoraongaro.it/ostuni-cosa-vedere/\" target=\"_blank\" rel=\"noopener noreferrer\">Sarà Perché Viaggio</a>." },
+          tx:"Ostuni è nota come <b>la Città Bianca</b> per il centro storico interamente imbiancato a calce, arroccato su una collina con vista sulla piana degli ulivi e sul mare. Vicoli stretti, scalinate, molti vicoli ciechi. <b>Piazza della Libertà</b>, con la Colonna di Sant'Oronzo, è il punto d'incontro tra la città nuova e il borgo antico. <b>Attenzione</b>: la Concattedrale di Ostuni, con il suo rosone gotico, risulta <b>chiusa per lavori di ristrutturazione</b> secondo un aggiornamento di aprile 2026 - verificare sul posto se ha riaperto prima di contarci come tappa, non è detto che sia già visitabile ad agosto. Fonte: <a href=\"https://www.eleonoraongaro.it/ostuni-cosa-vedere/\" target=\"_blank\" rel=\"noopener noreferrer\">Sarà Perché Viaggio</a>." },
         { t:"La vista dalle mura & il giro con l'ape calessino",
-          tx:"Testimonianza diretta, non da fonte web: sotto le mura c'è un tratto panoramico da cui si vede tutta Ostuni, la Città Bianca, in un colpo d'occhio — da non perdere. Da lì si può anche fare un giro con l'ape calessino (turistico e un po' \"da turisti basic\", ma ci sta). Questa tappa va vissuta di giorno, non di sera: il bianco della città risalta molto di più con la luce piena." },
+          tx:"Testimonianza diretta, non da fonte web: sotto le mura c'è un tratto panoramico da cui si vede tutta Ostuni, la Città Bianca, in un colpo d'occhio - da non perdere. Da lì si può anche fare un giro con l'ape calessino (turistico e un po' \"da turisti basic\", ma ci sta). Questa tappa va vissuta di giorno, non di sera: il bianco della città risalta molto di più con la luce piena." },
         { t:"Pomeriggio - Mare, meno affollato",
-          tx:"Sulla costa di Ostuni, <b>Torre Pozzelle</b> ha una serie di calette selvagge tra gli scogli, e <b>Costa Merlata</b> insenature rocciose meno battute delle spiagge principali — alternative valide a Rosa Marina se si cerca meno folla. Fonte: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>." },
+          tx:"Sulla costa di Ostuni, <b>Torre Pozzelle</b> ha una serie di calette selvagge tra gli scogli, e <b>Costa Merlata</b> insenature rocciose meno battute delle spiagge principali - alternative valide a Rosa Marina se si cerca meno folla. Fonte: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>." },
       ],
       tips:["Il centro storico è ripido e acciottolato: scarpe comode","Vista migliore sulla città bianca dalla strada che arriva da sud","Da testimonianza diretta: Ostuni va vista di giorno, non di sera, perché il bianco risalta con la luce"],
       cf:"20-35", ca:"0"
@@ -188,11 +188,11 @@ export const TRIP_DATA = {
       places:"Centro storico · Porto · Castello di Carlo V",
       sections:[
         { t:"Come Arrivare",
-          tx:"Da Polignano a Monopoli: solo 12 km, 15-20 minuti in auto — la tappa più vicina, giornata più rilassata." },
+          tx:"Da Polignano a Monopoli: solo 12 km, 15-20 minuti in auto - la tappa più vicina, giornata più rilassata." },
         { t:"Centro storico & Porto",
-          tx:"Monopoli ha un centro storico bianco simile a Polignano ma più esteso, cinto da mura, con un <b>porto peschereccio</b> ancora attivo — barche colorate (i tradizionali gozzi), pescatori che riparano le reti. Il <b>Castello di Carlo V</b> (XVI secolo), sul mare accanto al centro storico, domina il porto vecchio: non è visitabile ovunque all'interno (parte ospita uffici comunali), ma l'esterno vale comunque la sosta. Fonte: <a href=\"https://www.regionepuglia.org/monopoli/\" target=\"_blank\" rel=\"noopener noreferrer\">Regione Puglia</a>." },
+          tx:"Monopoli ha un centro storico bianco simile a Polignano ma più esteso, cinto da mura, con un <b>porto peschereccio</b> ancora attivo - barche colorate (i tradizionali gozzi), pescatori che riparano le reti. Il <b>Castello di Carlo V</b> (XVI secolo), sul mare accanto al centro storico, domina il porto vecchio: non è visitabile ovunque all'interno (parte ospita uffici comunali), ma l'esterno vale comunque la sosta. Fonte: <a href=\"https://www.regionepuglia.org/monopoli/\" target=\"_blank\" rel=\"noopener noreferrer\">Regione Puglia</a>." },
         { t:"Il molo con le barchette blu",
-          tx:"Testimonianza diretta, non da fonte web: Monopoli è bellissima tutta, ma soprattutto il molo con le barchette blu — molto colorato, da non perdere. Lì si trova ovunque il panino con il polpo fritto, uno street food diffuso in tutta la zona del porto. Il centro è pieno di locali per fare aperitivo, specialmente sul tardo pomeriggio/sera." },
+          tx:"Testimonianza diretta, non da fonte web: Monopoli è bellissima tutta, ma soprattutto il molo con le barchette blu - molto colorato, da non perdere. Lì si trova ovunque il panino con il polpo fritto, uno street food diffuso in tutta la zona del porto. Il centro è pieno di locali per fare aperitivo, specialmente sul tardo pomeriggio/sera." },
         { t:"Mare, meno affollato",
           tx:"A sud del centro, <b>Spiaggia di Porto Ghiacciolo</b> (5 minuti in auto) è segnalata come la spiaggia migliore della zona, sabbia dorata e acqua limpida. Più selvagge: <b>Port'Alga</b> (Scoglio dell'Eremita) e <b>Torre Incina</b>, buone per lo snorkeling; <b>Cala Verde</b>, dietro il campeggio Santo Stefano, è la più remota e meno frequentata. Fonti: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>, <a href=\"https://roamandthrive.com/best-beaches-monopoli-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Roam & Thrive</a>." },
         { t:"Sera - Porto vecchio",
@@ -213,7 +213,7 @@ export const TRIP_DATA = {
         { t:"Check-out & Partenza",
           tx:"Check-out e partenza per il rientro." },
         { t:"Sulla via del ritorno: Trani",
-          tx:"Testimonianza diretta, non da fonte web: se il percorso di rientro lo permette, una sosta a Trani vale la pena — ha un mercato del pesce molto famoso, con crudi di mare descritti come \"la fine del mondo\". Da valutare in base a quanto tempo/deviazione comporta rispetto al rientro." },
+          tx:"Testimonianza diretta, non da fonte web: se il percorso di rientro lo permette, una sosta a Trani vale la pena - ha un mercato del pesce molto famoso, con crudi di mare descritti come \"la fine del mondo\". Da valutare in base a quanto tempo/deviazione comporta rispetto al rientro." },
         { t:"Se restano giorni liberi nell'itinerario",
           tx:"Sempre da esperienza diretta: con più giorni a disposizione, quasi tutto qui intorno vale una visita perché le tappe sono piccole e il costo della vita è basso ovunque. <b>Lecce</b> ha un bel centro storico, un po' distante dalla base ma comunque consigliata se c'è tempo. <b>Brindisi</b> è invece sconsigliata senza mezzi termini: descritta come uno \"scenario post apocalittico\", niente da vedere. <b>Otranto e la Grotta della Poesia</b> sono decisamente fuori mano rispetto a questa base (più adatte a un futuro tour della Puglia centro/sud), non rientrano in questo itinerario." },
       ],
@@ -231,9 +231,9 @@ export const TRIP_DATA = {
       { nm:"Via dell'Arco Basso", tags:["Street food","$"], note:"Non un ristorante ma una strada: le massaie di Bari Vecchia preparano orecchiette a mano davanti casa, vendute fresche. Esperienza autentica più che un pasto vero e proprio.", sp:"Sosta breve, non un pranzo completo" },
     ]},
     { area:"Polignano a Mare", days:"Giorni 1, 2, 6", items:[
-      { nm:"Grotta Palazzese", tags:["Pesce","$$$$"], note:"Ristorante scavato in una grotta naturale a picco sul mare. Prezzo reale almeno €200/persona, tavolo vista mare non garantito anche prenotando, recensioni discordanti (3,4/5 Tripadvisor) — dettaglio completo nel Giorno 2. Fonte: <a href=\"https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/\" target=\"_blank\" rel=\"noopener noreferrer\">Dissapore</a>, <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>.", sp:"Esperienza per l'ambiente, non il miglior pasto del viaggio", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html" },
+      { nm:"Grotta Palazzese", tags:["Pesce","$$$$"], note:"Ristorante scavato in una grotta naturale a picco sul mare. Prezzo reale almeno €200/persona, tavolo vista mare non garantito anche prenotando, recensioni discordanti (3,4/5 Tripadvisor) - dettaglio completo nel Giorno 2. Fonte: <a href=\"https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/\" target=\"_blank\" rel=\"noopener noreferrer\">Dissapore</a>, <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>.", sp:"Esperienza per l'ambiente, non il miglior pasto del viaggio", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html" },
       // Nessun campo thefork per Grotta Palazzese: verificato che non ha una scheda su TheFork,
-      // prenota solo dal proprio sito ufficiale (grottapalazzese.it) — non inventato un link.
+      // prenota solo dal proprio sito ufficiale (grottapalazzese.it) - non inventato un link.
       { nm:"Pescaria", tags:["Pesce","Street food","$"], note:"Piazza Aldo Moro 6-8. Il primo fast food di pesce d'Italia, nato qui a Polignano: panini di mare, tartare di tonno, fish and chips. Informale, senza prenotazione. 4,8/5 su Restaurant Guru, #10 su 205 ristoranti di Polignano su Tripadvisor. Fonte: <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>, <a href=\"https://www.yelp.com/biz/pescaria-polignano-a-mare\" target=\"_blank\" rel=\"noopener noreferrer\">Yelp</a>.", sp:"Ottima alternativa economica a Grotta Palazzese", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html", thefork:"https://www.thefork.it/ristorante/pescaria-polignano-r849503" },
       { nm:"Super Mago del Gelo", tags:["Gelateria/Caffè","$"], note:"Testimonianza diretta, non da fonte web (nessun link verificato per questa voce): fa un caffè speciale che pare si trovi solo qui, gusto amaretto e agrumi. A due passi da Pescaria e Lama Monachile, nello stesso angolo di paese.", sp:"Vale la sosta anche solo per il caffè" },
     ]},
@@ -313,7 +313,7 @@ export const TRIP_DATA = {
   // ho fatto una ricerca dedicata su hotel/B&B reali di Polignano: prezzi e nomi sono indicativi,
   // da verificare su Booking/Airbnb prima di prenotare (agosto è alta stagione).
   accommodation: {
-    subtitle: "Una sola base per tutto il soggiorno — prezzi indicativi, non verificati",
+    subtitle: "Una sola base per tutto il soggiorno - prezzi indicativi, non verificati",
     bases: [
       {
         name: "Polignano a Mare", location: "Giorni 1-6 (5 notti)",
@@ -328,19 +328,19 @@ export const TRIP_DATA = {
 
   // Alloggio: indicativo, non ricercato (Alloggio diventa dinamico se confermi una prenotazione
   // reale o salvi un alloggio da Pianifica, vedi renderInfoCosts/resolveAccommodationCost in
-  // public/index.html — questa riga resta solo il valore di partenza). Pasti/Biglietti: somma
+  // public/index.html - questa riga resta solo il valore di partenza). Pasti/Biglietti: somma
   // delle stime cf/ca già scritte in ogni giorno sopra, coerenti con quei valori.
-  // Carburante: ricalcolato con dati reali (2026-07-13), non più una stima approssimativa —
+  // Carburante: ricalcolato con dati reali (2026-07-13), non più una stima approssimativa -
   // distanze via OSRM (Civitanova-Bari-Polignano A/R 924,4 km; Polignano-Alberobello A/R 60,2 km;
-  // Polignano-Ostuni A/R 98,8 km; Polignano-Monopoli A/R 22,8 km — totale 1106,2 km), consumo
+  // Polignano-Ostuni A/R 98,8 km; Polignano-Monopoli A/R 22,8 km - totale 1106,2 km), consumo
   // reale Alfa Romeo Giulietta 1.6 JTD diesel (2019) da fonti citate: 4,7-5,0 L/100km ciclo misto
   // ufficiale (test reali spesso migliori, ~4L/100km). Fonti:
   // https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/
   // https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/
   costEstimate: {
-    subtitle: "Per persona, camera doppia condivisa — stima indicativa",
+    subtitle: "Per persona, camera doppia condivisa - stima indicativa",
     rows: [
-      { label:"Alloggio", desc:"5 notti a Polignano a Mare, alta stagione agosto (indicativo, non verificato — diventa reale se confermi una prenotazione o salvi un alloggio da Pianifica)", amount:"€225-400", kind:"accommodation" },
+      { label:"Alloggio", desc:"5 notti a Polignano a Mare, alta stagione agosto (indicativo, non verificato - diventa reale se confermi una prenotazione o salvi un alloggio da Pianifica)", amount:"€225-400", kind:"accommodation" },
       { label:"Pasti", desc:"Somma delle stime giornaliere sopra (Giorni 1-6)", amount:"€120-225" },
       { label:"Biglietti e attività", desc:"Grotta Palazzese/Pescaria escluse (già in Pasti se scelte), Trullo Sovrano incluso", amount:"€15-35" },
       { label:"Carburante diesel", desc:"1106 km reali (Civitanova-Bari-Polignano A/R + spostamenti locali, calcolati con OSRM), Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone. Fonti: <a href=\"https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/\" target=\"_blank\" rel=\"noopener noreferrer\">Motor1</a>, <a href=\"https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda tecnica</a>.", amount:"€43-46" },
@@ -348,7 +348,7 @@ export const TRIP_DATA = {
     ],
     total: { sub:"6 giorni, tutto incluso" },
     // Importo di coppia (non per persona), sottratto coerentemente da tutte le viste che mostrano
-    // un totale (Info & Costi per persona, Costi il totale reale) — vedi renderInfoCosts e
+    // un totale (Info & Costi per persona, Costi il totale reale) - vedi renderInfoCosts e
     // renderCostsDashboard in public/index.html. Scaduto dopo validUntil: non piu' applicato
     // automaticamente, per non mostrare uno sconto non piu' reale.
     discount: { amount: 74.66, desc: "Sconto disponibile su questa prenotazione", validUntil: "2026-07-30" }

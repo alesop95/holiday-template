@@ -25,7 +25,7 @@ function googleFlightsSearchUrl(origin, dest, dep, ret) {
 // Airbnb): i voli non hanno una coordinata sensata da mostrare, i POI non hanno prezzo. Istanza
 // Leaflet separata da quella della scheda "Mappa" (renderMap): quella e' persistente per tutta
 // la sessione, questa va ricreata a ogni nuova ricerca (i marker cambiano), quindi richiede
-// .remove() esplicito prima di ricreare — Leaflet non permette due L.map() sullo stesso div.
+// .remove() esplicito prima di ricreare - Leaflet non permette due L.map() sullo stesso div.
 let planMapInstance = null;
 
 export function renderPlanPriceMap() {
@@ -53,7 +53,7 @@ export function renderPlanPriceMap() {
 
 // Menu "Aggiungi al giorno": i giorni del viaggio sono sempre gli stessi (TRIP_DATA.days, scritti
 // dallo sviluppatore), ma l'ordine in cui compaiono per ciascun tipo (volo/alloggio/POI) riflette
-// cosa quel giorno ha gia' — un giorno che ha gia' un volo salvato va in fondo, non e' piu'
+// cosa quel giorno ha gia' - un giorno che ha gia' un volo salvato va in fondo, non e' piu'
 // probabile che serva un secondo volo lo stesso giorno. Non nasconde nessun giorno (resta scelta
 // manuale dell'utente, l'app non conosce la destinazione di un giorno per bloccare scelte
 // incoerenti), solo lo rende meno probabile per disattenzione.
@@ -97,7 +97,7 @@ export function renderPlanResults() {
       // S.planLastSearch e' non-null solo se questa ricerca ha davvero incluso aeroporti: serve a
       // distinguere "non ho chiesto voli" (sezione nascosta, comportamento invariato) da "li ho
       // chiesti ma la fonte non ha restituito nulla" (messaggio esplicito invece del silenzio
-      // totale di prima — un utente non puo' distinguere i due casi senza questo messaggio).
+      // totale di prima - un utente non puo' distinguere i due casi senza questo messaggio).
       emptyMsg: S.planLastSearch ? 'Nessun volo trovato per questa rotta e queste date. Puo\' essere una rotta senza voli in quel periodo, oppure la fonte (Google Flights) non ha risposto: non e\' necessariamente un errore del comparatore.' : null,
       view:f=>{
         const src = FLIGHT_SOURCE_LABEL[f.source] || f.source;
@@ -129,7 +129,7 @@ export function renderPlanResults() {
         </select></div>` },
     { key:'pois', label:'Punti di interesse', originalCount:(p.points_of_interest||[]).length, pairs:pois,
       // fee/price_hint vengono dai tag OSM fee/charge, copertura reale bassa (verificato in
-      // sessione: 0/30 su un'area rurale, 5/100 con un prezzo vero su un'area museale densa) —
+      // sessione: 0/30 su un'area rurale, 5/100 con un prezzo vero su un'area museale densa) -
       // per questo qui e' solo informativo, mai sommato nel totale automatico dei costi.
       view:o=>{
         const feeTxt = o.price_hint ? `Ingresso: ${o.price_hint}` : (o.fee === 'no' ? 'Ingresso gratuito' : (o.fee ? 'Ingresso a pagamento' : ''));
@@ -209,7 +209,7 @@ function renderDayPlanning(dayId) {
 // Server demo pubblico OSRM (router.project-osrm.org): gratuito, senza chiave, CORS aperto
 // (Access-Control-Allow-Origin: *, verificato dal vivo), nessun backend proprio necessario. I
 // suoi termini d'uso dichiarati limitano il server demo a "reasonable, non-commercial use", non
-// piu' di 1 richiesta al secondo e nessuna garanzia di uptime/latenza — coerente con un click
+// piu' di 1 richiesta al secondo e nessuna garanzia di uptime/latenza - coerente con un click
 // manuale occasionale dell'utente, mai con chiamate automatiche o in sequenza ravvicinata.
 window.optimizeDayRoute = async (dayId) => {
   const el = document.getElementById(`day-route-${dayId}`); if (!el) return;
@@ -303,12 +303,12 @@ window.onAirportInput = (fieldKey) => {
   if (!S.airports || q.length < 2) { listEl.style.display = 'none'; return; }
 
   const exact = S.airports.find(a => a.iata === q.toUpperCase());
-  confirmEl.textContent = exact ? `${escHtml(exact.city)} — ${escHtml(exact.name)}` : '';
+  confirmEl.textContent = exact ? `${escHtml(exact.city)} - ${escHtml(exact.name)}` : '';
 
   const ql = q.toLowerCase();
   const matches = S.airports.map(a => ({ a, score: _airportScore(a, ql) })).filter(x => x.score < 9).sort((x,y) => x.score - y.score).slice(0, 8).map(x => x.a);
   if (!matches.length) { listEl.style.display = 'none'; return; }
-  listEl.innerHTML = matches.map(a => `<div class="airport-ac-item" onmousedown="selectAirport('${fieldKey}','${a.iata}')"><strong>${escHtml(a.iata)}</strong> — ${escHtml(a.city)}<span>${escHtml(a.name)}</span></div>`).join('');
+  listEl.innerHTML = matches.map(a => `<div class="airport-ac-item" onmousedown="selectAirport('${fieldKey}','${a.iata}')"><strong>${escHtml(a.iata)}</strong> - ${escHtml(a.city)}<span>${escHtml(a.name)}</span></div>`).join('');
   listEl.style.display = 'block';
 };
 
@@ -322,7 +322,7 @@ window.selectAirport = (fieldKey, iata) => {
   const input = document.getElementById(inputId);
   const airport = S.airports.find(a => a.iata === iata);
   input.value = iata;
-  document.getElementById(`${inputId}-confirm`).textContent = airport ? `${escHtml(airport.city)} — ${escHtml(airport.name)}` : '';
+  document.getElementById(`${inputId}-confirm`).textContent = airport ? `${escHtml(airport.city)} - ${escHtml(airport.name)}` : '';
   document.getElementById(`${inputId}-list`).style.display = 'none';
   // Suggerisce la citta'/zona per alloggi e POI solo se l'utente non ha gia' scritto la sua:
   // e' un punto di partenza plausibile (comune dell'aeroporto), non sempre la zona turistica
@@ -407,7 +407,7 @@ window.searchPlan = async () => {
     S.planFilters = { ...PLAN_FILTERS_DEFAULT };  // ogni nuova ricerca riparte pulita, niente filtri della ricerca precedente
     // Un 429/502/503 qui e' quasi sempre cold start concorrente dei servizi Render (piano free):
     // trip-planner ha gia' ritentato per 90s prima di arrendersi, ma un secondo tentativo a
-    // freddo puo' ancora fallire se i servizi non erano ancora svegli — un pulsante "Riprova"
+    // freddo puo' ancora fallire se i servizi non erano ancora svegli - un pulsante "Riprova"
     // evita di dover ridigitare tutto il form per il tentativo successivo, quasi sempre risolutivo.
     msgEl.innerHTML = (plan.errors && plan.errors.length) ? `<div class="plan-msg err">Parziale: ${plan.errors.join(' · ')} <button class="plan-retry-btn" onclick="searchPlan()">Riprova</button></div>` : '';
     renderPlanResults();

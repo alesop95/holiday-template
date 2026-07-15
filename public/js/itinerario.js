@@ -11,6 +11,7 @@ export function renderDays() {
   // ogni viaggio copiato dalla shell mostrava la sintesi di Cilento invece della propria.
   const summaryEl = document.getElementById('program-summary');
   if (summaryEl) summaryEl.textContent = TRIP_DATA.programSummary || '';
+  renderSavedLinks();
   // Il banner di cambio hotel e' specifico dei viaggi con piu' di una base (es. Cilento,
   // 4 notti + 2 notti): TRIP_DATA.hotelChange e' assente per un viaggio a base unica come
   // Polignano, quindi il banner semplicemente non compare, invece di mostrare per errore
@@ -39,6 +40,7 @@ export function renderDays() {
         ${d.tips?`<div class="tips-box" style="border-left-color:${d.color}"><div class="tips-ttl" style="color:${d.color}">Consigli Pratici</div>${d.tips.map(t=>`<div class="tip">${t}</div>`).join('')}</div>`:''}
         <div class="dcosts"><div class="cpill cf">Pasti: ${CURRENCY_SYMBOL}${d.cf}/pers.</div>${d.ca==='0'?'<div class="cpill cg">Attività: Gratuito</div>':`<div class="cpill ca">Attività: ${CURRENCY_SYMBOL}${d.ca}/pers.</div>`}</div>
         <div class="day-planning" id="day-planning-${d.id}" style="display:none"></div>
+        <div class="day-todos" id="day-todos-${d.id}"></div>
         <div class="day-actions">
           <button class="act-btn${done?' btn-done-active':''}" id="done-btn-${d.id}" onclick="markDone(${d.id})">${done?'✓ Fatto!':'○ Segna come fatto'}</button>
           <button class="act-btn" onclick="toggleNote(${d.id})">Note</button>
@@ -51,6 +53,39 @@ export function renderDays() {
   });
   c.innerHTML = html;
   renderDayPlanningAll();
+  renderDayTodosAll();
+}
+
+// Link generici salvati durante la pianificazione (es. video da un social), non legati a un
+// giorno preciso - a differenza delle "Cose da fare", che sono sempre per giorno. Opzionale
+// come hotelChange/programSummary: un viaggio senza TRIP_DATA.savedLinks non mostra la sezione.
+function renderSavedLinks() {
+  const el = document.getElementById('saved-links'); if (!el) return;
+  const links = TRIP_DATA.savedLinks || [];
+  if (!links.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="costs-card">
+    <div class="costs-card-ttl">Da controllare</div>
+    ${links.map(l => `<div class="costs-auto-row"><a class="plan-item-link" href="${escHtml(l.url)}" target="_blank" rel="noopener noreferrer">${escHtml(l.label)} →</a></div>`).join('')}
+  </div>`;
+}
+
+// ── "Cose da fare" per giorno (Itinerario) ─────────────────────────────────────
+// Diverso sia dal checkbox per attivita' (sec-blk sopra, contenuto fisso di TRIP_DATA) sia
+// dalla Valigia (checklist fissa, categorie dallo sviluppatore): qui l'elenco stesso e'
+// libero, l'utente aggiunge/rimuove voci dall'app, non solo le spunta. Seminato da
+// TRIP_DATA.days[].todos (vedi firestore.js, _defaultTodosByDay), poi vive interamente in
+// Firestore (state/todos) esattamente come i partecipanti di "Costi".
+export function renderDayTodosAll() { S.days.forEach(d => renderDayTodos(d.id)); }
+
+export function renderDayTodos(dayId) {
+  const el = document.getElementById(`day-todos-${dayId}`); if (!el) return;
+  const items = S.todos[dayId] || [];
+  el.innerHTML = `<div class="day-todos-ttl">Cose da fare</div>
+    ${items.map(t => `<div class="todo-item${t.done?' done':''}">
+      <div class="todo-row" onclick="todoTog(${dayId},'${t.id}')"><div class="ck-box">${t.done?'✓':''}</div><div class="ck-lbl">${escHtml(t.text)}</div></div>
+      <button class="plan-rm-btn" onclick="removeTodo(${dayId},'${t.id}')">Rimuovi</button>
+    </div>`).join('') || '<p class="costs-hint">Nessuna cosa da fare aggiunta ancora.</p>'}
+    <div class="costs-add-row"><input id="todo-new-${dayId}" placeholder="Aggiungi una cosa da fare..." onkeydown="if(event.key==='Enter'){event.preventDefault();addTodo(${dayId});}"><button class="costs-add-btn" onclick="addTodo(${dayId})">+ Aggiungi</button></div>`;
 }
 
 // Link esterni opzionali per ristorante (tripadvisor/thefork su ogni item di TRIP_DATA.

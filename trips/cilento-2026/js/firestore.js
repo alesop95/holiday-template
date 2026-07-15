@@ -3,7 +3,7 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https:
 import { TRIP_ID, TRIP_META, TRIP_DATA } from '../trip.config.js';
 import { S, fb } from './state.js';
 import { renderHero } from './hero.js';
-import { updateCkUI, updateNotesUI, updateActivityUI, renderInfoCosts } from './itinerario.js';
+import { updateCkUI, updateNotesUI, updateActivityUI, renderInfoCosts, renderDayTodosAll } from './itinerario.js';
 import { renderPlanSaved, renderDayPlanningAll, renderPriceAlerts, renderKeepAlive } from './pianifica.js';
 import { renderCostsDashboard } from './costs.js';
 
@@ -46,6 +46,24 @@ const activitiesDoc = createStateDoc('activities', {
 });
 const keepAliveDoc = createStateDoc('keepAlive', { defaultValue: { activatedAt: null } });
 
+// "Cose da fare" seminate da TRIP_DATA.days[].todos (contenuto per-viaggio, opzionale), poi
+// libere: l'utente le spunta, ne aggiunge e ne rimuove dall'app, esattamente come i partecipanti
+// in "Costi". Calcolato una sola volta qui (TRIP_DATA e' statico per tutta la sessione), stesso
+// principio di TRIP_META per state/meta: lo shell condiviso legge un campo generico del viaggio,
+// il contenuto vero e proprio vive in trip.config.js, non qui.
+function _defaultTodosByDay() {
+  const byDay = {};
+  TRIP_DATA.days.forEach(d => {
+    if (d.todos && d.todos.length) {
+      byDay[d.id] = d.todos.map((text, i) => ({ id: `seed-${d.id}-${i}`, text, done: false }));
+    }
+  });
+  return byDay;
+}
+const todosDoc = createStateDoc('todos', {
+  defaultValue: _defaultTodosByDay(), unwrap: (data) => data.byDay || {}, wrap: (byDay) => ({ byDay }),
+});
+
 // ── Seed automatico al primo avvio ────────────────────────────────────────────
 // days/restaurants/checklist NON sono piu' seminati su Firestore (erano "seed once": la prima
 // visita li scriveva su Firestore e ogni modifica successiva a TRIP_DATA restava invisibile
@@ -73,6 +91,7 @@ export async function seedIfNeeded() {
     priceAlertsDoc.seed(),
     activitiesDoc.seed(),
     keepAliveDoc.seed(),
+    todosDoc.seed(),
   ]);
 }
 
@@ -97,6 +116,11 @@ export async function loadPriceAlerts() { S.priceAlerts = await priceAlertsDoc.l
 // Stesso fallback self-healing: un viaggio seminato prima di questa feature riparte da
 // "mai attivato" invece di rompersi.
 export async function loadKeepAlive() { S.keepAlive = await keepAliveDoc.load(); }
+
+// Stesso fallback self-healing, ma il default qui non e' vuoto: un viaggio senza questo
+// documento (seminato prima della feature, o mai scritto perche' l'utente non ha ancora
+// toccato nulla) riparte dalle cose-da-fare suggerite in TRIP_DATA, non da una lista vuota.
+export async function loadTodos() { S.todos = await todosDoc.load(); }
 
 // ── Listener real-time per stato condiviso ────────────────────────────────────
 export function listenRealtime() {
@@ -131,6 +155,7 @@ export function listenRealtime() {
   });
   priceAlertsDoc.listen(items => { S.priceAlerts = items; renderPriceAlerts(); });
   keepAliveDoc.listen(keepAlive => { S.keepAlive = keepAlive; renderKeepAlive(); });
+  todosDoc.listen(byDay => { S.todos = byDay; renderDayTodosAll(); });
 }
 
 // ── Scritture su Firestore ────────────────────────────────────────────────────
@@ -145,3 +170,4 @@ export async function writeMeta(meta)         { await metaDoc.write(meta); }
 export async function writeCosts(costs)       { await costsDoc.write(costs); }
 export async function writePriceAlerts(items) { await priceAlertsDoc.write(items); }
 export async function writeKeepAlive(activatedAt) { await keepAliveDoc.write({ activatedAt }); }
+export async function writeTodos(byDay) { await todosDoc.write(byDay); }

@@ -2,9 +2,9 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { FIREBASE_CONFIG, CURRENCY_CODE } from '../trip.config.js';
 import { S } from './state.js';
-import { initFirestore, seedIfNeeded, loadContent, loadMeta, loadCosts, loadPriceAlerts, loadKeepAlive, listenRealtime, writeCk, writeActivity, writeNote, writeCompleted } from './firestore.js';
+import { initFirestore, seedIfNeeded, loadContent, loadMeta, loadCosts, loadPriceAlerts, loadKeepAlive, loadTodos, listenRealtime, writeCk, writeActivity, writeNote, writeCompleted, writeTodos } from './firestore.js';
 import { renderHero } from './hero.js';
-import { renderDays, renderRest, renderCk, updateCkProgress, renderInfoCosts } from './itinerario.js';
+import { renderDays, renderRest, renderCk, updateCkProgress, renderInfoCosts, renderDayTodos } from './itinerario.js';
 import { renderPlanSaved, renderPriceAlerts, renderKeepAlive, ensureAirportsLoaded, ensureCitiesLoaded, warmupBackend, checkPriceAlerts } from './pianifica.js';
 import { renderCostsDashboard } from './costs.js';
 import { renderMap } from './map.js';
@@ -43,6 +43,7 @@ async function init() {
     await loadCosts();
     await loadPriceAlerts();
     await loadKeepAlive();
+    await loadTodos();
 
     setStatus('Attivazione sync in tempo reale...');
     listenRealtime();
@@ -89,5 +90,32 @@ window.saveNote = (id,text) => {
   writeNote(id,text).then(()=>{ const s=document.getElementById(`note-saved-${id}`); if(s){ s.style.display='block'; setTimeout(()=>s.style.display='none',2000); } }).catch(console.error);
 };
 window.markDone = id => { const c=S.completed[id]||false; writeCompleted(id,!c).catch(console.error); };
+
+// ── Cose da fare per giorno (Itinerario) ───────────────────────────────────────
+// Stesso principio write-then-render di "Costi" (addCostParticipant ecc. in costs.js): scrive
+// su Firestore, poi aggiorna S e ri-renderizza solo il giorno coinvolto in caso di successo,
+// senza aggiornamento ottimistico - qui l'azione e' meno frequente di un semplice toggle,
+// il ritardo di una scrittura non e' percepibile quanto lo sarebbe su un checkbox spuntato spesso.
+window.todoTog = (dayId, todoId) => {
+  const items = (S.todos[dayId] || []).map(t => t.id === todoId ? { ...t, done: !t.done } : t);
+  const updated = { ...S.todos, [dayId]: items };
+  return writeTodos(updated).then(() => { S.todos = updated; renderDayTodos(dayId); }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.addTodo = (dayId) => {
+  const input = document.getElementById(`todo-new-${dayId}`);
+  const text = input.value.trim();
+  if (!text) return;
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  const items = [...(S.todos[dayId] || []), { id, text, done: false }];
+  const updated = { ...S.todos, [dayId]: items };
+  return writeTodos(updated).then(() => { S.todos = updated; renderDayTodos(dayId); }).catch(e => alert('Errore: ' + e.message));
+};
+
+window.removeTodo = (dayId, todoId) => {
+  const items = (S.todos[dayId] || []).filter(t => t.id !== todoId);
+  const updated = { ...S.todos, [dayId]: items };
+  return writeTodos(updated).then(() => { S.todos = updated; renderDayTodos(dayId); }).catch(e => alert('Errore: ' + e.message));
+};
 
 init();

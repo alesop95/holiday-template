@@ -250,6 +250,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .plan-saved-total{text-align:right;font-size:12.5px;font-weight:700;color:var(--sea);padding-top:8px;margin-top:2px;border-top:1.5px solid var(--border);}
 .day-planning{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
 .day-planning-ttl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+.day-todos{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
+.day-todos-ttl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+.todo-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--border);}
+.todo-item:first-of-type{border-top:none;}
+.todo-row{display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:0;}
+.todo-item.done .todo-row .ck-lbl{text-decoration:line-through;color:var(--muted);}
+.todo-item.done .ck-box{background:var(--teal);border-color:var(--teal);color:#fff;}
 .route-btn{margin-top:10px;}
 .day-route{margin-top:8px;}
 .route-summary{font-size:12px;font-weight:700;color:var(--sea);margin-bottom:6px;}
@@ -315,6 +322,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
       <p id="program-summary"></p>
       <button class="act-btn" id="export-print-btn" onclick="window.print()">Esporta / Stampa itinerario</button>
     </div>
+    <div id="saved-links"></div>
     <div id="days-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
   </div>
   <div id="mappa" class="panel">

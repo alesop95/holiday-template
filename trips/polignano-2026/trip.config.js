@@ -95,6 +95,14 @@ export const TRIP_DATA = {
   // l'utente non l'ha notato sul sito live di Polignano.
   programSummary: "Sosta a Bari in itinere, poi 5 notti a Polignano a Mare con gite a Alberobello, Ostuni e Monopoli. Una sola base, nessun cambio hotel.",
 
+  // Video salvati durante la pianificazione, non ancora guardati/verificati: non so a quale
+  // giorno o luogo si riferiscano (nessun accesso a video da qui), quindi restano generici in
+  // cima all'Itinerario invece di essere assegnati a un giorno specifico per ipotesi.
+  savedLinks: [
+    { label: "Video salvato 1", url: "https://vm.tiktok.com/ZNRou1gpL/" },
+    { label: "Video salvato 2", url: "https://vm.tiktok.com/ZNRoucgd7/" },
+    { label: "Video salvato 3", url: "https://vm.tiktok.com/ZNRousSDE/" },
+  ],
 
   days: [
     {
@@ -116,7 +124,11 @@ export const TRIP_DATA = {
           tx:"Testimonianza diretta di chi ha già fatto questo viaggio, non da una guida: Lama Monachile, Pescaria (panino o frittura di pesce, un'experience tipica del posto) e <b>Super Mago del Gelo</b> (un caffè speciale che pare si trovi solo lì, gusto amaretto e agrumi - vale la sosta) si trovano tutti nel giro di 20 metri l'uno dall'altro. Il resto del centro storico si visita comodamente in un'oretta, non serve pianificarci sopra mezza giornata." },
       ],
       tips:["Giornata lunga (guida + Bari + guida + arrivo): partire presto per non arrivare a Polignano troppo tardi","Bari Vecchia è ZTL: parcheggiare fuori e proseguire a piedi","Il tramonto da Lama Monachile è il momento migliore per le foto","Su Bari circolano allarmismi locali sui furti d'auto: nell'esperienza diretta di chi ha già fatto questo giro, parcheggiando nelle zone indicate sopra è stata una tappa tranquilla e vale assolutamente la sosta a Bari Vecchia"],
-      cf:"25-40", ca:"0"
+      cf:"25-40", ca:"0",
+      // Cose da fare seminate per questo giorno (checkbox in Itinerario, spuntabili e
+      // rimovibili dall'app): luoghi del centro storico di Polignano, non delle grotte marine
+      // (quelle sono nel Giorno 2). Nessuna fonte web per questa lista, indicazione dell'utente.
+      todos:["Balconata Lama Monachile","Galleria Santo Stefano (ex chiesetta)","La colonna","La Veranda di Giselda","Monumento ai caduti","Piazza Ardito"]
       // Fonti (ricerca web 2026-07-13): percorso Bari Vecchia e parcheggio da
       // https://www.regionepuglia.org/itinerario-bari-mezza-giornata/ e
       // https://www.bariexperience.com/en/what-to-do-in-bari/parking-in-bari-where-to-park-your-car-parkride-multi-storey-car-park-ztl-paid-parking/
@@ -136,31 +148,39 @@ export const TRIP_DATA = {
           tx:"Cena in centro storico, oppure Grotta Palazzese consapevoli del compromesso reale (prezzo/qualità) sopra - è un'esperienza da vivere per l'ambiente, non da aspettarsi come miglior pasto del viaggio." },
       ],
       tips:["Se si prenota Grotta Palazzese, farlo sapendo che il tavolo vista mare non è garantito","Kayak e barca a noleggio sul porticciolo per vedere le grotte dal mare"],
-      cf:"25-60", ca:"10-25"
+      cf:"25-60", ca:"10-25",
+      // Cose da fare seminate per questo giorno: le grotte marine della costa di Polignano
+      // (categoria "viewpoint" su OpenStreetMap, verificate dal vivo via Overpass in sessione,
+      // vedi services/poi-search/) piu' due ristoranti di pesce sulla stessa zona di costa.
+      // Nessuna fonte web per questa lista, indicazione dell'utente.
+      todos:["Arco Cala Di Luna","Cozze Nere","Grotta Ardito","Grotta delle monache","Grotta delle rondinelle","Grotta di Pietro e Paolo 1 e 2","Grotta di Santa Caterina 2","Grotta Frascina","Grotta Palazzese","Grotta piana - Grotta del basso porto","Grotta Pietropaolo - Grotticella sotto Favale","Grotta San Gennaro","Grotticella di Santo Stefano","Pietra Piatta"]
       // Fonti (ricerca web 2026-07-13): prezzo, assegnazione tavoli, valutazione Tripadvisor da
       // https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/ e
       // https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html
     },
     {
       id:3, color:"#C4832A", label:"Giorno 3",
-      title:"Alberobello, i Trulli (meglio di sera)",
-      places:"Rione Monti · Aia Piccola · Trullo Sovrano",
+      title:"Polignano (mattina) → Grotte di Castellana → Alberobello (sera)",
+      places:"Polignano a Mare (mattina) · Grotte di Castellana · Rione Monti · Aia Piccola",
       sections:[
-        { t:"Come Arrivare",
-          tx:"Da Polignano ad Alberobello: circa 35 km, 40-45 minuti in auto." },
-        { t:"Meglio la sera: testimonianza diretta",
-          tx:"Da chi ha già fatto questo viaggio (non da una guida): Alberobello vale la pena tenerla per la sera, quando i trulli si accendono con le lucine - è molto più bella così che di giorno, e in agosto significa anche non \"schiattare\" di caldo tra i vicoli senza ombra. È abbastanza una turistata (al 99% negozi di souvenir), ma comunque una tappa da fare una volta nella vita. Non essendoci mare, è una passeggiata che si presta bene a un orario serale invece che a mezza giornata di sole." },
-        { t:"Rione Monti & Aia Piccola",
-          tx:"Alberobello è patrimonio <b>UNESCO</b> per i suoi <b>trulli</b>, le caratteristiche case in pietra a secco con tetto conico bianco. <b>Rione Monti</b> (oltre 1.000 trulli) è il quartiere principale, denso di trulli - molti oggi negozi di souvenir - e molto affollato nelle ore centrali: meglio visitarlo presto la mattina o dopo cena. <b>Aia Piccola</b> (400 trulli), dall'altra parte del paese, è molto meno turistica - ancora abitazioni di famiglia vere, il nucleo più antico del paese - ed è particolarmente suggestiva la sera. Percorso consigliato: dal belvedere, scendere nel Rione Monti, poi Aia Piccola per capire la differenza tra la parte scenografica e quella vissuta. Fonte: <a href=\"https://www.marcotogni.it/cosa-vedere-alberobello/\" target=\"_blank\" rel=\"noopener noreferrer\">Marco Togni</a>." },
+        { t:"Mattina - Ultimo relax a Polignano",
+          tx:"Non c'è fretta: le Grotte di Castellana sono a soli <b>17 km, circa 20 minuti</b> di auto da Polignano (calcolato con un routing reale, non stimato). Ultimo bagno in una delle calette o una colazione con calma in centro, poi si parte nel primo pomeriggio." },
+        { t:"Grotte di Castellana",
+          tx:"Testimonianza diretta di chi ha già fatto questo viaggio, non da una guida: paragonabili alle Grotte di Frasassi, forse un po' meno spettacolari, ma offrono un po' di fresco rispetto al caldo di agosto. Non sembra serva prenotare con grande anticipo, ma verificare comunque i posti disponibili vista la stagione estiva prima di contarci." },
+        { t:"Verso Alberobello",
+          tx:"Da Grotte di Castellana ad Alberobello: altri <b>17 km, circa 20 minuti</b> di auto (calcolato con un routing reale). Il percorso Polignano → Castellana → Alberobello è tutto sensato come spostamento: nessuna delle due tappe è fuori strada rispetto all'altra." },
+        { t:"Sera - Rione Monti & Aia Piccola",
+          tx:"Da chi ha già fatto questo viaggio: Alberobello vale la pena tenerla per la sera, quando i trulli si accendono con le lucine - è molto più bella così che di giorno, e in agosto significa anche non \"schiattare\" di caldo tra i vicoli senza ombra. È abbastanza una turistata (al 99% negozi di souvenir), ma comunque una tappa da fare una volta nella vita. Alberobello è patrimonio <b>UNESCO</b> per i suoi <b>trulli</b>, le caratteristiche case in pietra a secco con tetto conico bianco. <b>Rione Monti</b> (oltre 1.000 trulli) è il quartiere principale, denso di trulli - molti oggi negozi di souvenir. <b>Aia Piccola</b> (400 trulli), dall'altra parte del paese, è molto meno turistica - ancora abitazioni di famiglia vere, il nucleo più antico del paese - ed è particolarmente suggestiva la sera. Percorso consigliato: dal belvedere, scendere nel Rione Monti, poi Aia Piccola per capire la differenza tra la parte scenografica e quella vissuta. Fonte: <a href=\"https://www.marcotogni.it/cosa-vedere-alberobello/\" target=\"_blank\" rel=\"noopener noreferrer\">Marco Togni</a>." },
         { t:"Trullo Sovrano",
           tx:"L'unico trullo a due piani della città (fine XVIII secolo, monumento nazionale dal 1930), oggi piccolo museo con ambienti ricostruiti (panificio, camera da letto, cucina). Biglietto: <b>€2,50</b> (Piazza Sacramento 10). Fonte: <a href=\"https://www.trullosovrano.eu/ingresso-biglietti/\" target=\"_blank\" rel=\"noopener noreferrer\">sito ufficiale</a>." },
-        { t:"Pranzo",
-          tx:"Pranzo in una trattoria del centro storico: cucina della Valle d'Itria, orecchiette, verdure locali." },
-        { t:"Se avete tempo: Locorotondo e Grotte di Castellana",
-          tx:"Sempre da esperienza diretta, non da fonte web: <b>Locorotondo</b> è carina ma molto piccola, da aggiungere solo se restano ore libere nella giornata. Le <b>Grotte di Castellana</b> sono paragonabili alle Grotte di Frasassi (forse un po' meno spettacolari), e offrono un po' di fresco rispetto al caldo di agosto - non pare serva prenotare con grande anticipo, ma verificare comunque i posti disponibili visto il periodo estivo prima di contarci." },
+        { t:"Cena",
+          tx:"Cena in una trattoria del centro storico: cucina della Valle d'Itria, orecchiette, verdure locali." },
       ],
-      tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo, poca ombra tra i trulli","Da testimonianza diretta: tenere Alberobello per il tardo pomeriggio/sera, sia per le lucine sui trulli sia per evitare il caldo peggiore"],
+      tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo: la mattina a Polignano e le Grotte (fresche) coprono bene la parte più calda della giornata","Da testimonianza diretta: tenere Alberobello per il tardo pomeriggio/sera, sia per le lucine sui trulli sia per evitare il caldo peggiore","Locorotondo è carina ma molto piccola: da aggiungere solo se resta tempo, non è nel percorso diretto Castellana-Alberobello"],
       cf:"20-35", ca:"5-10"
+      // Distanze/tempi Polignano-Castellana e Castellana-Alberobello: calcolo reale via OSRM
+      // (router.project-osrm.org) da coordinate geocodificate con Nominatim, verificato dal vivo
+      // in sessione (2026-07-15), non stimato.
     },
     {
       id:4, color:"#7B4F9E", label:"Giorno 4",

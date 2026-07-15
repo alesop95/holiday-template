@@ -11,6 +11,41 @@ export function initFirestore(app) {
   fb.db = getFirestore(app);
 }
 
+// ── Fabbrica per un documento di stato semplice (trips/{TRIP_ID}/state/{name}) ───
+// Generalizza il pattern seed→load→write→listener scritto a mano, identico, per
+// meta/costs/priceAlerts/activities/keepAlive: un solo documento Firestore, letto e scritto
+// sempre per intero (mai un aggiornamento parziale). unwrap/wrap servono solo a chi avvolge un
+// array o una mappa sotto una chiave wrapper (es. {items:[...]}: Firestore non accetta un array
+// come documento di primo livello) - meta/costs/keepAlive non ne hanno bisogno, il documento e'
+// gia' l'oggetto giusto cosi' com'e'. Restano fuori da questa fabbrica checklist (updateDoc con
+// path puntato, aggiornamento di un singolo campo) e notes/planning (setDoc con merge:true su
+// mappe annidate): scrivono in modo parziale, non per intero, sono una variante diversa dello
+// stesso schema di stato condiviso, non lo stesso schema, e restano scritte a mano sotto.
+function createStateDoc(name, { defaultValue, unwrap = (data) => data, wrap = (value) => value }) {
+  const ref = () => doc(fb.db, 'trips', TRIP_ID, 'state', name);
+  return {
+    seed: () => setDoc(ref(), wrap(defaultValue)),
+    load: async () => {
+      const snap = await getDoc(ref());
+      return snap.exists() ? unwrap(snap.data()) : defaultValue;
+    },
+    write: (value) => setDoc(ref(), wrap(value)),
+    listen: (onChange) => onSnapshot(ref(), snap => {
+      onChange(snap.exists() ? unwrap(snap.data()) : defaultValue);
+    }),
+  };
+}
+
+const metaDoc = createStateDoc('meta', { defaultValue: { ...TRIP_META } });
+const costsDoc = createStateDoc('costs', { defaultValue: { participants: [], expenses: [] } });
+const priceAlertsDoc = createStateDoc('priceAlerts', {
+  defaultValue: [], unwrap: (data) => data.items || [], wrap: (items) => ({ items }),
+});
+const activitiesDoc = createStateDoc('activities', {
+  defaultValue: {}, unwrap: (data) => data.items || {}, wrap: (items) => ({ items }),
+});
+const keepAliveDoc = createStateDoc('keepAlive', { defaultValue: { activatedAt: null } });
+
 // ── Seed automatico al primo avvio ────────────────────────────────────────────
 // days/restaurants/checklist NON sono piu' seminati su Firestore (erano "seed once": la prima
 // visita li scriveva su Firestore e ogni modifica successiva a TRIP_DATA restava invisibile
@@ -33,11 +68,11 @@ export async function seedIfNeeded() {
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'checklist'), { items: {} }),
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'notes'),     { days: {}, completed: {} }),
     setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'planning'),  { byDay: {} }),
-    setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'meta'),      { ...TRIP_META }),
-    setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'costs'),     { participants: [], expenses: [] }),
-    setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'priceAlerts'), { items: [] }),
-    setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'activities'), { items: {} }),
-    setDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'keepAlive'), { activatedAt: null }),
+    metaDoc.seed(),
+    costsDoc.seed(),
+    priceAlertsDoc.seed(),
+    activitiesDoc.seed(),
+    keepAliveDoc.seed(),
   ]);
 }
 
@@ -49,31 +84,19 @@ export function loadContent() {
 // Viaggi seminati prima che state/meta esistesse (vedi seedIfNeeded) non hanno questo
 // documento: fallback a TRIP_META, self-healing al primo salvataggio (writeMeta usa
 // setDoc, non updateDoc, quindi crea il documento se assente).
-export async function loadMeta() {
-  const snap = await getDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'meta'));
-  S.meta = snap.exists() ? snap.data() : { ...TRIP_META };
-}
+export async function loadMeta() { S.meta = await metaDoc.load(); }
 
 // Stesso fallback self-healing di loadMeta: un viaggio seminato prima che questa feature
 // esistesse non ha 'costs', riparte da un dashboard vuoto invece di rompersi.
-export async function loadCosts() {
-  const snap = await getDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'costs'));
-  S.costs = snap.exists() ? snap.data() : { participants: [], expenses: [] };
-}
+export async function loadCosts() { S.costs = await costsDoc.load(); }
 
 // Stesso fallback self-healing di loadCosts/loadMeta: un viaggio seminato prima che questa
 // feature esistesse non ha 'priceAlerts', riparte da una lista vuota invece di rompersi.
-export async function loadPriceAlerts() {
-  const snap = await getDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'priceAlerts'));
-  S.priceAlerts = snap.exists() ? (snap.data().items || []) : [];
-}
+export async function loadPriceAlerts() { S.priceAlerts = await priceAlertsDoc.load(); }
 
 // Stesso fallback self-healing: un viaggio seminato prima di questa feature riparte da
 // "mai attivato" invece di rompersi.
-export async function loadKeepAlive() {
-  const snap = await getDoc(doc(fb.db, 'trips', TRIP_ID, 'state', 'keepAlive'));
-  S.keepAlive = snap.exists() ? snap.data() : { activatedAt: null };
-}
+export async function loadKeepAlive() { S.keepAlive = await keepAliveDoc.load(); }
 
 // ── Listener real-time per stato condiviso ────────────────────────────────────
 export function listenRealtime() {
@@ -82,10 +105,7 @@ export function listenRealtime() {
     S.ckState = snap.data().items || {};
     updateCkUI();
   });
-  onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'activities'), snap => {
-    S.activityState = snap.exists() ? (snap.data().items || {}) : {};
-    updateActivityUI();
-  });
+  activitiesDoc.listen(items => { S.activityState = items; updateActivityUI(); });
   onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'notes'), snap => {
     if (!snap.exists()) return;
     S.notes = snap.data().days || {}; S.completed = snap.data().completed || {};
@@ -100,40 +120,28 @@ export function listenRealtime() {
     renderCostsDashboard();
     renderInfoCosts();
   });
-  onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'meta'), snap => {
-    if (!snap.exists()) return;
-    S.meta = snap.data();
-    if (!S.metaEditing) renderHero();  // non sovrascrive una modifica in corso sull'altro dispositivo
+  metaDoc.listen(meta => {
+    S.meta = meta;
+    if (!S.metaEditing) renderHero(); // non sovrascrive una modifica in corso sull'altro dispositivo
   });
-  onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'costs'), snap => {
-    S.costs = snap.exists() ? snap.data() : { participants: [], expenses: [] };
+  costsDoc.listen(costs => {
+    S.costs = costs;
     renderCostsDashboard();
     renderInfoCosts(); // confirmedAccommodation vive nello stesso documento: aggiorna anche "Info & Costi"
   });
-  onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'priceAlerts'), snap => {
-    S.priceAlerts = snap.exists() ? (snap.data().items || []) : [];
-    renderPriceAlerts();
-  });
-  onSnapshot(doc(fb.db, 'trips', TRIP_ID, 'state', 'keepAlive'), snap => {
-    S.keepAlive = snap.exists() ? snap.data() : { activatedAt: null };
-    renderKeepAlive();
-  });
+  priceAlertsDoc.listen(items => { S.priceAlerts = items; renderPriceAlerts(); });
+  keepAliveDoc.listen(keepAlive => { S.keepAlive = keepAlive; renderKeepAlive(); });
 }
 
 // ── Scritture su Firestore ────────────────────────────────────────────────────
 export async function writeCk(key, val)       { await updateDoc(doc(fb.db,'trips',TRIP_ID,'state','checklist'), { [`items.${key}`]: val }); }
-// A differenza di writeCk (updateDoc con path puntato, richiede che il documento esista gia'),
-// qui si scrive l'intera mappa con setDoc: 'state/activities' e' un doc nuovo, assente sui
-// viaggi gia' seminati prima che questa feature esistesse (seedIfNeeded non lo crea in quel
-// caso, vedi sopra), e updateDoc fallirebbe con "No document to update" al primo click. setDoc
-// crea il documento se assente, stesso principio gia' usato per writeCosts/writeMeta/writePriceAlerts.
-export async function writeActivity(items) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','activities'), { items }); }
+export async function writeActivity(items)    { await activitiesDoc.write(items); }
 export async function writeNote(id, text)     { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','notes'), { days: { [id]: text } }, { merge:true }); }
 export async function writeCompleted(id, val) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','notes'), { completed: { [id]: val } }, { merge:true }); }
 // merge:true crea il documento e le mappe annidate se assenti (vale anche per un viaggio
 // gia' seminato prima che 'planning' esistesse, vedi seedIfNeeded): stesso pattern di writeNote.
 export async function writePlanDay(dayId, kind, arr) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','planning'), { byDay: { [dayId]: { [kind]: arr } } }, { merge:true }); }
-export async function writeMeta(meta) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','meta'), meta); }
-export async function writeCosts(costs) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','costs'), costs); }
-export async function writePriceAlerts(items) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','priceAlerts'), { items }); }
-export async function writeKeepAlive(activatedAt) { await setDoc(doc(fb.db,'trips',TRIP_ID,'state','keepAlive'), { activatedAt }); }
+export async function writeMeta(meta)         { await metaDoc.write(meta); }
+export async function writeCosts(costs)       { await costsDoc.write(costs); }
+export async function writePriceAlerts(items) { await priceAlertsDoc.write(items); }
+export async function writeKeepAlive(activatedAt) { await keepAliveDoc.write({ activatedAt }); }

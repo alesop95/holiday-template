@@ -5,7 +5,7 @@ import { S } from './state.js';
 import { initFirestore, seedIfNeeded, loadContent, loadMeta, loadCosts, loadPriceAlerts, loadKeepAlive, listenRealtime, writeCk, writeActivity, writeNote, writeCompleted } from './firestore.js';
 import { renderHero } from './hero.js';
 import { renderDays, renderRest, renderCk, updateCkProgress, renderInfoCosts } from './itinerario.js';
-import { renderPlanSaved, renderPriceAlerts, renderKeepAlive, ensureAirportsLoaded, warmupBackend, checkPriceAlerts } from './pianifica.js';
+import { renderPlanSaved, renderPriceAlerts, renderKeepAlive, ensureAirportsLoaded, ensureCitiesLoaded, warmupBackend, checkPriceAlerts } from './pianifica.js';
 import { renderCostsDashboard } from './costs.js';
 import { renderMap } from './map.js';
 
@@ -61,7 +61,7 @@ window.showTab = (id,btn) => {
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active'); btn.classList.add('active');
   if(id==='mappa') renderMap();
-  if(id==='pianifica') { ensureAirportsLoaded(); warmupBackend(); checkPriceAlerts(); }
+  if(id==='pianifica') { ensureAirportsLoaded(); ensureCitiesLoaded(); warmupBackend(); checkPriceAlerts(); }
 };
 window.tog = id => document.getElementById(`dc${id}`).classList.toggle('open');
 window.ckTog = (key,el) => {

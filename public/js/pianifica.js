@@ -350,6 +350,64 @@ window.pickZoneSuggestion = (zoneName) => {
   document.getElementById('pf-dest-loc').value = zoneName;
 };
 
+// ── Autocompletamento città (public/cities.json, dataset GeoNames cities1000) ────
+// Nominatim vieta esplicitamente l'autocompletamento lato client contro la propria API
+// ("you must not implement such a service on the client side using the API", policy
+// ufficiale) - niente interrogazioni dal vivo mentre si scrive, per non rischiare un ban.
+// Dataset statico invece, stesso principio di airports.json: caricato una sola volta al primo
+// accesso alla scheda Pianifica. cities1000 (soglia di popolazione >=1000, non cities15000 o
+// cities5000) e' l'unica delle tre soglie GeoNames che copre entrambe le destinazioni reali gia'
+// usate in questo progetto (Polignano a Mare e Marina di Camerota, verificato dal vivo scaricando
+// e confrontando i tre dataset in sessione) - a costo di un file piu' pesante (~3MB gzip). Resta
+// comunque solo un suggerimento: il campo e' testo libero come prima, un borgo assente
+// dall'elenco si digita a mano esattamente come oggi, la geocodifica backend lo trova comunque.
+export async function ensureCitiesLoaded() {
+  if (S.cities) return;
+  try {
+    const res = await fetch('./cities.json');
+    S.cities = await res.json();
+  } catch (e) {
+    S.cities = [];
+    console.error('Impossibile caricare cities.json', e);
+  }
+}
+
+function _cityScore(c, q) {
+  const name = c.name.toLowerCase();
+  if (name === q) return 0;
+  if (name.startsWith(q)) return 1;
+  if (name.includes(q)) return 2;
+  return 9;
+}
+
+window.onCityInput = () => {
+  const input = document.getElementById('pf-dest-loc');
+  const listEl = document.getElementById('pf-dest-loc-list');
+  const q = input.value.trim();
+  if (!S.cities || q.length < 2) { listEl.style.display = 'none'; return; }
+
+  const ql = q.toLowerCase();
+  // A parita' di punteggio, la citta' piu' popolosa viene prima: utile per nomi ambigui
+  // (es. "San Giovanni" esiste in decine di comuni), la piu' nota e' quasi sempre quella cercata.
+  const matches = S.cities.map(c => ({ c, score: _cityScore(c, ql) })).filter(x => x.score < 9)
+    .sort((x,y) => x.score - y.score || y.c.pop - x.c.pop).slice(0, 8).map(x => x.c);
+  if (!matches.length) { listEl.style.display = 'none'; return; }
+  // data-name, non un letterale dentro onmousedown: molti nomi reali contengono un apostrofo
+  // (es. "L'Aquila", "Sant'Antioco") che romperebbe una stringa JS incorporata nell'attributo -
+  // stesso motivo gia' documentato sopra per i zone-chip di pickZoneSuggestion.
+  listEl.innerHTML = matches.map(c => `<div class="airport-ac-item" data-name="${escHtml(c.name)}" onmousedown="selectCity(this.dataset.name)"><strong>${escHtml(c.name)}</strong><span>${escHtml(c.country)}</span></div>`).join('');
+  listEl.style.display = 'block';
+};
+
+window.hideCitySuggestions = () => {
+  document.getElementById('pf-dest-loc-list').style.display = 'none';
+};
+
+window.selectCity = (name) => {
+  document.getElementById('pf-dest-loc').value = name;
+  document.getElementById('pf-dest-loc-list').style.display = 'none';
+};
+
 // Il cold start concorrente dei tre servizi a valle (flight/stay/poi-search) puo' superare anche
 // i 90s di margine gia' coperti dal retry di trip-planner (verificato dal vivo in sessione): li
 // si sveglia in anticipo, appena si apre questa scheda, cosi' il tempo speso a compilare il form

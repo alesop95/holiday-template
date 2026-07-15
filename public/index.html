@@ -350,7 +350,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
         <div id="pf-dest-air-list" class="airport-ac-list" style="display:none"></div>
         <div id="pf-dest-air-confirm" class="airport-ac-confirm"></div>
       </div>
-      <div class="plan-field full"><label>Città / zona (alloggi e POI)</label><input id="pf-dest-loc" placeholder="Es. il nome della città o della zona">
+      <div class="plan-field full airport-field"><label>Città / zona (alloggi e POI)</label><input id="pf-dest-loc" placeholder="Es. il nome della città o della zona" autocomplete="off" oninput="onCityInput()" onfocus="onCityInput()" onblur="setTimeout(()=>hideCitySuggestions(),150)">
+        <div id="pf-dest-loc-list" class="airport-ac-list" style="display:none"></div>
         <div id="pf-zone-suggestions" class="zone-suggestions"></div>
       </div>
       <div class="plan-field"><label>Andata</label><input id="pf-dep" type="date"></div>

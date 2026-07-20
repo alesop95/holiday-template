@@ -85,7 +85,28 @@ fuori scope per un progetto privato).
    `trip.config.js` ("driving" per Cilento; anche "foot" verificato funzionante, per un futuro
    viaggio a piedi in città). Dettaglio implementativo in `public/index.html`
    (`optimizeDayRoute`, scheda "Itinerario").
-5. *Rifinitura* — non iniziato. Export dell'itinerario, price alert opzionali, gestione multivaluta.
+5. *Rifinitura* — avviata. Export dell'itinerario: **fatto (2026-07-10)**, pulsante "Esporta /
+   Stampa itinerario" nella scheda "Itinerario" (`public/index.html`), `window.print()` nativo
+   invece di una libreria PDF da CDN — zero dipendenza nuova, copre sia PDF (via "Salva come PDF"
+   del dialogo di stampa) sia stampa pulita con lo stesso meccanismo. Foglio di stile `@media
+   print` dedicato: forza la vista Itinerario indipendentemente dalla scheda attiva a schermo,
+   espande ogni day-card anche se collassata (altrimenti l'export mostrerebbe solo i giorni già
+   aperti manualmente), nasconde i controlli non utili su carta, corregge il testo bianco
+   dell'hero (invisibile su sfondo di stampa bianco senza l'override). Gestione multivaluta:
+   **fatta (2026-07-10)**. Prima non era un valore configurabile ma una stringa `"EUR"` scritta a
+   mano in sei punti tra i tre servizi con prezzi (`fast_flights_adapter.py`, `kiwi_adapter.py`,
+   `pyairbnb_adapter.py`) più altrettanti nel frontend. Ora un campo `currency` (ISO 4217, default
+   `"EUR"` per compatibilità) attraversa tutta la catena — richiesta frontend → `trip-planner` →
+   i due servizi a valle → query reale mandata a Google Flights/Kiwi/Airbnb → stringa di prezzo
+   restituita — verificato con un test dedicato per servizio che cattura l'argomento vero passato
+   alla libreria sottostante, non solo che il campo esiste nello schema. Nuovi export obbligatori
+   `CURRENCY_CODE`/`CURRENCY_SYMBOL` in ogni `trip.config.js`, stesso vincolo di `ROUTING_PROFILE`
+   (import ES nominato mancante rompe il modulo). Limite noto, dichiarato nel codice
+   (`pyairbnb_adapter.py`): la divisione per 100 del prezzo Airbnb assume una valuta con unità
+   minore a due cifre (EUR/USD/GBP), non generalizzata a valute come JPY che non ne hanno una. La
+   stima statica di "Info & Costi" (prosa scritta dallo sviluppatore in `public/index.html`,
+   incoerenza preesistente già segnalata in `current-work.md`) resta fuori da questa modifica,
+   non richiesta. Price alert opzionali restano non iniziati.
 
 Non conviene inseguire integrazioni ufficiali con Skyscanner o Booking.com: entrambe le API sono
 partner-only, richiedono revisione business e non sono percorribili per un progetto privato in fase

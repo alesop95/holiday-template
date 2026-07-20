@@ -4,6 +4,43 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-09 — Adottato il livello didattico (studio-didattico), prima voce: modello di deploy Render
+
+Commit: non ancora committato (nuovi file sotto `.claude/context/`).
+File toccati: nuovo `.claude/context/studio-didattico-master.md` (prima voce), nuovo
+`.claude/context/refactor-01-render-deploy-model.md`.
+Motivo: su richiesta esplicita dell'utente, adottata la pratica documentale `studio-didattico`
+(skill già presente nel repository dal commit `50fa52b`, non ancora usata finora). Prima voce:
+perché "Manual Deploy" su Render aveva ricostruito il commit precedente invece del fix appena
+scritto (il fix era ancora solo locale, non committato né pushato) e perché, in quel momento
+specifico, forzare un deploy manuale fosse l'unica leva disponibile, mentre il deploy successivo
+è scattato da solo (Auto-Deploy) non appena il commit `77b89cf` è arrivato su `origin/main`.
+Dettaglio completo nel deep-dive: modello Blueprint di `render.yaml`, `buildCommand`/
+`startCommand`, variabile `PORT` iniettata da Render, cold start del piano free (22-56s
+osservati dal vivo in sessione), e come diagnosticare in futuro un deploy che "non contiene" una
+modifica appena fatta (confronto hash locale/Dashboard, controllo Auto-Deploy per servizio).
+
+## 2026-07-09 — Corretto fast_flights (regressione Render), fonte/link prenotazione voli, accordion risultati Pianifica
+
+Commit: `77b89cf`.
+File toccati: `services/flight-search/requirements.txt` (`fast-flights>=2.2` → `==3.0.2`),
+`public/index.html` e `trips/cilento-2026/index.html` (propagato, byte-identico): etichetta
+fonte + link "Cerca su Google Flights" per le offerte `fast_flights` (nessun link per `kiwi`,
+formato URL non verificato), gruppi risultati (Voli/Alloggi/POI) trasformati in `<details>`/
+`<summary>` nativi per l'accordion.
+Motivo: l'utente ha segnalato che la ricerca voli tornava vuota per una rotta con date a
+novembre. Diagnosticato dal vivo con `curl` diretto contro `flight-search-pfcn` su Render: vuoto
+in meno di un secondo (troppo rapido per un vero scraping) sia per la rotta segnalata sia per
+FCO→CDG, una rotta già verificata funzionante in sessioni precedenti — mentre la stessa identica
+ricerca in locale (stesso codice, libreria `fast-flights` pinnata a `3.0.2`) ha restituito 9
+offerte reali. Causa non confermabile con certezza senza accesso ai log di build/runtime di
+Render (non disponibile in questa sessione): due ipotesi plausibili, deriva di versione della
+libreria (requirements non pinnato) o blocco IP di Google verso i data center cloud. Pinnata la
+versione per eliminare la prima ipotesi; verifica reale rimandata al prossimo deploy del servizio
+`flight-search-pfcn` (non `trip-planner`, che non dipende da `fast-flights`).
+Non ancora fatto: riscontro visivo dell'utente in browser di fonte/link/accordion; conferma se il
+pin della versione ha davvero risolto i voli vuoti su Render.
+
 ## 2026-07-09 — Zone turistiche note per aeroporti leisure, corretto un bug di escaping su un apostrofo reale
 
 Commit: non ancora committato.

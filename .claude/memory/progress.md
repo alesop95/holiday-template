@@ -4,6 +4,73 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-08-03 — Valle d'Itria nell'itinerario di Polignano, Ostuni retrocessa, costi reali dell'alloggio
+
+Commit: `7605514`, `19ee530`, `e4f33e1` (dell'utente), `d77a628`, più due modifiche non ancora
+committate al momento della scrittura di questa voce (nome della struttura e nota sulla discrepanza
+dell'importo): controllare `git status` prima di assumere.
+File toccati: `trips/polignano-2026/trip.config.js`, unico file tracciato modificato in tutta la
+sessione; nuovo `trips/polignano-2026/_trip-notes/contatti.md` (cartella ignorata da git,
+verificata con `git check-ignore -v`, e anche esclusa dall'hosting da `firebase.json`). Nessuna
+modifica alla shell `public/` né ai moduli `js/`: l'intervento è di puro contenuto, quindi non
+c'è stato niente da propagare.
+Motivo: l'utente ha portato una testimonianza diretta di chi ha già girato la zona (Cisternino
+visitata nel 2023, preferenza per Martina Franca rispetto a Locorotondo, ricordo di Matera e
+Bernalda, un alloggio in campagna reale) e ha chiesto di incorporarla. Cisternino è entrata come
+sezione in coda al Giorno 3, con la cena nei vicoli come alternativa esplicita alla trattoria di
+Alberobello; il Giorno 4 è stato ricostruito su Martina Franca con contenuto da ricerca web citata
+(Palazzo Ducale del 1668 con la balconata di 74 m su progetto approvato da Bernini, Basilica di San
+Martino del 1747, parcheggio Villa Garibaldi e Porta di Santo Stefano) e Ostuni è stata retrocessa
+a tappa opzionale conservando per intero le sue cinque sezioni già verificate, invece di
+cancellarle. Trovato per strada un dato utile che nessuno cercava: il Festival della Valle d'Itria
+2026 si tiene a Martina Franca dal 14 luglio al 2 agosto, quindi può cadere dentro il viaggio.
+Due contenuti della testimonianza sono stati corretti prima di entrare nel file, non riportati
+come dati: Bernalda non è il paese natale di Coppola (nato a Detroit nel 1939, Bernalda è il paese
+di origine dei nonni paterni, fonte citata) e Masseria Peppeturro non sta tra Locorotondo e Martina
+Franca ma a pochi chilometri da Cisternino, in provincia di Brindisi. Corretta anche la stima
+"altre centinaia di chilometri" per Ostuni e Matera: ricalcolo reale via OSRM da coordinate
+Nominatim dà Cisternino a 43,0 km e Ostuni a 51,3 km da Polignano, quindi praticamente equivalenti,
+e Matera a 139,2 km. Di conseguenza è stata rifatta la riga del carburante (1092,7 km contro i
+1106,2 di prima, €42-45 a persona), scoprendo che il vecchio conto non contava la deviazione per le
+Grotte di Castellana nel Giorno 3.
+Verificate contro Overpass/OpenStreetMap tutte e venti le categorie dei `todos` fornite
+dall'utente: venti su venti confermate dai tag reali, comprese le non ovvie (`La colonna` e
+`La Veranda di Giselda` sono `amenity=restaurant`, `Galleria Santo Stefano` è `tourism=museum`,
+`Monumento ai caduti` è `historic=memorial`), con una correzione: Grotta Palazzese porta insieme
+`tourism=viewpoint` e `amenity=restaurant`, quindi è annotata come entrambi. Risolti i tre link
+TikTok rimasti "pending": seguiti i redirect e letto l'endpoint oEmbed pubblico, quindi autore e
+titolo sono reali (il contenuto dei video no, richiede login). Due hanno prodotto contenuto vero,
+finito nel Giorno 4 (percorso a piedi di Ostuni dal Parcheggio Comunale alla Cattedrale) e nel
+Giorno 5 (Cala Tre Buchi, dichiarando che la fonte è un operatore di gite in barca e quindi non
+neutrale); il terzo è un vlog generico. Confermato che il consiglio dell'utente sull'ordine del
+Giorno 3 era già esattamente quello nel file, quindi nessuna modifica.
+Costi reali: l'alloggio non è più una stima. €784,78 di totale Booking meno €74,66 di credito
+wallet fanno €710,12 pagati, cioè €355,06 a persona, e il totale passa da €452-805 a €582-760 (è
+salito: la vecchia forbice indicativa era ottimista in basso). Il deposito cauzionale di €150 in
+contanti resta fuori dal totale perché rimborsabile, confermato dall'utente. Lo sconto del wallet
+resta volutamente inerte con `validUntil` nel passato, con un avvertimento nel file: riattivarlo lo
+sottrarrebbe una seconda volta.
+Verifica: scritti due controlli eseguibili, non un colpo d'occhio, perché il progetto non ha test
+sul frontend. Un controllo strutturale che importa `trip.config.js` come modulo ES e valida gli
+invarianti che il rendering assume senza guardie (sezioni obbligatorie, `id` numerici e unici, `ca`
+stringa, coordinate numeriche, tag `<a>` bilanciati con `rel`, assenza di trattini lunghi ed emoji,
+totale ricostruito con la stessa logica del render), e uno smoke test che fa girare le vere
+funzioni di `js/itinerario.js` contro un DOM finto, con l'SDK Firebase stubbato da un loader hook
+di Node, per ispezionare l'HTML prodotto. Entrambi passati. Riscontro visivo chiuso su cinque
+screenshot dell'utente: Giorno 3 con Cisternino, Giorno 4 con le sezioni Ostuni marcate opzionali,
+mappa con sette marker e legenda corretta, Info & Costi con il carburante scomposto, cose da fare
+del Giorno 2 con le categorie visibili. Quest'ultimo ha dimostrato che il documento Firestore
+`state/todos` non esisteva, quindi non c'era nulla da cancellare.
+Verifica residua: il pannello Alloggio confermato su Firestore contiene €804,78, cioè €20,00 esatti
+in più del totale Booking dichiarato, e nessuna delle due cifre meno il wallet dà €710,12 tranne
+€784,78. Finché non è chiarito quale sia il totale vero, il valore del pannello prevale sul file
+nel rendering e il totale mostrato sovrastima di €47,33 a persona. Va guardata la conferma Booking
+e poi inserita nel pannello la cifra netta pagata.
+Nota sul log: tra la voce del 2026-07-09 e questa mancano le sessioni dei commit dal `13/07` al
+`15/07` (nascita di `trips/polignano-2026`, split dei moduli sotto `js/`, feature dei costi e degli
+avvisi prezzo). Non sono state ricostruite qui perché non documentate in sessione: i messaggi di
+commit sono l'unica traccia disponibile.
+
 ## 2026-07-09 — Adottato il livello didattico (studio-didattico), prima voce: modello di deploy Render
 
 Commit: non ancora committato (nuovi file sotto `.claude/context/`).

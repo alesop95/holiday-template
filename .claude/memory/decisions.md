@@ -268,3 +268,73 @@ un piccolo costo operativo per viaggio, accettato esplicitamente dall'utente. De
 [^1]: **Firebase Hosting multi-site** — funzionalità di Firebase Hosting che permette a un solo
 progetto di ospitare più siti indipendenti, ciascuno con il proprio URL `<site-id>.web.app`, fino
 a un massimo di 36 siti per progetto (limite dichiarato nella documentazione ufficiale Firebase).
+
+## ADR-010 — Categoria delle cose da fare dentro il testo della voce, non come campo dello schema
+
+Data: 2026-08-03
+Stato: accettata e applicata (venti voci annotate in `trips/polignano-2026/trip.config.js`,
+verificate a video dall'utente)
+Contesto: l'utente ha fornito il tipo di ciascuna delle venti cose da fare dei Giorni 1 e 2
+(punto panoramico, ristorante, museo, memoriale) e ha chiesto di renderlo visibile. Tutte e venti
+le etichette sono state verificate contro i tag reali di OpenStreetMap via Overpass e confermate.
+Il problema era dove metterle: lo schema di un todo è `{id, text, done}` (`_defaultTodosByDay` in
+`js/firestore.js`), quindi non esiste un campo per il tipo. Vincolo comune a ogni soluzione, non
+eliminabile scegliendo diversamente: i todos vivono nel documento Firestore `state/todos`, che ha
+la precedenza sul file, quindi qualunque modifica alla lista diventa visibile solo cancellando quel
+documento.
+Decisione: la categoria si scrive dentro la stringa `text` della voce, in italiano tra parentesi
+(`"La colonna (ristorante)"`), su tutte le voci e non solo su quelle sorprendenti. Nessuna modifica
+al codice della shell.
+Motivazione: tre ragioni, in ordine di peso. Un campo `category` vero avrebbe richiesto di
+modificare `_defaultTodosByDay` e `renderDayTodos` e poi di ricopiare quelle modifiche a mano in
+`public/` e in `trips/cilento-2026/`, perché tra le copie non esiste import a runtime (ADR-002):
+tre copie di codice condiviso toccate, senza un solo test automatico sul frontend, per un guadagno
+di sola presentazione. La strada dello schema non avrebbe nemmeno risparmiato il costo vero
+dell'operazione, cioè la cancellazione di `state/todos`, identica nei due casi. E `text` è l'unico
+campo che l'utente può scrivere dall'app quando aggiunge una voce a mano: tenendo la categoria nel
+testo, una voce aggiunta dall'app segue la stessa convenzione senza supporto nel codice, mentre con
+un campo separato nascerebbe sempre priva di categoria. L'annotazione è su tutte le voci perché
+con quella parziale l'assenza di etichetta diventa ambigua, non si distingue una voce senza tipo da
+una non classificata.
+Conseguenze: la categoria è testo, quindi non è filtrabile né raggruppabile per programma; se in
+futuro servisse ordinare o filtrare per tipo, questa decisione va rivista e allora il campo nello
+schema diventa la scelta giusta. Verificato a video che `state/todos` non esisteva per
+`polignano-2026`, quindi in questo caso la cancellazione non è servita e l'app ha ripiegato sulla
+lista del file (`load()` e `listen()` in `createStateDoc` tornano `defaultValue` se il documento
+manca). Attenzione operativa: dalla prima spunta o rimozione fatta dall'app il documento viene
+creato con `setDoc` e da quel momento ha la precedenza, quindi una futura modifica della lista nel
+file richiederà di cancellarlo.
+
+## ADR-011 — Uno sconto già usato si tiene inerte, e nel pannello alloggio si inserisce il netto pagato
+
+Data: 2026-08-03
+Stato: accettata (file allineato; la correzione dell'importo nel pannello Firestore resta un passo
+manuale dell'utente, non ancora eseguito)
+Contesto: `costEstimate.discount` era nato come sconto ancora disponibile su una prenotazione da
+fare (importo di coppia, `validUntil`), e `activeDiscount()` lo restituisce `null` dopo la scadenza
+per non mostrare uno sconto non più valido. Poi la prenotazione è stata fatta davvero: €784,78 di
+totale Booking meno €74,66 di credito wallet, cioè €710,12 versati. I €74,66 erano esattamente
+l'importo già scritto nel file, quindi lo sconto non era una stima ma proprio quel credito. Da qui
+il rischio concreto: la cifra pagata è già netta, e uno sconto riattivato la ridurrebbe una seconda
+volta.
+Decisione: uno sconto realmente utilizzato non si rimuove dal file e non si rinnova, si lascia con
+`validUntil` nel passato, si riscrive la sua `desc` per dire che è già incluso nel prezzo pagato, e
+si aggiunge accanto un avvertimento esplicito a non riportare la data in avanti. Nel pannello
+Alloggio confermato si inserisce sempre l'importo netto effettivamente versato, mai quello lordo.
+L'importo reale si scrive anche in un commento del file, oltre che su Firestore.
+Motivazione: la data passata rende lo sconto inerte per costruzione, quindi il comportamento
+corretto non dipende dal fatto che qualcuno si ricordi la regola; ma senza un avvertimento accanto,
+una data scaduta somiglia a una dimenticanza da correggere, ed è proprio la correzione a introdurre
+il doppio conteggio. Il netto nel pannello, e non il lordo più lo sconto, evita di rappresentare la
+stessa riduzione in due punti che l'app somma separatamente (`resolveAccommodationCost` per la riga
+alloggio, `activeDiscount` per il totale). Il commento nel file serve perché il dato sopravviva alla
+cancellazione del documento `state/costs`, che è stato azzerato più volte durante lo sviluppo.
+Conseguenze: la riga `Alloggio` del file porta ora un valore reale (€355,06 a persona) e non più una
+forbice indicativa, e il totale è salito da €452-805 a €582-760, perché la stima precedente era
+ottimista in basso. Il deposito cauzionale di €150 resta fuori dal totale perché rimborsabile: è
+liquidità da portare, non una spesa, e vive come voce di checklist. Effetto collaterale scoperto
+leggendo il codice e non previsto in partenza: quando una prenotazione risulta confermata,
+`renderInfoCosts` nasconde tutte le opzioni indicative dell'alloggio (`hideOptions`), quindi la voce
+sulla masseria in Valle d'Itria resta visibile solo nella sezione Cisternino del Giorno 3. Discrepanza
+aperta al momento della scrittura: il pannello contiene €804,78, venti euro esatti in più del totale
+dichiarato, e va chiarito quale sia il valore vero prima di considerare il totale attendibile.

@@ -8,7 +8,7 @@ covers-paths:
   - services/flight-search/**
   - README.md
   - .gitignore
-last-verified-commit: fb591e56a801d12f33dd6e7ddbda7a9cb20df5ff
+last-verified-commit: d77a62826234fd137b8bf16ad32cbaf6e558b37a
 stato: in corso
 ---
 
@@ -467,9 +467,72 @@ dopo "Pianifica" (nav e pannello `#costi`, `renderCostsDashboard` invariato: scr
 `#costs-dashboard`, solo la posizione nel DOM è cambiata). Ancora da rifare il riscontro visivo
 dopo questo spostamento.
 
+## Feature: contenuto del viaggio Polignano, Valle d'Itria e costi reali — chiusa salvo una verifica
+
+Cosa fa: incorpora nel contenuto di `trips/polignano-2026/trip.config.js` una testimonianza diretta
+di chi ha già girato la zona e i costi reali della prenotazione, senza toccare una riga di codice.
+Cisternino entra come sezione in coda al Giorno 3, con la cena nei vicoli come alternativa esplicita
+alla trattoria di Alberobello; il Giorno 4 diventa Martina Franca e Ostuni scende a tappa opzionale
+conservando tutte le sue sezioni; Matera e Bernalda si aggiungono alle tappe di raggio più ampio del
+Giorno 6; le venti cose da fare dei Giorni 1 e 2 guadagnano la categoria nel testo (ADR-010); lo
+sconto del wallet Booking diventa uno sconto già usato e tenuto inerte (ADR-011).
+
+File modificati: `trips/polignano-2026/trip.config.js`, unico file tracciato toccato. Nuovo
+`trips/polignano-2026/_trip-notes/contatti.md`, ignorato da git e escluso dall'hosting, per il
+contatto telefonico della masseria che non deve stare in un repository pubblico. Nessuna modifica
+alla shell `public/` né ai moduli `js/`, quindi niente da propagare.
+
+Definition of done:
+
+- [x] Contenuto della testimonianza incorporato, con le sezioni nuove aggiunte sempre in coda alle
+      giornate: le chiavi delle checkbox sono posizionali (`${d.id}-${indice}`), un inserimento
+      intermedio sposterebbe le spunte su Firestore. Verificato a video che le nove caselle del
+      Giorno 4, le cui chiavi sono effettivamente slittate, erano tutte vuote: nessuna spunta persa.
+- [x] Due contenuti corretti prima di entrare nel file invece di essere riportati: Bernalda è il
+      paese di origine dei nonni paterni di Coppola e non il suo paese natale (nato a Detroit nel
+      1939), e Masseria Peppeturro sta a pochi chilometri da Cisternino, non tra Locorotondo e
+      Martina Franca. Fonti citate nel file.
+- [x] Stima "altre centinaia di chilometri" per Ostuni e Matera non riportata perché smentita dal
+      calcolo reale (OSRM su coordinate Nominatim): Cisternino 43,0 km, Ostuni 51,3 km, Matera
+      139,2 km da Polignano. Riga carburante rifatta di conseguenza (1092,7 km, €42-45 a persona),
+      scoprendo che il conto precedente non contava la deviazione per le Grotte di Castellana.
+- [x] Contenuto su Martina Franca da ricerca web con fonti citate accanto al testo, non a memoria;
+      dichiarato esplicitamente che sulla ZTL non è stata trovata alcuna fonte, invece di riempirla
+      per analogia con Bari e Ostuni. Trovate anche le date del Festival della Valle d'Itria 2026
+      (14 luglio - 2 agosto), che possono cadere dentro il viaggio.
+- [x] Venti categorie delle cose da fare verificate contro Overpass/OpenStreetMap, venti su venti
+      confermate, con una correzione (Grotta Palazzese porta insieme `tourism=viewpoint` e
+      `amenity=restaurant`).
+- [x] Tre link TikTok "pending" risolti seguendo i redirect e leggendo l'endpoint oEmbed pubblico:
+      autore e titolo reali, contenuto dei video non guardato (richiede login) e dichiarato come
+      tale. Due hanno prodotto contenuto vero (percorso a piedi di Ostuni, Cala Tre Buchi), il terzo
+      no.
+- [x] Costi reali dell'alloggio: €784,78 meno €74,66 di credito wallet fanno €710,12 pagati, cioè
+      €355,06 a persona; totale da €452-805 a €582-760. Deposito cauzionale di €150 fuori dal
+      totale perché rimborsabile.
+- [x] Verificato con due controlli eseguibili, non a vista: un controllo strutturale che importa il
+      modulo e valida gli invarianti che il rendering assume senza guardie, e uno smoke test che fa
+      girare le vere funzioni di `js/itinerario.js` contro un DOM finto con l'SDK Firebase stubbato.
+      Vivono nella cartella di scratch della sessione, non nel repository: se questo pattern si
+      rivela utile anche in futuro, vanno promossi a `tools/` e documentati in `dev-testing.md`.
+- [x] Riscontro visivo chiuso su cinque screenshot dell'utente (Giorno 3, Giorno 4, mappa, Info &
+      Costi, cose da fare del Giorno 2), non assunto dal codice.
+- [ ] **Discrepanza aperta sull'importo dell'alloggio**: il pannello Alloggio confermato su
+      Firestore contiene €804,78, venti euro esatti in più del totale Booking dichiarato, e nessuna
+      delle due cifre meno il wallet dà €710,12 tranne €784,78. Finché non è chiarito, il valore del
+      pannello prevale sul file e il totale mostrato sovrastima di €47,33 a persona. Va guardata la
+      conferma Booking e poi inserita nel pannello la cifra netta pagata.
+
+Domande aperte: se le due giornate alternative (Martina Franca e Ostuni) debbano prima o poi
+diventare due giornate distinte invece di una con sezioni opzionali, quando il viaggio avrà date
+fissate e si saprà quale delle due si fa davvero. Non deciso, non richiesto.
+
 ## Riconciliazione
 
-Ultima verifica: 2026-07-08. Ultimo commit reale su `origin/main` al momento di scrivere (da
-verificare con `git log`/`git status`, non assumere): il lavoro su cache di `stay-search`,
-`poi-search` e ora `trip-planner` potrebbe non essere ancora committato — controllare `git
-status` prima di assumere lo stato esatto.
+Ultima verifica: 2026-08-03, contro `d77a628`. Alla chiusura di quella sessione risultavano non
+committate due modifiche a `trips/polignano-2026/trip.config.js` (nome della struttura e nota sulla
+discrepanza dell'importo) e restavano modificati da prima cinque file sotto `.claude/templates/` più
+`.claude/PROJECT-SYSTEM.md`, con `scrub-claude-json.js` e `RESUME_PROMPT.md` non tracciati: roba di
+manutenzione del template, non di questo viaggio, lasciata deliberatamente fuori dai commit del
+contenuto. Controllare `git status` prima di assumere lo stato esatto. Nota che il work-log non
+copre le sessioni dei commit dal 13 al 15 luglio: i messaggi di commit sono l'unica traccia.

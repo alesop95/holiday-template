@@ -403,7 +403,7 @@ export const TRIP_DATA = {
         name: "Polignano a Mare", location: "Giorni 1-6 (5 notti)",
         badge: "Unica base", badgeBg: "#E3F7EE", badgeColor: "#1DAD70",
         options: [
-          { name:"Prenotazione reale su Booking, già pagata", price:"€710,12 in tutto (5 notti, due persone)", desc:"Cifra realmente versata, non una stima: <b>€784,78</b> di totale Booking meno <b>€74,66</b> di credito wallet, quindi <b>€710,12</b> pagati, cioè €355,06 a persona. Sul posto va consegnato a parte un <b>deposito cauzionale di €150 in contanti</b>, che è rimborsabile e torna indietro al check-out: va portato, ma non è un costo del viaggio e per questo non entra nella stima. Le due voci sotto restano solo come riferimento di quanto costava indicativamente la zona, e spariscono da sole appena l'importo viene inserito nel pannello Alloggio confermato della scheda Costi." },
+          { name:"Magda Relax Suites, prenotata su Booking e già pagata", price:"€710,12 in tutto (5 notti, due persone)", desc:"Cifra realmente versata, non una stima: <b>€784,78</b> di totale Booking meno <b>€74,66</b> di credito wallet, quindi <b>€710,12</b> pagati, cioè €355,06 a persona. Sul posto va consegnato a parte un <b>deposito cauzionale di €150 in contanti</b>, che è rimborsabile e torna indietro al check-out: va portato, ma non è un costo del viaggio e per questo non entra nella stima. Le due voci sotto restano solo come riferimento di quanto costava indicativamente la zona, e spariscono da sole appena l'importo viene inserito nel pannello Alloggio confermato della scheda Costi." },
           { name:"Alternativa - Airbnb/appartamento", price:"indicativo €100-180 / notte", desc:"Con cucina propria, utile per colazioni o pranzi più economici." },
           // Voce solo descrittiva: resolveAccommodationCost() (js/itinerario.js) non legge questo
           // campo price, il costo alloggio del totale viene da una prenotazione confermata o da un
@@ -416,8 +416,13 @@ export const TRIP_DATA = {
 
   // Alloggio: cifra reale confermata dall'utente il 2026-08-03, scritta anche qui perche' il
   // repository conservi il dato se il documento Firestore state/costs venisse cancellato:
-  // €784,78 di totale Booking meno €74,66 di credito wallet fanno €710,12 pagati, cioe' €355,06
-  // a persona. Va a parte un deposito cauzionale di €150 in contanti sul posto, correttamente NON
+  // Magda Relax Suites, €784,78 di totale Booking meno €74,66 di credito wallet fanno €710,12
+  // pagati, cioe' €355,06 a persona.
+  // ATTENZIONE, discrepanza aperta al 2026-08-03: il pannello Alloggio confermato su Firestore
+  // contiene €804,78, cioe' €20,00 esatti in piu' del totale Booking dichiarato, e nessuna delle
+  // due cifre meno il wallet da' 710,12 tranne 784,78. Finche' non e' chiarito quale sia il vero
+  // totale, il valore del pannello prevale su questa riga nel rendering (resolveAccommodationCost)
+  // e il totale mostrato sovrastima di €47,33 a persona. Va a parte un deposito cauzionale di €150 in contanti sul posto, correttamente NON
   // sommato al totale: l'utente ha confermato (2026-08-03) che e' rimborsabile e torna indietro al
   // check-out, quindi e' liquidita' da portare, non una spesa del viaggio. La riga resta il
   // valore di partenza del file: inserendo l'importo nel pannello Alloggio confermato,

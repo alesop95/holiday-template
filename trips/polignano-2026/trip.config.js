@@ -332,12 +332,12 @@ export const TRIP_DATA = {
       { t:"Assicurazione auto + libretto" },
       { t:"Prenotazioni hotel (screenshot offline)" },
       { t:"Prenotazione Grotta Palazzese, se fatta",  n:"Giorno 2" },
-      { t:"Contanti €100-150",                       n:"Spese in loco, oltre ai €150 della caparra" },
+      { t:"Contanti €100-150",                       n:"Spese in loco, oltre ai €150 del deposito cauzionale" },
       { t:"Carta di credito / bancomat" },
       // Voce aggiunta in coda alla categoria, non in mezzo: le chiavi delle checkbox sono
       // posizionali (`${indice categoria}-${indice voce}`), un inserimento intermedio
       // sposterebbe le spunte gia' salvate su Firestore.
-      { t:"Caparra alloggio: €150 in contanti",       n:"Confermato dall'utente, da portare in contanti" },
+      { t:"Deposito cauzionale alloggio: €150 in contanti", n:"Rimborsabile, torna indietro: da recuperare al check-out" },
     ]},
     { cat:"Abbigliamento", items:[
       { t:"Magliette leggere (x5-6)" },
@@ -403,7 +403,7 @@ export const TRIP_DATA = {
         name: "Polignano a Mare", location: "Giorni 1-6 (5 notti)",
         badge: "Unica base", badgeBg: "#E3F7EE", badgeColor: "#1DAD70",
         options: [
-          { name:"Prenotazione reale su Booking, già pagata", price:"€710,12 in tutto (5 notti, due persone)", desc:"Cifra realmente versata, non una stima: <b>€784,78</b> di totale Booking meno <b>€74,66</b> di credito wallet, quindi <b>€710,12</b> pagati, cioè €355,06 a persona. Va aggiunta a parte una <b>caparra di €150 in contanti</b> da consegnare sul posto. Le due voci sotto restano solo come riferimento di quanto costava indicativamente la zona, e spariscono da sole appena l'importo viene inserito nel pannello Alloggio confermato della scheda Costi." },
+          { name:"Prenotazione reale su Booking, già pagata", price:"€710,12 in tutto (5 notti, due persone)", desc:"Cifra realmente versata, non una stima: <b>€784,78</b> di totale Booking meno <b>€74,66</b> di credito wallet, quindi <b>€710,12</b> pagati, cioè €355,06 a persona. Sul posto va consegnato a parte un <b>deposito cauzionale di €150 in contanti</b>, che è rimborsabile e torna indietro al check-out: va portato, ma non è un costo del viaggio e per questo non entra nella stima. Le due voci sotto restano solo come riferimento di quanto costava indicativamente la zona, e spariscono da sole appena l'importo viene inserito nel pannello Alloggio confermato della scheda Costi." },
           { name:"Alternativa - Airbnb/appartamento", price:"indicativo €100-180 / notte", desc:"Con cucina propria, utile per colazioni o pranzi più economici." },
           // Voce solo descrittiva: resolveAccommodationCost() (js/itinerario.js) non legge questo
           // campo price, il costo alloggio del totale viene da una prenotazione confermata o da un
@@ -417,8 +417,9 @@ export const TRIP_DATA = {
   // Alloggio: cifra reale confermata dall'utente il 2026-08-03, scritta anche qui perche' il
   // repository conservi il dato se il documento Firestore state/costs venisse cancellato:
   // €784,78 di totale Booking meno €74,66 di credito wallet fanno €710,12 pagati, cioe' €355,06
-  // a persona. Va a parte una caparra di €150 in contanti sul posto, non sommata al totale perche'
-  // non e' noto se sia rimborsabile: da chiarire prima di trattarla come costo. La riga resta il
+  // a persona. Va a parte un deposito cauzionale di €150 in contanti sul posto, correttamente NON
+  // sommato al totale: l'utente ha confermato (2026-08-03) che e' rimborsabile e torna indietro al
+  // check-out, quindi e' liquidita' da portare, non una spesa del viaggio. La riga resta il
   // valore di partenza del file: inserendo l'importo nel pannello Alloggio confermato,
   // resolveAccommodationCost() la sostituisce e renderInfoCosts divide per due l'importo di coppia
   // (js/itinerario.js, non piu' public/index.html: il codice e' stato spezzato in moduli).

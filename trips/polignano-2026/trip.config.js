@@ -83,7 +83,13 @@ export const MAP_LOCATIONS = [
   { lat:40.9966, lng:17.2202, nm:"Polignano a Mare", sub:"Base · Giorni 1-6", c:"#2B5C8A" },
   { lat:40.9535, lng:17.3009, nm:"Monopoli",         sub:"Giorno 5",         c:"#1A7A6E" },
   { lat:40.7827, lng:17.2378, nm:"Alberobello",      sub:"Giorno 3",         c:"#C4832A" },
-  { lat:40.7302, lng:17.5741, nm:"Ostuni",           sub:"Giorno 4",         c:"#7B4F9E" },
+  // Martina Franca e Cisternino: coordinate reali da geocoding Nominatim in sessione
+  // (2026-07-31), non a memoria. Inseriti qui e non in coda perche' l'ordine dell'array
+  // disegna la polyline: da Alberobello verso est la sequenza Martina Franca, Cisternino,
+  // Ostuni e' quella geograficamente coerente.
+  { lat:40.7042, lng:17.3400, nm:"Martina Franca",   sub:"Giorno 4",         c:"#7B4F9E" },
+  { lat:40.7430, lng:17.4257, nm:"Cisternino",       sub:"Giorno 3 · sera",  c:"#C4832A" },
+  { lat:40.7302, lng:17.5741, nm:"Ostuni",           sub:"Giorno 4 · opzionale", c:"#7B4F9E" },
 ];
 
 // ─── DATI DEL VIAGGIO ────────────────────────────────────────────────────────
@@ -93,15 +99,18 @@ export const TRIP_DATA = {
   // Prima era testo scritto a mano nella shell condivisa con la sintesi di Cilento - bug
   // template gia' corretto per "Cambio Hotel" e "Info & Costi", qui era sfuggito finche'
   // l'utente non l'ha notato sul sito live di Polignano.
-  programSummary: "Sosta a Bari in itinere, poi 5 notti a Polignano a Mare con gite a Alberobello, Ostuni e Monopoli. Una sola base, nessun cambio hotel.",
+  programSummary: "Sosta a Bari in itinere, poi 5 notti a Polignano a Mare con gite in Valle d'Itria (Grotte di Castellana, Alberobello, Cisternino, Martina Franca) e a Monopoli. Ostuni resta come tappa opzionale del Giorno 4. Una sola base, nessun cambio hotel.",
 
-  // Video salvati durante la pianificazione, non ancora guardati/verificati: non so a quale
-  // giorno o luogo si riferiscano (nessun accesso a video da qui), quindi restano generici in
-  // cima all'Itinerario invece di essere assegnati a un giorno specifico per ipotesi.
+  // Video salvati durante la pianificazione, identificati il 2026-07-31: i link brevi sono stati
+  // risolti seguendo i redirect e i titoli letti dall'endpoint oEmbed pubblico di TikTok. Quindi
+  // autore e titolo sono reali, non inventati, ma il contenuto dei video non e' stato guardato da
+  // qui (TikTok richiede login): cio' che ne e' stato estratto sta nelle descrizioni pubbliche.
+  // Il primo e il secondo hanno prodotto contenuto vero, finito nel Giorno 4 (percorso a piedi di
+  // Ostuni) e nel Giorno 5 (Cala Tre Buchi); il terzo e' un vlog generico, nessun dato utile.
   savedLinks: [
-    { label: "Video salvato 1", url: "https://vm.tiktok.com/ZNRou1gpL/" },
-    { label: "Video salvato 2", url: "https://vm.tiktok.com/ZNRoucgd7/" },
-    { label: "Video salvato 3", url: "https://vm.tiktok.com/ZNRousSDE/" },
+    { label: "Mini tour di Ostuni a piedi (JohnPietro_PugliaSpoiler)", url: "https://vm.tiktok.com/ZNRou1gpL/" },
+    { label: "Cala Tre Buchi, caletta sulla costa di Monopoli (Toboat)", url: "https://vm.tiktok.com/ZNRoucgd7/" },
+    { label: "Vlog di due giorni a Polignano a Mare (sofiabossi)", url: "https://vm.tiktok.com/ZNRousSDE/" },
   ],
 
   days: [
@@ -127,8 +136,13 @@ export const TRIP_DATA = {
       cf:"25-40", ca:"0",
       // Cose da fare seminate per questo giorno (checkbox in Itinerario, spuntabili e
       // rimovibili dall'app): luoghi del centro storico di Polignano, non delle grotte marine
-      // (quelle sono nel Giorno 2). Nessuna fonte web per questa lista, indicazione dell'utente.
-      todos:["Balconata Lama Monachile","Galleria Santo Stefano (ex chiesetta)","La colonna","La Veranda di Giselda","Monumento ai caduti","Piazza Ardito"]
+      // (quelle sono nel Giorno 2). La lista era un'indicazione dell'utente senza fonte; il tipo
+      // di ciascun luogo e' stato verificato il 2026-08-03 interrogando Overpass su OpenStreetMap
+      // (tutti e sei trovati con il nome esatto entro 9 km da Polignano) e scritto in italiano tra
+      // parentesi: tourism=viewpoint -> punto panoramico, amenity=restaurant -> ristorante,
+      // tourism=museum -> museo, historic=memorial -> memoriale. Serviva perche' dai soli nomi non
+      // si capiva che "La colonna" e "La Veranda di Giselda" sono ristoranti.
+      todos:["Balconata Lama Monachile (punto panoramico)","Galleria Santo Stefano, ex chiesetta (museo)","La colonna (ristorante)","La Veranda di Giselda (ristorante)","Monumento ai caduti (memoriale)","Piazza Ardito (punto panoramico)"]
       // Fonti (ricerca web 2026-07-13): percorso Bari Vecchia e parcheggio da
       // https://www.regionepuglia.org/itinerario-bari-mezza-giornata/ e
       // https://www.bariexperience.com/en/what-to-do-in-bari/parking-in-bari-where-to-park-your-car-parkride-multi-storey-car-park-ztl-paid-parking/
@@ -152,8 +166,11 @@ export const TRIP_DATA = {
       // Cose da fare seminate per questo giorno: le grotte marine della costa di Polignano
       // (categoria "viewpoint" su OpenStreetMap, verificate dal vivo via Overpass in sessione,
       // vedi services/poi-search/) piu' due ristoranti di pesce sulla stessa zona di costa.
-      // Nessuna fonte web per questa lista, indicazione dell'utente.
-      todos:["Arco Cala Di Luna","Cozze Nere","Grotta Ardito","Grotta delle monache","Grotta delle rondinelle","Grotta di Pietro e Paolo 1 e 2","Grotta di Santa Caterina 2","Grotta Frascina","Grotta Palazzese","Grotta piana - Grotta del basso porto","Grotta Pietropaolo - Grotticella sotto Favale","Grotta San Gennaro","Grotticella di Santo Stefano","Pietra Piatta"]
+      // Tipo verificato di nuovo il 2026-08-03 sugli stessi 14 nomi: tutti trovati in OSM con il
+      // nome esatto, dodici tourism=viewpoint (quasi tutti anche natural=cave_entrance), Cozze
+      // Nere amenity=restaurant, e Grotta Palazzese che porta entrambi i tag - per questo qui e'
+      // annotata come ristorante e punto panoramico insieme, non solo come ristorante.
+      todos:["Arco Cala Di Luna (punto panoramico)","Cozze Nere (ristorante)","Grotta Ardito (punto panoramico)","Grotta delle monache (punto panoramico)","Grotta delle rondinelle (punto panoramico)","Grotta di Pietro e Paolo 1 e 2 (punto panoramico)","Grotta di Santa Caterina 2 (punto panoramico)","Grotta Frascina (punto panoramico)","Grotta Palazzese (ristorante e punto panoramico)","Grotta piana - Grotta del basso porto (punto panoramico)","Grotta Pietropaolo - Grotticella sotto Favale (punto panoramico)","Grotta San Gennaro (punto panoramico)","Grotticella di Santo Stefano (punto panoramico)","Pietra Piatta (punto panoramico)"]
       // Fonti (ricerca web 2026-07-13): prezzo, assegnazione tavoli, valutazione Tripadvisor da
       // https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/ e
       // https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html
@@ -161,7 +178,7 @@ export const TRIP_DATA = {
     {
       id:3, color:"#C4832A", label:"Giorno 3",
       title:"Polignano (mattina) → Grotte di Castellana → Alberobello (sera)",
-      places:"Polignano a Mare (mattina) · Grotte di Castellana · Rione Monti · Aia Piccola",
+      places:"Polignano a Mare (mattina) · Grotte di Castellana · Rione Monti · Aia Piccola · Cisternino (sera, alternativa)",
       sections:[
         { t:"Mattina - Ultimo relax a Polignano",
           tx:"Non c'è fretta: le Grotte di Castellana sono a soli <b>17 km, circa 20 minuti</b> di auto da Polignano (calcolato con un routing reale, non stimato). Ultimo bagno in una delle calette o una colazione con calma in centro, poi si parte nel primo pomeriggio." },
@@ -175,32 +192,62 @@ export const TRIP_DATA = {
           tx:"L'unico trullo a due piani della città (fine XVIII secolo, monumento nazionale dal 1930), oggi piccolo museo con ambienti ricostruiti (panificio, camera da letto, cucina). Biglietto: <b>€2,50</b> (Piazza Sacramento 10). Fonte: <a href=\"https://www.trullosovrano.eu/ingresso-biglietti/\" target=\"_blank\" rel=\"noopener noreferrer\">sito ufficiale</a>." },
         { t:"Cena",
           tx:"Cena in una trattoria del centro storico: cucina della Valle d'Itria, orecchiette, verdure locali." },
+        // Sezione aggiunta in coda e non in mezzo alla giornata per una ragione tecnica, non
+        // estetica: le checkbox delle attivita' usano come chiave `${d.id}-${indice di sezione}`
+        // (js/itinerario.js), quindi un inserimento intermedio sposterebbe le spunte gia' salvate
+        // su Firestore verso la voce sbagliata.
+        { t:"Cisternino, alternativa per la sera",
+          tx:"Testimonianza diretta, non da fonte web: <b>Cisternino</b> è già stata visitata nel 2023, mezza giornata di passaggio, e la cosa che vale la pena è prenotare una cena dentro i vicoli del centro storico. È l'alternativa concreta alla trattoria di Alberobello della sezione sopra, non un'aggiunta: si sceglie una delle due cene, non entrambe. Da Alberobello sono <b>18,1 km, circa 20 minuti</b>; da Polignano <b>43 km, circa 38 minuti</b>, e il rientro serale Cisternino-Polignano è di <b>41,5 km, 39 minuti</b> (distanze da routing reale, non stimate). Chi ha già girato questa zona non alloggiava in paese ma fuori, in campagna, alla <a href=\"https://www.tripadvisor.com/Hotel_Review-g652000-d4225796-Reviews-Masseria_Peppeturro-Cisternino_Province_of_Brindisi_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Masseria Peppeturro</a>, masseria di inizio Novecento con due trulli ristrutturati e piscina a pochi chilometri da Cisternino: il contatto telefonico diretto non sta in questo file ma negli appunti privati del viaggio, perché il repository è pubblico." },
       ],
-      tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo: la mattina a Polignano e le Grotte (fresche) coprono bene la parte più calda della giornata","Da testimonianza diretta: tenere Alberobello per il tardo pomeriggio/sera, sia per le lucine sui trulli sia per evitare il caldo peggiore","Locorotondo è carina ma molto piccola: da aggiungere solo se resta tempo, non è nel percorso diretto Castellana-Alberobello"],
+      tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo: la mattina a Polignano e le Grotte (fresche) coprono bene la parte più calda della giornata","Da testimonianza diretta: tenere Alberobello per il tardo pomeriggio/sera, sia per le lucine sui trulli sia per evitare il caldo peggiore","Da testimonianza diretta: tra Locorotondo e Martina Franca è meglio la seconda, che ora è la tappa principale del Giorno 4 - Locorotondo si aggiunge solo se resta tempo, è carina ma molto piccola e non è nel percorso diretto Castellana-Alberobello","Se si sceglie Cisternino per la sera, la cena nei vicoli va prenotata: è il motivo per cui ci si va"],
       cf:"20-35", ca:"5-10"
       // Distanze/tempi Polignano-Castellana e Castellana-Alberobello: calcolo reale via OSRM
       // (router.project-osrm.org) da coordinate geocodificate con Nominatim, verificato dal vivo
       // in sessione (2026-07-15), non stimato.
+      // Tratte di Cisternino aggiunte con lo stesso metodo (2026-07-31): Alberobello-Cisternino
+      // 18,1 km / 20 min; Polignano-Cisternino 43,0 km / 38 min; Cisternino-Polignano 41,5 km /
+      // 39 min. La testimonianza ricordava Cisternino "poco piu' giu' di 50 km": il dato reale
+      // conferma l'ordine di grandezza.
     },
     {
       id:4, color:"#7B4F9E", label:"Giorno 4",
-      title:"Ostuni, la Città Bianca",
-      places:"Centro storico · Piazza della Libertà · Costa Ostunese",
+      title:"Martina Franca, il barocco della Valle d'Itria",
+      places:"Piazza Roma · Palazzo Ducale · Basilica di San Martino · Ostuni (opzionale)",
       sections:[
-        { t:"Come Arrivare",
-          tx:"Da Polignano a Ostuni: circa 50 km, 50-60 minuti in auto." },
-        { t:"Parcheggio",
+        { t:"Perché questa giornata è cambiata",
+          tx:"Testimonianza diretta, non da fonte web: chi ha già girato questa zona ha preferito la <b>Valle d'Itria</b> a Ostuni, e tra Locorotondo e Martina Franca indica senza esitazione la seconda. Nella stessa testimonianza Ostuni e Matera venivano ricordate come \"altre centinaia di chilometri\" rispetto a Cisternino, e questo il dato reale non lo conferma: va detto, perché è l'informazione su cui si decide. Da Polignano, Martina Franca è a <b>40,9 km, 39 minuti</b> e Ostuni a <b>51,3 km, 44 minuti</b>, quindi come spostamento le due tappe sono praticamente equivalenti (routing reale, non stime). Ostuni non sparisce quindi per una questione di distanza, ma per una preferenza dichiarata: scende a tappa opzionale di questa giornata e conserva tutto il suo contenuto più sotto. Martina Franca ha in più il vantaggio di stare a <b>9,7 km, 13 minuti</b> da Cisternino, la tappa serale del Giorno 3." },
+        { t:"Come arrivare e parcheggio",
+          tx:"Da Polignano a Martina Franca: <b>40,9 km, circa 39 minuti</b>, e <b>39,0 km, 39 minuti</b> al ritorno (routing reale). Si parcheggia vicino al centro storico a prezzi contenuti e si prosegue a piedi; un'alternativa indicata è lasciare l'auto nell'area di <b>Villa Garibaldi</b> e raggiungere a piedi <b>Piazza XX Settembre</b>, da cui si entra nel centro storico attraverso la <b>Porta di Santo Stefano</b>. Una cosa va dichiarata invece di riempita per ipotesi: a differenza di Bari e di Ostuni, per Martina Franca non ho trovato una fonte che documenti una ZTL con orari precisi, quindi va verificata sul posto alla segnaletica e non data per assente. Fonte: <a href=\"https://www.lafinestraaccanto.com/2024/citta/martina-franca-itinerario-a-piedi-nel-centro-storico/\" target=\"_blank\" rel=\"noopener noreferrer\">La finestra accanto</a>." },
+        { t:"Il centro storico barocco",
+          tx:"Martina Franca è il centro barocco della Valle d'Itria: case bianche a calce, vicoli stretti, balconi in ferro battuto e facciate nobiliari decorate. Il <b>Palazzo Ducale</b>, edificato nel <b>1668</b> su un progetto approvato da <b>Gian Lorenzo Bernini</b>, ha una balconata in ferro battuto di <b>74 metri</b> lungo tutta la facciata che dà su <b>Piazza Roma</b>, e ospita all'interno due musei, uno di scienze naturali e uno di arte pittorica. La <b>Basilica di San Martino</b> (<b>1747</b>) è il monumento simbolo della città, e la <b>Chiesa di San Domenico</b> completa il giro del barocco locale. Il prezzo dei biglietti dei due musei dentro il Palazzo Ducale non è verificato e non lo invento: la passeggiata nel centro storico è in ogni caso gratuita. Fonti: <a href=\"https://www.idealista.it/news/vacanze/mete-turistiche/2026/04/18/353411-che-cosa-vedere-a-martina-franca-il-borgo-barocco-della-valle-d-itria\" target=\"_blank\" rel=\"noopener noreferrer\">idealista</a>, <a href=\"https://www.iltarantino.it/turismo/2026/06/02/cosa-vedere-a-martina-franca-guida-completa-del-gioiello-barocco-della-valle-ditria/\" target=\"_blank\" rel=\"noopener noreferrer\">Il Tarantino</a>." },
+        { t:"Festival della Valle d'Itria, da controllare contro le date del viaggio",
+          tx:"Da verificare prima di partire, perché può cambiare del tutto l'atmosfera della giornata e la disponibilità di alloggi in zona: la <b>52ª edizione del Festival della Valle d'Itria</b>, festival lirico tra i più importanti d'Europa, si tiene a Martina Franca dal <b>14 luglio al 2 agosto 2026</b>, con sede principale il Palazzo Ducale e i chiostri del centro storico. Se il viaggio cade nei primissimi giorni di agosto il festival è ancora in corso e conviene guardare il programma con anticipo; se cade più avanti nel mese è già chiuso. Questo itinerario non ha date calendariali fissate, quindi la verifica resta da fare. Fonti: <a href=\"https://www.festivaldellavalleditria.it/en/program-2026\" target=\"_blank\" rel=\"noopener noreferrer\">programma ufficiale 2026</a>, <a href=\"https://www.laterradipuglia.it/2026/eventi-spettacoli/concerti-musica/festival-della-valle-ditria-2026-programma-artisti-e-guida-completa.htm\" target=\"_blank\" rel=\"noopener noreferrer\">La Terra di Puglia</a>." },
+        { t:"Ostuni (opzionale) - come arrivare",
+          tx:"Ostuni resta un'opzione piena, non una tappa cancellata: se si preferisce la Città Bianca al barocco della Valle d'Itria, questa giornata si scambia con quella descritta sopra. Da Polignano sono <b>51,3 km, 44 minuti</b> all'andata e <b>49,6 km, 45 minuti</b> al ritorno (routing reale ricalcolato in sessione), cioè circa 101 km in giornata contro gli 80 di Martina Franca." },
+        { t:"Ostuni (opzionale) - parcheggio",
           tx:"Il centro storico è in gran parte <b>ZTL</b>, strade strette e affollate in alta stagione: meglio lasciare l'auto in un parcheggio esterno a pagamento (es. Ostuni Parking Area1, o i parcheggi di Via Antonia Specchia) e proseguire a piedi. Fonte: <a href=\"https://www.ostunicentralparking.it/2025/06/20/cosa-vedere-a-ostuni-in-un-giorno-con-mappa-e-consigli-di-parcheggio/\" target=\"_blank\" rel=\"noopener noreferrer\">Ostuni Central Parking</a>." },
-        { t:"Mattino - Il centro storico",
-          tx:"Ostuni è nota come <b>la Città Bianca</b> per il centro storico interamente imbiancato a calce, arroccato su una collina con vista sulla piana degli ulivi e sul mare. Vicoli stretti, scalinate, molti vicoli ciechi. <b>Piazza della Libertà</b>, con la Colonna di Sant'Oronzo, è il punto d'incontro tra la città nuova e il borgo antico. <b>Attenzione</b>: la Concattedrale di Ostuni, con il suo rosone gotico, risulta <b>chiusa per lavori di ristrutturazione</b> secondo un aggiornamento di aprile 2026 - verificare sul posto se ha riaperto prima di contarci come tappa, non è detto che sia già visitabile ad agosto. Fonte: <a href=\"https://www.eleonoraongaro.it/ostuni-cosa-vedere/\" target=\"_blank\" rel=\"noopener noreferrer\">Sarà Perché Viaggio</a>." },
-        { t:"La vista dalle mura & il giro con l'ape calessino",
+        { t:"Ostuni (opzionale) - il centro storico",
+          tx:"Ostuni è nota come <b>la Città Bianca</b> per il centro storico interamente imbiancato a calce, arroccato su una collina con vista sulla piana degli ulivi e sul mare. Vicoli stretti, scalinate, molti vicoli ciechi. <b>Piazza della Libertà</b>, con la Colonna di Sant'Oronzo, è il punto d'incontro tra la città nuova e il borgo antico. <b>Attenzione</b>: la Concattedrale di Ostuni, con il suo rosone gotico, risulta <b>chiusa per lavori di ristrutturazione</b> secondo un aggiornamento di aprile 2026 - verificare sul posto se ha riaperto prima di contarci come tappa, non è detto che sia già visitabile ad agosto. Un percorso a piedi concreto arriva da uno dei video salvati in cima all'Itinerario, di cui è stata letta la descrizione pubblica e non il video stesso: partire dal <b>Parcheggio Comunale</b>, seguire <b>Via Giosuè Pinto</b> in direzione del centro storico fino alla <b>Colonna di Sant'Oronzo</b>, che sta davanti al Comune, poi imboccare <b>Via Cattedrale</b> e percorrerla fino alla <b>Cattedrale di Santa Maria Assunta</b>. Da tenere presente che quel percorso termina proprio sul monumento segnalato come chiuso per lavori: il giro resta valido, la tappa finale no. Fonti: <a href=\"https://www.eleonoraongaro.it/ostuni-cosa-vedere/\" target=\"_blank\" rel=\"noopener noreferrer\">Sarà Perché Viaggio</a>, <a href=\"https://vm.tiktok.com/ZNRou1gpL/\" target=\"_blank\" rel=\"noopener noreferrer\">video salvato sul mini tour di Ostuni</a>." },
+        { t:"Ostuni (opzionale) - la vista dalle mura e l'ape calessino",
           tx:"Testimonianza diretta, non da fonte web: sotto le mura c'è un tratto panoramico da cui si vede tutta Ostuni, la Città Bianca, in un colpo d'occhio - da non perdere. Da lì si può anche fare un giro con l'ape calessino (turistico e un po' \"da turisti basic\", ma ci sta). Questa tappa va vissuta di giorno, non di sera: il bianco della città risalta molto di più con la luce piena." },
-        { t:"Pomeriggio - Mare, meno affollato",
+        { t:"Ostuni (opzionale) - mare, meno affollato",
           tx:"Sulla costa di Ostuni, <b>Torre Pozzelle</b> ha una serie di calette selvagge tra gli scogli, e <b>Costa Merlata</b> insenature rocciose meno battute delle spiagge principali - alternative valide a Rosa Marina se si cerca meno folla. Fonte: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>." },
       ],
-      tips:["Il centro storico è ripido e acciottolato: scarpe comode","Vista migliore sulla città bianca dalla strada che arriva da sud","Da testimonianza diretta: Ostuni va vista di giorno, non di sera, perché il bianco risalta con la luce"],
+      tips:["Il centro storico di Martina Franca si gira a piedi senza un percorso obbligato: il barocco è il motivo della tappa","Da testimonianza diretta: tra Locorotondo e Martina Franca è meglio la seconda","Se il viaggio cade entro il 2 agosto, controllare il programma del Festival della Valle d'Itria prima di arrivare","Ostuni, se scelta al posto di Martina Franca: centro storico ripido e acciottolato, scarpe comode","Ostuni, se scelta: vista migliore sulla città bianca dalla strada che arriva da sud","Ostuni, se scelta: da testimonianza diretta va vista di giorno e non di sera, perché il bianco risalta con la luce piena"],
       cf:"20-35", ca:"0"
-      // Fonte spiagge (ricerca web 2026-07-13): https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/
+      // Fonte spiagge Ostuni (ricerca web 2026-07-13): https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/
+      // Contenuto Martina Franca (ricerca web 2026-07-31): Palazzo Ducale, balconata di 74 m,
+      // Basilica di San Martino, parcheggio Villa Garibaldi / Porta di Santo Stefano da
+      // https://www.idealista.it/news/vacanze/mete-turistiche/2026/04/18/353411-che-cosa-vedere-a-martina-franca-il-borgo-barocco-della-valle-d-itria
+      // https://www.iltarantino.it/turismo/2026/06/02/cosa-vedere-a-martina-franca-guida-completa-del-gioiello-barocco-della-valle-ditria/
+      // https://www.lafinestraaccanto.com/2024/citta/martina-franca-itinerario-a-piedi-nel-centro-storico/
+      // Date Festival della Valle d'Itria 2026 (14 luglio - 2 agosto) da
+      // https://www.festivaldellavalleditria.it/en/program-2026
+      // Nessuna fonte trovata su una ZTL di Martina Franca: dichiarato come da verificare sul
+      // posto, non riempito per analogia con Ostuni e Bari.
+      // Distanze Polignano-Martina Franca (40,9 / 39,0 km) e Polignano-Ostuni (51,3 / 49,6 km):
+      // OSRM reale in sessione (2026-07-31). La stima "centinaia di km" della testimonianza non e'
+      // confermata e non e' stata riportata nel testo.
     },
     {
       id:5, color:"#1A7A6E", label:"Giorno 5",
@@ -214,7 +261,7 @@ export const TRIP_DATA = {
         { t:"Il molo con le barchette blu",
           tx:"Testimonianza diretta, non da fonte web: Monopoli è bellissima tutta, ma soprattutto il molo con le barchette blu - molto colorato, da non perdere. Lì si trova ovunque il panino con il polpo fritto, uno street food diffuso in tutta la zona del porto. Il centro è pieno di locali per fare aperitivo, specialmente sul tardo pomeriggio/sera." },
         { t:"Mare, meno affollato",
-          tx:"A sud del centro, <b>Spiaggia di Porto Ghiacciolo</b> (5 minuti in auto) è segnalata come la spiaggia migliore della zona, sabbia dorata e acqua limpida. Più selvagge: <b>Port'Alga</b> (Scoglio dell'Eremita) e <b>Torre Incina</b>, buone per lo snorkeling; <b>Cala Verde</b>, dietro il campeggio Santo Stefano, è la più remota e meno frequentata. Fonti: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>, <a href=\"https://roamandthrive.com/best-beaches-monopoli-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Roam & Thrive</a>." },
+          tx:"A sud del centro, <b>Spiaggia di Porto Ghiacciolo</b> (5 minuti in auto) è segnalata come la spiaggia migliore della zona, sabbia dorata e acqua limpida. Più selvagge: <b>Port'Alga</b> (Scoglio dell'Eremita) e <b>Torre Incina</b>, buone per lo snorkeling; <b>Cala Verde</b>, dietro il campeggio Santo Stefano, è la più remota e meno frequentata. Da uno dei video salvati in cima all'Itinerario, di cui è stata letta la descrizione pubblica: <b>Cala Tre Buchi</b>, incassata tra gli scogli della costa di Monopoli, prende il nome dalle tre piccole grotte che la formano ed è riparata dal mare aperto, quindi con acqua calma e limpida tutto il giorno. Da valutare sapendo due cose: la fonte è un operatore di gite in barca, quindi non è un consiglio neutrale, e l'accesso descritto è dal mare, non a piedi. Fonti: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>, <a href=\"https://roamandthrive.com/best-beaches-monopoli-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Roam & Thrive</a>, <a href=\"https://vm.tiktok.com/ZNRoucgd7/\" target=\"_blank\" rel=\"noopener noreferrer\">video salvato su Cala Tre Buchi</a>." },
         { t:"Sera - Porto vecchio",
           tx:"A fine giornata, rientro nel centro storico per l'atmosfera serale intorno al porto vecchio e <b>Piazza Giuseppe Garibaldi</b>, il ritrovo serale della città." },
       ],
@@ -235,7 +282,7 @@ export const TRIP_DATA = {
         { t:"Sulla via del ritorno: Trani",
           tx:"Testimonianza diretta, non da fonte web: se il percorso di rientro lo permette, una sosta a Trani vale la pena - ha un mercato del pesce molto famoso, con crudi di mare descritti come \"la fine del mondo\". Da valutare in base a quanto tempo/deviazione comporta rispetto al rientro." },
         { t:"Se restano giorni liberi nell'itinerario",
-          tx:"Sempre da esperienza diretta: con più giorni a disposizione, quasi tutto qui intorno vale una visita perché le tappe sono piccole e il costo della vita è basso ovunque. <b>Lecce</b> ha un bel centro storico, un po' distante dalla base ma comunque consigliata se c'è tempo. <b>Brindisi</b> è invece sconsigliata senza mezzi termini: descritta come uno \"scenario post apocalittico\", niente da vedere. <b>Otranto e la Grotta della Poesia</b> sono decisamente fuori mano rispetto a questa base (più adatte a un futuro tour della Puglia centro/sud), non rientrano in questo itinerario." },
+          tx:"Sempre da esperienza diretta: con più giorni a disposizione, quasi tutto qui intorno vale una visita perché le tappe sono piccole e il costo della vita è basso ovunque. <b>Lecce</b> ha un bel centro storico, un po' distante dalla base ma comunque consigliata se c'è tempo. <b>Brindisi</b> è invece sconsigliata senza mezzi termini: descritta come uno \"scenario post apocalittico\", niente da vedere. <b>Otranto e la Grotta della Poesia</b> sono decisamente fuori mano rispetto a questa base (più adatte a un futuro tour della Puglia centro/sud), non rientrano in questo itinerario. <b>Matera</b> è stata vista dalla stessa testimonianza, ma dieci anni fa: da Polignano sono <b>139,2 km, circa 2 ore e 20 minuti</b> (routing reale), quindi è una giornata intera da programmare, non un salto - ed è anche la ragione per cui non entra nell'itinerario a base unica. A <b>28,3 km</b> da Matera, verso Metaponto, c'è <b>Bernalda</b>, dove nella stessa occasione si alloggiava in un grande albergo per cerimonie di un amico, usato come base per le battute di caccia in zona. Bernalda è il paese di origine dei nonni paterni di <b>Francis Ford Coppola</b>, emigrati da lì: non il suo paese natale, perché Coppola è nato a Detroit nel 1939, e la differenza vale la pena saperla prima di raccontarla sul posto (fonte: <a href=\"https://en.wikipedia.org/wiki/Francis_Ford_Coppola\" target=\"_blank\" rel=\"noopener noreferrer\">Wikipedia</a>)." },
       ],
       tips:["Tenere conto del traffico estivo sulla statale se si parte nel weekend"],
       cf:"10-20", ca:"0"
@@ -257,10 +304,18 @@ export const TRIP_DATA = {
       { nm:"Pescaria", tags:["Pesce","Street food","$"], note:"Piazza Aldo Moro 6-8. Il primo fast food di pesce d'Italia, nato qui a Polignano: panini di mare, tartare di tonno, fish and chips. Informale, senza prenotazione. 4,8/5 su Restaurant Guru, #10 su 205 ristoranti di Polignano su Tripadvisor. Fonte: <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>, <a href=\"https://www.yelp.com/biz/pescaria-polignano-a-mare\" target=\"_blank\" rel=\"noopener noreferrer\">Yelp</a>.", sp:"Ottima alternativa economica a Grotta Palazzese", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html", thefork:"https://www.thefork.it/ristorante/pescaria-polignano-r849503" },
       { nm:"Super Mago del Gelo", tags:["Gelateria/Caffè","$"], note:"Testimonianza diretta, non da fonte web (nessun link verificato per questa voce): fa un caffè speciale che pare si trovi solo qui, gusto amaretto e agrumi. A due passi da Pescaria e Lama Monachile, nello stesso angolo di paese.", sp:"Vale la sosta anche solo per il caffè" },
     ]},
-    { area:"Alberobello", days:"Giorno 3 pranzo", items:[
+    // "Giorno 3 sera" e non piu' "Giorno 3 pranzo": il Giorno 3 tiene Alberobello per la sera
+    // (lucine sui trulli, caldo evitato), quindi l'etichetta precedente contraddiceva la giornata.
+    { area:"Alberobello", days:"Giorno 3 sera", items:[
       { nm:"Trattoria in un trullo", tags:["Valle d'Itria","$-$$"], note:"Voce indicativa: diversi ristoranti del centro storico occupano trulli veri. Orecchiette, verdure sott'olio, formaggi locali." },
     ]},
-    { area:"Ostuni", days:"Giorno 4 pranzo", items:[
+    { area:"Cisternino", days:"Giorno 3 sera, alternativa ad Alberobello", items:[
+      { nm:"Cena nei vicoli del centro storico", tags:["Valle d'Itria","$-$$"], note:"Testimonianza diretta, non da fonte web: a Cisternino la cosa che vale la pena è prenotare una cena dentro i vicoli del centro storico. La testimonianza non indica un locale specifico, quindi qui non c'è nessun link: va scelto sul posto o cercato in zona, sapendo che la prenotazione è il punto.", sp:"Alternativa alla cena ad Alberobello, non in aggiunta" },
+    ]},
+    { area:"Martina Franca", days:"Giorno 4", items:[
+      { nm:"Ristorante del centro storico", tags:["Valle d'Itria","$-$$"], note:"Voce indicativa, come quelle di Alberobello e Ostuni: cucina della Valle d'Itria nel centro barocco. Su Martina Franca non è stata fatta una ricerca dedicata a locali specifici, quindi nessun nome e nessun link inventato." },
+    ]},
+    { area:"Ostuni", days:"Giorno 4, solo se si sceglie Ostuni", items:[
       { nm:"Ristorante del centro storico", tags:["Pugliese","$-$$"], note:"Voce indicativa: cucina pugliese classica (fave e cicorie, orecchiette, carne alla brace) nel centro storico della città bianca." },
     ]},
     { area:"Monopoli", days:"Giorno 5", items:[
@@ -285,7 +340,7 @@ export const TRIP_DATA = {
       { t:"Pantaloncini" },
       { t:"Abiti / vestiti per le cene",  n:"1-2 outfit" },
       { t:"Sandali da camminata" },
-      { t:"Scarpe comode per centri storici acciottolati", n:"Ostuni e Alberobello sono ripidi/sconnessi" },
+      { t:"Scarpe comode per centri storici acciottolati", n:"Alberobello, Martina Franca e Ostuni sono ripidi/sconnessi" },
       { t:"Costume da bagno x 2" },
       { t:"Copricostume / pareo" },
       { t:"Cappello da sole" },
@@ -324,6 +379,11 @@ export const TRIP_DATA = {
       { t:"Tramonto a Lama Monachile",    n:"Giorno 1" },
       { t:"Foto tra i trulli di Alberobello" },
       { t:"Foto in ogni tappa dell'itinerario" },
+      // Voci aggiunte in coda alla categoria e non in mezzo: le checkbox della valigia usano
+      // come chiave `${indice categoria}-${indice voce}` (js/itinerario.js), quindi un
+      // inserimento intermedio sposterebbe le spunte gia' salvate su Firestore.
+      { t:"Prenotare la cena nei vicoli a Cisternino", n:"Giorno 3, alternativa alla cena ad Alberobello" },
+      { t:"Controllare le date del Festival della Valle d'Itria", n:"Giorno 4, edizione 2026 dal 14 luglio al 2 agosto" },
     ]},
   ],
 
@@ -341,6 +401,10 @@ export const TRIP_DATA = {
         options: [
           { name:"Hotel/B&B nel centro storico", price:"indicativo €90-160 / notte (doppia, alta stagione agosto)", desc:"Voce non verificata con una ricerca dedicata: controllare prezzi e disponibilità reali su Booking/Airbnb, prenotare con largo anticipo per agosto." },
           { name:"Alternativa - Airbnb/appartamento", price:"indicativo €100-180 / notte", desc:"Con cucina propria, utile per colazioni o pranzi più economici." },
+          // Voce solo descrittiva: resolveAccommodationCost() (js/itinerario.js) non legge questo
+          // campo price, il costo alloggio del totale viene da una prenotazione confermata o da un
+          // alloggio salvato in Pianifica. Nessun prezzo inventato qui.
+          { name:"Alternativa fuori base - masseria in campagna in Valle d'Itria", price:"prezzo non verificato", desc:"Testimonianza diretta, non una fonte web: chi ha già girato questa zona non alloggiava in paese ma fuori, in campagna, alla <a href=\"https://www.tripadvisor.com/Hotel_Review-g652000-d4225796-Reviews-Masseria_Peppeturro-Cisternino_Province_of_Brindisi_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Masseria Peppeturro</a>, masseria di inizio Novecento con due trulli ristrutturati e piscina a pochi chilometri da Cisternino. Va letta come alternativa alla base di Polignano e non come secondo alloggio da sommare: sposta il centro del viaggio nella Valle d'Itria e allontana dalle calette di Polignano, che sono il motivo dei Giorni 1, 2 e 6. Prezzi non verificati direttamente, come per le due voci sopra. Il contatto telefonico diretto sta negli appunti privati del viaggio, non nel repository, che è pubblico." },
         ]
       },
     ]
@@ -350,9 +414,12 @@ export const TRIP_DATA = {
   // reale o salvi un alloggio da Pianifica, vedi renderInfoCosts/resolveAccommodationCost in
   // public/index.html - questa riga resta solo il valore di partenza). Pasti/Biglietti: somma
   // delle stime cf/ca già scritte in ogni giorno sopra, coerenti con quei valori.
-  // Carburante: ricalcolato con dati reali (2026-07-13), non più una stima approssimativa -
-  // distanze via OSRM (Civitanova-Bari-Polignano A/R 924,4 km; Polignano-Alberobello A/R 60,2 km;
-  // Polignano-Ostuni A/R 98,8 km; Polignano-Monopoli A/R 22,8 km - totale 1106,2 km), consumo
+  // Carburante: ricalcolato con dati reali (2026-07-13, rifatto il 2026-07-31 dopo il passaggio di
+  // Ostuni a tappa opzionale), non una stima approssimativa - distanze via OSRM
+  // (Civitanova-Bari-Polignano A/R 924,4 km; giro del Giorno 3 Polignano-Castellana-Alberobello-
+  // Polignano 65,6 km, che sostituisce il vecchio Polignano-Alberobello A/R 60,2 km perche' non
+  // contava la deviazione per le Grotte; Martina Franca A/R 79,9 km al posto di Ostuni A/R;
+  // Monopoli A/R 22,8 km - totale 1092,7 km), consumo
   // reale Alfa Romeo Giulietta 1.6 JTD diesel (2019) da fonti citate: 4,7-5,0 L/100km ciclo misto
   // ufficiale (test reali spesso migliori, ~4L/100km). Fonti:
   // https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/
@@ -363,7 +430,7 @@ export const TRIP_DATA = {
       { label:"Alloggio", desc:"5 notti a Polignano a Mare, alta stagione agosto (indicativo, non verificato - diventa reale se confermi una prenotazione o salvi un alloggio da Pianifica)", amount:"€225-400", kind:"accommodation" },
       { label:"Pasti", desc:"Somma delle stime giornaliere sopra (Giorni 1-6)", amount:"€120-225" },
       { label:"Biglietti e attività", desc:"Grotta Palazzese/Pescaria escluse (già in Pasti se scelte), Trullo Sovrano incluso", amount:"€15-35" },
-      { label:"Carburante diesel", desc:"1106 km reali (Civitanova-Bari-Polignano A/R + spostamenti locali, calcolati con OSRM), Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone. Fonti: <a href=\"https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/\" target=\"_blank\" rel=\"noopener noreferrer\">Motor1</a>, <a href=\"https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda tecnica</a>.", amount:"€43-46" },
+      { label:"Carburante diesel", desc:"1092,7 km reali calcolati con OSRM: Civitanova-Bari-Polignano A/R 924,4 km, giro del Giorno 3 (Polignano-Castellana-Alberobello-Polignano) 65,6 km, Martina Franca A/R 79,9 km, Monopoli A/R 22,8 km. Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone. Due varianti che spostano il conto: scegliere Ostuni al posto di Martina Franca aggiunge circa 21 km (100,9 km A/R contro 79,9), e chiudere il Giorno 3 con la cena a Cisternino invece del rientro diretto da Alberobello ne aggiunge altri 28,8. Fonti: <a href=\"https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/\" target=\"_blank\" rel=\"noopener noreferrer\">Motor1</a>, <a href=\"https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda tecnica</a>.", amount:"€42-45" },
       { label:"Extra e imprevisti", amount:"€50-100" },
     ],
     total: { sub:"6 giorni, tutto incluso" },
@@ -378,7 +445,10 @@ export const TRIP_DATA = {
     { name:"Basilica di San Nicola (Bari)", price:"Gratuito", free:true },
     { name:"Bari Vecchia (passeggiata)", price:"Gratuito", free:true },
     { name:"Trullo Sovrano (Alberobello)", price:"€2,50" },
-    { name:"Centro storico Ostuni", price:"Gratuito", free:true },
+    { name:"Centro storico Cisternino", price:"Gratuito", free:true },
+    { name:"Centro storico Martina Franca", price:"Gratuito", free:true },
+    { name:"Musei del Palazzo Ducale (Martina Franca)", price:"Non verificato" },
+    { name:"Centro storico Ostuni (opzionale)", price:"Gratuito", free:true },
     { name:"Centro storico Monopoli", price:"Gratuito", free:true },
   ],
 

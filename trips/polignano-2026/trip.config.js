@@ -397,13 +397,13 @@ export const TRIP_DATA = {
   // ho fatto una ricerca dedicata su hotel/B&B reali di Polignano: prezzi e nomi sono indicativi,
   // da verificare su Booking/Airbnb prima di prenotare (agosto è alta stagione).
   accommodation: {
-    subtitle: "Una sola base per tutto il soggiorno - prezzi indicativi, non verificati",
+    subtitle: "Una sola base per tutto il soggiorno - prenotazione reale, pagata su Booking",
     bases: [
       {
         name: "Polignano a Mare", location: "Giorni 1-6 (5 notti)",
         badge: "Unica base", badgeBg: "#E3F7EE", badgeColor: "#1DAD70",
         options: [
-          { name:"Hotel/B&B nel centro storico", price:"prenotato e pagato (importo reale nel pannello Alloggio confermato)", desc:"La prenotazione è stata fatta e pagata, con lo sconto già applicato all'importo versato (confermato dall'utente il 2026-08-03), più una caparra di €150 da consegnare in contanti sul posto. L'importo esatto non è scritto qui: va inserito una volta nel pannello Alloggio confermato della scheda Costi, che è il meccanismo previsto per un alloggio reale e alimenta sia il totale di Info & Costi sia quello di Costi senza contarlo due volte. Le due voci sotto restano solo come riferimento di quanto costava indicativamente la zona." },
+          { name:"Prenotazione reale su Booking, già pagata", price:"€710,12 in tutto (5 notti, due persone)", desc:"Cifra realmente versata, non una stima: <b>€784,78</b> di totale Booking meno <b>€74,66</b> di credito wallet, quindi <b>€710,12</b> pagati, cioè €355,06 a persona. Va aggiunta a parte una <b>caparra di €150 in contanti</b> da consegnare sul posto. Le due voci sotto restano solo come riferimento di quanto costava indicativamente la zona, e spariscono da sole appena l'importo viene inserito nel pannello Alloggio confermato della scheda Costi." },
           { name:"Alternativa - Airbnb/appartamento", price:"indicativo €100-180 / notte", desc:"Con cucina propria, utile per colazioni o pranzi più economici." },
           // Voce solo descrittiva: resolveAccommodationCost() (js/itinerario.js) non legge questo
           // campo price, il costo alloggio del totale viene da una prenotazione confermata o da un
@@ -414,10 +414,16 @@ export const TRIP_DATA = {
     ]
   },
 
-  // Alloggio: indicativo, non ricercato (Alloggio diventa dinamico se confermi una prenotazione
-  // reale o salvi un alloggio da Pianifica, vedi renderInfoCosts/resolveAccommodationCost in
-  // public/index.html - questa riga resta solo il valore di partenza). Pasti/Biglietti: somma
-  // delle stime cf/ca già scritte in ogni giorno sopra, coerenti con quei valori.
+  // Alloggio: cifra reale confermata dall'utente il 2026-08-03, scritta anche qui perche' il
+  // repository conservi il dato se il documento Firestore state/costs venisse cancellato:
+  // €784,78 di totale Booking meno €74,66 di credito wallet fanno €710,12 pagati, cioe' €355,06
+  // a persona. Va a parte una caparra di €150 in contanti sul posto, non sommata al totale perche'
+  // non e' noto se sia rimborsabile: da chiarire prima di trattarla come costo. La riga resta il
+  // valore di partenza del file: inserendo l'importo nel pannello Alloggio confermato,
+  // resolveAccommodationCost() la sostituisce e renderInfoCosts divide per due l'importo di coppia
+  // (js/itinerario.js, non piu' public/index.html: il codice e' stato spezzato in moduli).
+  // Pasti/Biglietti: somma delle stime cf/ca già scritte in ogni giorno sopra, coerenti con quei
+  // valori.
   // Carburante: ricalcolato con dati reali (2026-07-13, rifatto il 2026-07-31 dopo il passaggio di
   // Ostuni a tappa opzionale), non una stima approssimativa - distanze via OSRM
   // (Civitanova-Bari-Polignano A/R 924,4 km; giro del Giorno 3 Polignano-Castellana-Alberobello-
@@ -429,9 +435,9 @@ export const TRIP_DATA = {
   // https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/
   // https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/
   costEstimate: {
-    subtitle: "Per persona, camera doppia condivisa - stima indicativa",
+    subtitle: "Per persona, camera doppia condivisa - alloggio reale pagato, il resto stima indicativa",
     rows: [
-      { label:"Alloggio", desc:"5 notti a Polignano a Mare, alta stagione agosto (indicativo, non verificato - diventa reale se confermi una prenotazione o salvi un alloggio da Pianifica)", amount:"€225-400", kind:"accommodation" },
+      { label:"Alloggio", desc:"Cifra reale, non piu' una stima: €710,12 pagati su Booking per 5 notti a Polignano (€784,78 meno €74,66 di credito wallet), divisi tra due persone. Resta il valore di partenza del file: inserendo l'importo nel pannello Alloggio confermato, questa riga viene sostituita dal valore risolto da Firestore.", amount:"€355,06", kind:"accommodation" },
       { label:"Pasti", desc:"Somma delle stime giornaliere sopra (Giorni 1-6)", amount:"€120-225" },
       { label:"Biglietti e attività", desc:"Grotta Palazzese/Pescaria escluse (già in Pasti se scelte), Trullo Sovrano incluso", amount:"€15-35" },
       { label:"Carburante diesel", desc:"1092,7 km reali calcolati con OSRM: Civitanova-Bari-Polignano A/R 924,4 km, giro del Giorno 3 (Polignano-Castellana-Alberobello-Polignano) 65,6 km, Martina Franca A/R 79,9 km, Monopoli A/R 22,8 km. Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone. Due varianti che spostano il conto: scegliere Ostuni al posto di Martina Franca aggiunge circa 21 km (100,9 km A/R contro 79,9), e chiudere il Giorno 3 con la cena a Cisternino invece del rientro diretto da Alberobello ne aggiunge altri 28,8. Fonti: <a href=\"https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/\" target=\"_blank\" rel=\"noopener noreferrer\">Motor1</a>, <a href=\"https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda tecnica</a>.", amount:"€42-45" },

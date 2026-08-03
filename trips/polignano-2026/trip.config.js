@@ -332,8 +332,12 @@ export const TRIP_DATA = {
       { t:"Assicurazione auto + libretto" },
       { t:"Prenotazioni hotel (screenshot offline)" },
       { t:"Prenotazione Grotta Palazzese, se fatta",  n:"Giorno 2" },
-      { t:"Contanti €100-150" },
+      { t:"Contanti €100-150",                       n:"Spese in loco, oltre ai €150 della caparra" },
       { t:"Carta di credito / bancomat" },
+      // Voce aggiunta in coda alla categoria, non in mezzo: le chiavi delle checkbox sono
+      // posizionali (`${indice categoria}-${indice voce}`), un inserimento intermedio
+      // sposterebbe le spunte gia' salvate su Firestore.
+      { t:"Caparra alloggio: €150 in contanti",       n:"Confermato dall'utente, da portare in contanti" },
     ]},
     { cat:"Abbigliamento", items:[
       { t:"Magliette leggere (x5-6)" },
@@ -399,7 +403,7 @@ export const TRIP_DATA = {
         name: "Polignano a Mare", location: "Giorni 1-6 (5 notti)",
         badge: "Unica base", badgeBg: "#E3F7EE", badgeColor: "#1DAD70",
         options: [
-          { name:"Hotel/B&B nel centro storico", price:"indicativo €90-160 / notte (doppia, alta stagione agosto)", desc:"Voce non verificata con una ricerca dedicata: controllare prezzi e disponibilità reali su Booking/Airbnb, prenotare con largo anticipo per agosto." },
+          { name:"Hotel/B&B nel centro storico", price:"prenotato e pagato (importo reale nel pannello Alloggio confermato)", desc:"La prenotazione è stata fatta e pagata, con lo sconto già applicato all'importo versato (confermato dall'utente il 2026-08-03), più una caparra di €150 da consegnare in contanti sul posto. L'importo esatto non è scritto qui: va inserito una volta nel pannello Alloggio confermato della scheda Costi, che è il meccanismo previsto per un alloggio reale e alimenta sia il totale di Info & Costi sia quello di Costi senza contarlo due volte. Le due voci sotto restano solo come riferimento di quanto costava indicativamente la zona." },
           { name:"Alternativa - Airbnb/appartamento", price:"indicativo €100-180 / notte", desc:"Con cucina propria, utile per colazioni o pranzi più economici." },
           // Voce solo descrittiva: resolveAccommodationCost() (js/itinerario.js) non legge questo
           // campo price, il costo alloggio del totale viene da una prenotazione confermata o da un
@@ -438,7 +442,12 @@ export const TRIP_DATA = {
     // un totale (Info & Costi per persona, Costi il totale reale) - vedi renderInfoCosts e
     // renderCostsDashboard in public/index.html. Scaduto dopo validUntil: non piu' applicato
     // automaticamente, per non mostrare uno sconto non piu' reale.
-    discount: { amount: 74.66, desc: "Sconto disponibile su questa prenotazione", validUntil: "2026-07-30" }
+    // ATTENZIONE, non riportare validUntil in avanti: lo sconto e' stato usato davvero, l'utente
+    // ha confermato di aver pagato la prenotazione con lo sconto applicato (2026-08-03). Essendo
+    // gia' incluso nella cifra realmente pagata, riattivarlo lo sottrarrebbe una seconda volta dal
+    // totale. La data passata lo tiene inerte (activeDiscount() torna null), che qui e' il
+    // comportamento corretto e non una dimenticanza.
+    discount: { amount: 74.66, desc: "Sconto gia' usato: incluso nel prezzo realmente pagato", validUntil: "2026-07-30" }
   },
 
   tickets: [

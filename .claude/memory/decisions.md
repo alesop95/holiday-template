@@ -1,340 +1,49 @@
 # Registro delle decisioni architetturali
 
-> Convenzione ADR-lite, append-only. Ogni decisione architetturale non ovvia entra come voce
-> numerata con data, stato, contesto, decisione, motivazione e conseguenze. Una decisione non si
-> cancella e non si riscrive: quando viene superata, si aggiunge una nuova voce che dichiara di
-> superare la precedente e ne cita il numero. Le inferenze non confermate si marcano come da
-> verificare e si promuovono a decisione solo quando una fonte le conferma.
+> Convenzione ADR-lite, append-only. Ogni decisione architetturale non ovvia entra come voce numerata con data, stato, contesto, decisione, motivazione e conseguenze. Una decisione non si cancella e non si riscrive: quando viene superata, si aggiunge una nuova voce che dichiara di superare la precedente e ne cita il numero. Le inferenze non confermate si marcano come da verificare e si promuovono a decisione solo quando una fonte le conferma.
 
 ## ADR-001 — Adozione del sistema di progetto portabile
 
-Data: 2026-06-15
-Stato: accettata
-Contesto: il progetto necessita di uno stato interamente recuperabile da un clone e di
-documentazione che resti allineata al codice senza rilettura integrale a ogni sessione.
-Decisione: adottare il sistema descritto in `.claude/PROJECT-SYSTEM.md`, con motore di
-riconciliazione ancorato ai commit e doppio livello documentale tracciato/ignorato.
-Motivazione: persistenza strutturale su disco indipendente dalla sessione di chat, e controllo
-umano sul versionamento.
-Conseguenze: ogni passo significativo aggiorna schede, `last-verified-commit`, snapshot e
-work-log; commit e push restano manuali.
+Data: 2026-06-15 Stato: accettata Contesto: il progetto necessita di uno stato interamente recuperabile da un clone e di documentazione che resti allineata al codice senza rilettura integrale a ogni sessione. Decisione: adottare il sistema descritto in `.claude/PROJECT-SYSTEM.md`, con motore di riconciliazione ancorato ai commit e doppio livello documentale tracciato/ignorato. Motivazione: persistenza strutturale su disco indipendente dalla sessione di chat, e controllo umano sul versionamento. Conseguenze: ogni passo significativo aggiorna schede, `last-verified-commit`, snapshot e work-log; commit e push restano manuali.
 
 ## ADR-002 — Sotto-cartella per viaggio invece di branch Git per viaggio
 
-Data: 2026-07-06
-Stato: accettata
-Contesto: `handoff/README.md` (rimosso in questa sessione dopo la migrazione) proponeva un solo
-`public/index.html` + `public/trip.config.js` condivisi, con un nuovo viaggio gestito come branch
-Git separato dal branch `main`. Il progetto vuole invece poter avere più viaggi, passati e futuri,
-visibili e navigabili insieme sullo stesso branch.
-Decisione: ogni viaggio è una cartella autosufficiente sotto `trips/<nome>/`, con una propria
-copia di shell (`index.html`), configurazione (`trip.config.js`) e hosting (`firebase.json`),
-deployabile in modo indipendente dalle altre. `public/index.html` resta la shell canonica,
-sorgente di verità da cui si copia, non un file importato a runtime dai viaggi.
-Motivazione: coerenza con l'obiettivo di tenere lo storico di tutti i viaggi consultabile su disco
-senza cambiare branch; ogni cartella resta deployabile per conto proprio.
-Conseguenze: una correzione alla shell canonica non si propaga automaticamente ai viaggi già
-creati — va ricopiata manualmente in ogni `trips/<nome>/index.html` che si vuole aggiornare.
+Data: 2026-07-06 Stato: accettata Contesto: `handoff/README.md` (rimosso in questa sessione dopo la migrazione) proponeva un solo `public/index.html` + `public/trip.config.js` condivisi, con un nuovo viaggio gestito come branch Git separato dal branch `main`. Il progetto vuole invece poter avere più viaggi, passati e futuri, visibili e navigabili insieme sullo stesso branch. Decisione: ogni viaggio è una cartella autosufficiente sotto `trips/<nome>/`, con una propria copia di shell (`index.html`), configurazione (`trip.config.js`) e hosting (`firebase.json`), deployabile in modo indipendente dalle altre. `public/index.html` resta la shell canonica, sorgente di verità da cui si copia, non un file importato a runtime dai viaggi. Motivazione: coerenza con l'obiettivo di tenere lo storico di tutti i viaggi consultabile su disco senza cambiare branch; ogni cartella resta deployabile per conto proprio. Conseguenze: una correzione alla shell canonica non si propaga automaticamente ai viaggi già creati — va ricopiata manualmente in ogni `trips/<nome>/index.html` che si vuole aggiornare.
 
 ## ADR-003 — Un solo progetto Firebase condiviso, dati Firestore namespaced per TRIP_ID
 
-Data: 2026-07-06
-Stato: accettata
-Contesto: il modello originale (un progetto Firebase per viaggio, per non far collidere i
-percorsi Firestore fissi `content/days` ecc. tra viaggi diversi) risolveva la collisione dei dati
-ma richiede di creare un nuovo progetto Firebase su Console ad ogni nuovo viaggio, percepito come
-un attrito operativo non necessario per un uso privato saltuario.
-Decisione: un solo progetto Firebase (`viaggio-new`) serve tutti i viaggi, presenti e futuri.
-`trip.config.js` guadagna l'export `TRIP_ID`; tutti i percorsi Firestore in `index.html` sono
-namespaced come `trips/{TRIP_ID}/content/...` e `trips/{TRIP_ID}/state/...`. Questa è stata
-l'unica modifica apportata a `index.html` per un motivo diverso da una correzione di bug: da qui
-in avanti la shell torna a non cambiare mai tra un viaggio e l'altro.
-Motivazione: elimina la creazione di un nuovo progetto Firebase (e delle relative credenziali)
-ad ogni nuovo viaggio, al costo di condividere la stessa quota gratuita giornaliera di Firestore
-tra tutti i viaggi — quota (50.000 letture/20.000 scritture al giorno) ampiamente sufficiente per
-un uso privato di due persone anche con più viaggi attivi.
-Conseguenze: le Firestore Security Rules permissive (`allow read, write: if true`, sezione 12 di
-`README.md`) coprono l'intero albero `trips/**`, non un solo viaggio: chiunque conosca l'URL
-pubblico può leggere/scrivere i dati di qualunque viaggio, passato o futuro, non solo di quello
-in corso.
+Data: 2026-07-06 Stato: accettata Contesto: il modello originale (un progetto Firebase per viaggio, per non far collidere i percorsi Firestore fissi `content/days` ecc. tra viaggi diversi) risolveva la collisione dei dati ma richiede di creare un nuovo progetto Firebase su Console ad ogni nuovo viaggio, percepito come un attrito operativo non necessario per un uso privato saltuario. Decisione: un solo progetto Firebase (`viaggio-new`) serve tutti i viaggi, presenti e futuri. `trip.config.js` guadagna l'export `TRIP_ID`; tutti i percorsi Firestore in `index.html` sono namespaced come `trips/{TRIP_ID}/content/...` e `trips/{TRIP_ID}/state/...`. Questa è stata l'unica modifica apportata a `index.html` per un motivo diverso da una correzione di bug: da qui in avanti la shell torna a non cambiare mai tra un viaggio e l'altro. Motivazione: elimina la creazione di un nuovo progetto Firebase (e delle relative credenziali) ad ogni nuovo viaggio, al costo di condividere la stessa quota gratuita giornaliera di Firestore tra tutti i viaggi — quota (50.000 letture/20.000 scritture al giorno) ampiamente sufficiente per un uso privato di due persone anche con più viaggi attivi. Conseguenze: le Firestore Security Rules permissive (`allow read, write: if true`, sezione 12 di `README.md`) coprono l'intero albero `trips/**`, non un solo viaggio: chiunque conosca l'URL pubblico può leggere/scrivere i dati di qualunque viaggio, passato o futuro, non solo di quello in corso.
 
 ## ADR-004 — Regole Firestore distribuite via CLI da un firebase.json di radice, non generate dalla Console
 
-Data: 2026-07-06
-Stato: accettata
-Contesto: creando il database Firestore da Console, l'utente ha scelto "modalità di test" per lo
-step delle regole (necessario per avere subito lettura/scrittura funzionanti). La modalità di
-test della Console genera però una regola con una scadenza automatica di 30 giorni incorporata
-nel testo della regola stessa, che richiederebbe di tornare manualmente su Console prima della
-scadenza per sostituirla con una versione permanente — un promemoria ricorrente da non
-dimenticare, che l'utente ha chiesto di eliminare invece di gestire.
-Decisione: le regole permissive già previste (`allow read, write: if true`, invariate nel
-contenuto) sono state scritte in `firestore.rules` (radice del repository, tracciato in Git) e
-distribuite una tantum con `firebase deploy --only firestore:rules`, usando un `firebase.json` di
-radice dedicato (chiave `"firestore"` soltanto, nessuna `"hosting"`) e un `.firebaserc` di radice
-(gitignored) che punta allo stesso progetto condiviso `viaggio-new`.
-Motivazione: una regola distribuita via CLI non porta la condizione di scadenza che la Console
-inserisce automaticamente nella modalità di test; il problema dei 30 giorni si elimina alla radice
-invece di essere rimandato con un promemoria.
-Conseguenze: eventuali modifiche future alle regole (es. restringerle con Firebase Authentication)
-vanno fatte editando `firestore.rules` e rilanciando lo stesso comando di deploy, non dalla
-Console — la Console resta comunque utilizzabile per ispezionare le regole attive, solo non è più
-la fonte di verità del loro contenuto.
+Data: 2026-07-06 Stato: accettata Contesto: creando il database Firestore da Console, l'utente ha scelto "modalità di test" per lo step delle regole (necessario per avere subito lettura/scrittura funzionanti). La modalità di test della Console genera però una regola con una scadenza automatica di 30 giorni incorporata nel testo della regola stessa, che richiederebbe di tornare manualmente su Console prima della scadenza per sostituirla con una versione permanente — un promemoria ricorrente da non dimenticare, che l'utente ha chiesto di eliminare invece di gestire. Decisione: le regole permissive già previste (`allow read, write: if true`, invariate nel contenuto) sono state scritte in `firestore.rules` (radice del repository, tracciato in Git) e distribuite una tantum con `firebase deploy --only firestore:rules`, usando un `firebase.json` di radice dedicato (chiave `"firestore"` soltanto, nessuna `"hosting"`) e un `.firebaserc` di radice (gitignored) che punta allo stesso progetto condiviso `viaggio-new`. Motivazione: una regola distribuita via CLI non porta la condizione di scadenza che la Console inserisce automaticamente nella modalità di test; il problema dei 30 giorni si elimina alla radice invece di essere rimandato con un promemoria. Conseguenze: eventuali modifiche future alle regole (es. restringerle con Firebase Authentication) vanno fatte editando `firestore.rules` e rilanciando lo stesso comando di deploy, non dalla Console — la Console resta comunque utilizzabile per ispezionare le regole attive, solo non è più la fonte di verità del loro contenuto.
 
 ## ADR-005 — Incidente: apiKey Firebase esposta pubblicamente, rimedio con restrizione + bonifica storia
 
-Data: 2026-07-07
-Stato: accettata
-Contesto: GitHub Secret Scanning ha segnalato un "Google API Key" in `trips/cilento-2026/trip.config.js`
-(la `FIREBASE_CONFIG.apiKey` reale, introdotta nel commit poi rinominato `8f3d1c3` dopo la
-riscrittura). Il repository `alesop95/holiday-template` è pubblico (verificato via API GitHub, non
-assunto). Sebbene una `apiKey` Firebase non sia un segreto nel senso classico — l'accesso ai dati è
-governato dalle Firestore Security Rules, non dalla segretezza della chiave (vedi
-`design-and-security.md`) — il rischio reale di una chiave Google esposta e non ristretta è l'abuso
-su altre API del progetto Cloud, non l'accesso ai dati Firestore.
-Decisione: due azioni indipendenti, non una sola. Primo, la chiave è stata ristretta su Google
-Cloud Console (progetto `viaggio-new`): referrer HTTP limitati a `viaggio-new.web.app` e
-`viaggio-new.firebaseapp.com`, API accessibili ridotte da 25 a 4 (Cloud Firestore API, Identity
-Toolkit API, Token Service API, Firebase Installations API) — questo è il rimedio che neutralizza
-il rischio reale. Secondo, la storia Git è stata riscritta con `git filter-repo --replace-text`
-(dopo un backup completo via `git bundle`) per rimuovere le ripetizioni della stringa dai commit
-precedenti, poi la chiave (stessa stringa, ora ristretta) è stata reintrodotta in un nuovo commit
-perché l'app deve comunque poterla leggere per funzionare, e forzato il push (`git push --force`,
-eseguito dall'utente, non dall'agente, come da vincolo del progetto sulle operazioni git manuali).
-Motivazione: riscrivere solo la storia, senza restringere la chiave su Cloud Console, non avrebbe
-ridotto il rischio reale (la chiave sarebbe comunque rimasta nel commit corrente, necessariamente);
-restringere la chiave senza bonificare la storia avrebbe lasciato ripetuta la stessa stringa in piu'
-commit passati, superfluo ma non necessario dopo la restrizione. Fatte entrambe perché l'utente ha
-chiesto esplicitamente sia la pulizia della storia sia la restrizione, e sono complementari, non
-alternative.
-Conseguenze: ogni clone locale del repository precedente al force-push ha una storia ora
-incompatibile (i vecchi hash dei commit dal punto della riscrittura in poi non esistono più); non
-risultano altri clone noti. Verificato dopo il force-push, con un fetch indipendente e non fidandosi
-del solo output incollato dall'utente, che `origin/main` riflette la storia riscritta e che la
-vecchia stringa della chiave non ricorre più in nessun punto della storia remota tranne
-nell'unico commit finale che la reintroduce (atteso e corretto). Backup pre-riscrittura conservato
-in locale (`git bundle`, fuori dal repository), non versionato.
+Data: 2026-07-07 Stato: accettata Contesto: GitHub Secret Scanning ha segnalato un "Google API Key" in `trips/cilento-2026/trip.config.js` (la `FIREBASE_CONFIG.apiKey` reale, introdotta nel commit poi rinominato `8f3d1c3` dopo la riscrittura). Il repository `alesop95/holiday-template` è pubblico (verificato via API GitHub, non assunto). Sebbene una `apiKey` Firebase non sia un segreto nel senso classico — l'accesso ai dati è governato dalle Firestore Security Rules, non dalla segretezza della chiave (vedi `design-and-security.md`) — il rischio reale di una chiave Google esposta e non ristretta è l'abuso su altre API del progetto Cloud, non l'accesso ai dati Firestore. Decisione: due azioni indipendenti, non una sola. Primo, la chiave è stata ristretta su Google Cloud Console (progetto `viaggio-new`): referrer HTTP limitati a `viaggio-new.web.app` e `viaggio-new.firebaseapp.com`, API accessibili ridotte da 25 a 4 (Cloud Firestore API, Identity Toolkit API, Token Service API, Firebase Installations API) — questo è il rimedio che neutralizza il rischio reale. Secondo, la storia Git è stata riscritta con `git filter-repo --replace-text` (dopo un backup completo via `git bundle`) per rimuovere le ripetizioni della stringa dai commit precedenti, poi la chiave (stessa stringa, ora ristretta) è stata reintrodotta in un nuovo commit perché l'app deve comunque poterla leggere per funzionare, e forzato il push (`git push --force`, eseguito dall'utente, non dall'agente, come da vincolo del progetto sulle operazioni git manuali). Motivazione: riscrivere solo la storia, senza restringere la chiave su Cloud Console, non avrebbe ridotto il rischio reale (la chiave sarebbe comunque rimasta nel commit corrente, necessariamente); restringere la chiave senza bonificare la storia avrebbe lasciato ripetuta la stessa stringa in piu' commit passati, superfluo ma non necessario dopo la restrizione. Fatte entrambe perché l'utente ha chiesto esplicitamente sia la pulizia della storia sia la restrizione, e sono complementari, non alternative. Conseguenze: ogni clone locale del repository precedente al force-push ha una storia ora incompatibile (i vecchi hash dei commit dal punto della riscrittura in poi non esistono più); non risultano altri clone noti. Verificato dopo il force-push, con un fetch indipendente e non fidandosi del solo output incollato dall'utente, che `origin/main` riflette la storia riscritta e che la vecchia stringa della chiave non ricorre più in nessun punto della storia remota tranne nell'unico commit finale che la reintroduce (atteso e corretto). Backup pre-riscrittura conservato in locale (`git bundle`, fuori dal repository), non versionato.
 
 ## ADR-006 — Abbandonato Amadeus come fonte dati, sostituito da Kiwi Tequila
 
-Data: 2026-07-07
-Stato: accettata, supera implicitamente la scelta di Amadeus in ADR (nessuna precedente formale,
-ma Amadeus era la fonte pianificata fin dalla ricerca originale sintetizzata in `roadmap.md`)
-Contesto: durante la registrazione per ottenere credenziali reali per l'adapter Amadeus Flight
-Offers Search (già scritto e verificato contro un esempio di risposta ufficiale, ma mai contro
-l'API live), è emerso che il sito Amadeus for Developers mostra un avviso di chiusura del
-portale self-service al 17 luglio 2026. Verificato con fonti indipendenti (PhocusWire, Tragento),
-non solo dall'annuncio sul sito: nuove registrazioni già sospese, chiavi esistenti disattivate
-alla data di chiusura. Resta attivo solo il portale Enterprise, a pagamento e con approvazione
-tramite account manager — fuori scope per un progetto privato a costo zero.
-Decisione: rimosso interamente `amadeus_adapter.py` (non lasciato come riferimento morto) e
-tutte le sue tracce in `main.py`/`.env.example`. Scritto `kiwi_adapter.py` come sostituto,
-verso Kiwi.com Tequila API — già la seconda scelta della ricerca originale, con il vantaggio
-pratico di richiedere solo una API key (nessun OAuth2) e una registrazione senza revisione.
-Motivazione: investire ulteriore lavoro di verifica (credenziali, test live) su una piattaforma
-in chiusura imminente non avrebbe alcun ritorno; il pattern adapter (`FlightSourceAdapter`) ha
-reso la sostituzione priva di conseguenze per `FastFlightsAdapter` o per il comparatore in
-`main.py`, che non hanno dovuto cambiare.
-Conseguenze: la Fase 2 della roadmap (motore di ricerca alloggi) perde la propria fonte primaria
-pianificata (Amadeus Hotel Search/List API, stesso portale in chiusura) e resta senza una fonte
-"ufficiale" sostitutiva individuata — segnalato come domanda aperta in `roadmap.md`, non risolto
-da questa decisione. L'adapter Kiwi ha una verifica più debole di quella Amadeus al momento della
-rimozione (nomi dei campi della risposta ricostruiti da fonti di terze parti, non da un esempio
-ufficiale): la prima ricerca live con una chiave reale resta un passo di verifica ancora dovuto,
-non completato da questa sessione.
+Data: 2026-07-07 Stato: accettata, supera implicitamente la scelta di Amadeus in ADR (nessuna precedente formale, ma Amadeus era la fonte pianificata fin dalla ricerca originale sintetizzata in `roadmap.md`) Contesto: durante la registrazione per ottenere credenziali reali per l'adapter Amadeus Flight Offers Search (già scritto e verificato contro un esempio di risposta ufficiale, ma mai contro l'API live), è emerso che il sito Amadeus for Developers mostra un avviso di chiusura del portale self-service al 17 luglio 2026. Verificato con fonti indipendenti (PhocusWire, Tragento), non solo dall'annuncio sul sito: nuove registrazioni già sospese, chiavi esistenti disattivate alla data di chiusura. Resta attivo solo il portale Enterprise, a pagamento e con approvazione tramite account manager — fuori scope per un progetto privato a costo zero. Decisione: rimosso interamente `amadeus_adapter.py` (non lasciato come riferimento morto) e tutte le sue tracce in `main.py`/`.env.example`. Scritto `kiwi_adapter.py` come sostituto, verso Kiwi.com Tequila API — già la seconda scelta della ricerca originale, con il vantaggio pratico di richiedere solo una API key (nessun OAuth2) e una registrazione senza revisione. Motivazione: investire ulteriore lavoro di verifica (credenziali, test live) su una piattaforma in chiusura imminente non avrebbe alcun ritorno; il pattern adapter (`FlightSourceAdapter`) ha reso la sostituzione priva di conseguenze per `FastFlightsAdapter` o per il comparatore in `main.py`, che non hanno dovuto cambiare. Conseguenze: la Fase 2 della roadmap (motore di ricerca alloggi) perde la propria fonte primaria pianificata (Amadeus Hotel Search/List API, stesso portale in chiusura) e resta senza una fonte "ufficiale" sostitutiva individuata — segnalato come domanda aperta in `roadmap.md`, non risolto da questa decisione. L'adapter Kiwi ha una verifica più debole di quella Amadeus al momento della rimozione (nomi dei campi della risposta ricostruiti da fonti di terze parti, non da un esempio ufficiale): la prima ricerca live con una chiave reale resta un passo di verifica ancora dovuto, non completato da questa sessione.
 
 ## ADR-007 — Risultati del comparatore salvati dal frontend via SDK client, non dal backend via Admin SDK
 
-Data: 2026-07-08
-Stato: accettata
-Contesto: collegare i risultati di `trip-planner` (voli, alloggi, POI) a un giorno specifico
-dell'itinerario richiede una scrittura su Firestore. La via ovvia — dare a `trip-planner` un
-endpoint di salvataggio che scrive lui stesso su Firestore — richiede il Firebase Admin SDK, che
-a sua volta richiede una service account key: una credenziale reale da generare su Google Cloud
-Console e distribuire al servizio, cioè uno dei passi manuali che l'utente ha chiesto di rimandare
-a favore dello sviluppo di puro codice.
-Decisione: nessuno dei quattro servizi backend scrive su Firestore. La shell (`public/index.html`)
-guadagna una scheda "Pianifica" che chiama `trip-planner` via `fetch` semplice (nessun SDK
-coinvolto in quella chiamata) e, quando l'utente sceglie di salvare un risultato su un giorno,
-scrive direttamente su Firestore con l'SDK client già inizializzato in `init()` — lo stesso canale
-usato da checklist e note. Nuovo documento `trips/{TRIP_ID}/state/planning`, struttura
-`{ byDay: { "<dayId>": { flights: [...], stays: [...], pois: [...] } } }`, scritto con
-`setDoc(..., {merge:true})` sullo stesso pattern già in uso per `writeNote`.
-Motivazione: la separazione già esistente tra i quattro backend (stateless, senza segreti, senza
-dato personale, vedi `design-and-security.md`) resta intatta senza introdurre credenziali nuove;
-il costo è che il salvataggio funziona solo quando la shell gira nello stesso contesto browser che
-può raggiungere sia `trip-planner` (rete locale) sia Firestore (rete pubblica), non da qualunque
-client del backend.
-Conseguenze: CORS aperto (`allow_origins=["*"]`) aggiunto a tutti e quattro i servizi, altrimenti
-il browser blocca la risposta della chiamata da un'origine diversa (la shell aperta da file:// o
-da un server statico locale) — scelta coerente con l'assenza di autenticazione e di dati sensibili
-già documentata, non un indebolimento della sicurezza reale. Se in futuro il salvataggio dovesse
-avvenire da un contesto senza SDK client (es. un job schedulato lato server), servirà comunque
-introdurre l'Admin SDK a quel punto: questa decisione rimanda quel passo, non lo esclude.
+Data: 2026-07-08 Stato: accettata Contesto: collegare i risultati di `trip-planner` (voli, alloggi, POI) a un giorno specifico dell'itinerario richiede una scrittura su Firestore. La via ovvia — dare a `trip-planner` un endpoint di salvataggio che scrive lui stesso su Firestore — richiede il Firebase Admin SDK, che a sua volta richiede una service account key: una credenziale reale da generare su Google Cloud Console e distribuire al servizio, cioè uno dei passi manuali che l'utente ha chiesto di rimandare a favore dello sviluppo di puro codice. Decisione: nessuno dei quattro servizi backend scrive su Firestore. La shell (`public/index.html`) guadagna una scheda "Pianifica" che chiama `trip-planner` via `fetch` semplice (nessun SDK coinvolto in quella chiamata) e, quando l'utente sceglie di salvare un risultato su un giorno, scrive direttamente su Firestore con l'SDK client già inizializzato in `init()` — lo stesso canale usato da checklist e note. Nuovo documento `trips/{TRIP_ID}/state/planning`, struttura `{ byDay: { "<dayId>": { flights: [...], stays: [...], pois: [...] } } }`, scritto con `setDoc(..., {merge:true})` sullo stesso pattern già in uso per `writeNote`. Motivazione: la separazione già esistente tra i quattro backend (stateless, senza segreti, senza dato personale, vedi `design-and-security.md`) resta intatta senza introdurre credenziali nuove; il costo è che il salvataggio funziona solo quando la shell gira nello stesso contesto browser che può raggiungere sia `trip-planner` (rete locale) sia Firestore (rete pubblica), non da qualunque client del backend. Conseguenze: CORS aperto (`allow_origins=["*"]`) aggiunto a tutti e quattro i servizi, altrimenti il browser blocca la risposta della chiamata da un'origine diversa (la shell aperta da file:// o da un server statico locale) — scelta coerente con l'assenza di autenticazione e di dati sensibili già documentata, non un indebolimento della sicurezza reale. Se in futuro il salvataggio dovesse avvenire da un contesto senza SDK client (es. un job schedulato lato server), servirà comunque introdurre l'Admin SDK a quel punto: questa decisione rimanda quel passo, non lo esclude.
 
 ## ADR-008 — Hosting dei quattro servizi backend su Render, un solo deploy condiviso per tutti i viaggi
 
-Data: 2026-07-08
-Stato: accettata ed eseguita (workspace Render dedicato `holiday-template` creato, Blueprint
-deployato, tutti e quattro i servizi "Deployed" con URL pubblici assegnati; un bug di timeout
-emerso dal primo test end-to-end reale è stato diagnosticato e corretto, dettaglio in
-`current-work.md` e `deployment.md`)
-Contesto: il primo test in browser della scheda "Pianifica" (screenshot dell'utente) ha mostrato
-`Failed to fetch` verso `http://localhost:8004`: la shell gira su HTTPS (`viaggio-new.web.app`,
-referrer autorizzato dell'apiKey Firebase per ADR-005) e il browser blocca come *mixed content*
-una richiesta attiva verso un'origine HTTP in chiaro, indipendentemente da come risponde il
-servizio di destinazione. Nessuna delle alternative di solo sviluppo locale è pulita: allargare la
-restrizione referrer dell'apiKey a `localhost` è un cambio di postura di sicurezza per un test, e
-un certificato HTTPS locale autofirmato aggiunge un pezzo di infrastruttura usa-e-getta. L'utente
-ha inoltre posto la domanda di hosting reale nello stesso momento, con un account Render già
-esistente collegato a GitHub.
-Decisione: i quattro servizi backend (`flight-search`, `stay-search`, `poi-search`,
-`trip-planner`) si deployano su Render come Web Service Python separati, descritti in un unico
-`render.yaml` (Render Blueprint) alla radice del repository. Un solo deploy serve tutti i viaggi,
-presenti e futuri: nessuno dei quattro servizi conosce un `TRIP_ID` o dipende da un viaggio
-specifico (sono ricerca/orchestrazione pure), lo stesso principio già adottato per il progetto
-Firebase unico (ADR-003). `TRIP_PLANNER_URL` in `trip.config.js` passa dal default locale
-(`http://localhost:8004`) all'URL pubblico HTTPS di `trip-planner` su Render, stesso valore
-ripetuto identico in ogni `trips/<nome>/trip.config.js` futuro, sullo stesso modello già in uso
-per `FIREBASE_CONFIG`.
-Motivazione: risolve il blocco di mixed content alla radice, perché sia la shell sia il backend
-finiscono sotto HTTPS, senza toccare la restrizione referrer dell'apiKey né introdurre
-infrastruttura locale usa-e-getta. Render era già la scelta di fallback raccomandata dalla ricerca
-originale (`roadmap.md`, sezione "Direzione") per chi non dispone di un dispositivo sempre acceso;
-l'utente ha già l'account, quindi non introduce un nuovo attrito operativo.
-Conseguenze accettate esplicitamente dall'utente, non mitigate: il piano free di Render mette in
-pausa un servizio dopo circa 15 minuti di inattività, con un cold start di circa 50 secondi alla
-richiesta successiva; per una ricerca che coinvolge tutti e quattro (`trip-planner` deve prima
-svegliarsi lui stesso, poi gli altri tre si svegliano in parallelo) il caso peggiore dopo un
-periodo di inattività è dell'ordine di 100 secondi per la prima ricerca. Giudicato accettabile per
-il pattern d'uso reale della scheda "Pianifica" (ricerca occasionale durante la pianificazione di
-un viaggio, non un servizio ad accesso continuo): non introdotto alcun meccanismo per tenere i
-servizi svegli (es. un ping periodico via GitHub Actions, comunque valutato nella ricerca originale
-in `roadmap.md`), scelta deliberata per non aggiungere infrastruttura non necessaria al caso d'uso.
-Gli URL pubblici dei tre servizi a valle di `trip-planner` (`FLIGHT_SEARCH_URL`,
-`STAY_SEARCH_URL`, `POI_SEARCH_URL`) vanno impostati a mano nel pannello Render dopo il primo
-deploy di ciascuno, perché la sintassi esatta della variabile Blueprint `fromService` per
-comporre un URL completo con schema HTTPS a partire dal solo host/porta privato non è stata
-verificata con sufficiente certezza contro la documentazione ufficiale per essere scritta nel
-Blueprint senza rischio di un valore inventato; il file `render.yaml` marca quei tre valori
-`sync: false` apposta.
+Data: 2026-07-08 Stato: accettata ed eseguita (workspace Render dedicato `holiday-template` creato, Blueprint deployato, tutti e quattro i servizi "Deployed" con URL pubblici assegnati; un bug di timeout emerso dal primo test end-to-end reale è stato diagnosticato e corretto, dettaglio in `current-work.md` e `deployment.md`) Contesto: il primo test in browser della scheda "Pianifica" (screenshot dell'utente) ha mostrato `Failed to fetch` verso `http://localhost:8004`: la shell gira su HTTPS (`viaggio-new.web.app`, referrer autorizzato dell'apiKey Firebase per ADR-005) e il browser blocca come *mixed content* una richiesta attiva verso un'origine HTTP in chiaro, indipendentemente da come risponde il servizio di destinazione. Nessuna delle alternative di solo sviluppo locale è pulita: allargare la restrizione referrer dell'apiKey a `localhost` è un cambio di postura di sicurezza per un test, e un certificato HTTPS locale autofirmato aggiunge un pezzo di infrastruttura usa-e-getta. L'utente ha inoltre posto la domanda di hosting reale nello stesso momento, con un account Render già esistente collegato a GitHub. Decisione: i quattro servizi backend (`flight-search`, `stay-search`, `poi-search`, `trip-planner`) si deployano su Render come Web Service Python separati, descritti in un unico `render.yaml` (Render Blueprint) alla radice del repository. Un solo deploy serve tutti i viaggi, presenti e futuri: nessuno dei quattro servizi conosce un `TRIP_ID` o dipende da un viaggio specifico (sono ricerca/orchestrazione pure), lo stesso principio già adottato per il progetto Firebase unico (ADR-003). `TRIP_PLANNER_URL` in `trip.config.js` passa dal default locale (`http://localhost:8004`) all'URL pubblico HTTPS di `trip-planner` su Render, stesso valore ripetuto identico in ogni `trips/<nome>/trip.config.js` futuro, sullo stesso modello già in uso per `FIREBASE_CONFIG`. Motivazione: risolve il blocco di mixed content alla radice, perché sia la shell sia il backend finiscono sotto HTTPS, senza toccare la restrizione referrer dell'apiKey né introdurre infrastruttura locale usa-e-getta. Render era già la scelta di fallback raccomandata dalla ricerca originale (`roadmap.md`, sezione "Direzione") per chi non dispone di un dispositivo sempre acceso; l'utente ha già l'account, quindi non introduce un nuovo attrito operativo. Conseguenze accettate esplicitamente dall'utente, non mitigate: il piano free di Render mette in pausa un servizio dopo circa 15 minuti di inattività, con un cold start di circa 50 secondi alla richiesta successiva; per una ricerca che coinvolge tutti e quattro (`trip-planner` deve prima svegliarsi lui stesso, poi gli altri tre si svegliano in parallelo) il caso peggiore dopo un periodo di inattività è dell'ordine di 100 secondi per la prima ricerca. Giudicato accettabile per il pattern d'uso reale della scheda "Pianifica" (ricerca occasionale durante la pianificazione di un viaggio, non un servizio ad accesso continuo): non introdotto alcun meccanismo per tenere i servizi svegli (es. un ping periodico via GitHub Actions, comunque valutato nella ricerca originale in `roadmap.md`), scelta deliberata per non aggiungere infrastruttura non necessaria al caso d'uso. Gli URL pubblici dei tre servizi a valle di `trip-planner` (`FLIGHT_SEARCH_URL`, `STAY_SEARCH_URL`, `POI_SEARCH_URL`) vanno impostati a mano nel pannello Render dopo il primo deploy di ciascuno, perché la sintassi esatta della variabile Blueprint `fromService` per comporre un URL completo con schema HTTPS a partire dal solo host/porta privato non è stata verificata con sufficiente certezza contro la documentazione ufficiale per essere scritta nel Blueprint senza rischio di un valore inventato; il file `render.yaml` marca quei tre valori `sync: false` apposta.
 
 ## ADR-009 — Un sito Firebase Hosting dedicato per viaggio, non più un URL condiviso
 
-Data: 2026-07-08
-Stato: accettata (configurazione scritta; la creazione effettiva del sito Hosting dedicato per
-`cilento-2026`, un'azione che muta il progetto Firebase live, resta un passo manuale non ancora
-eseguito in questa sessione)
-Contesto: l'utente ha fatto notare che `trips/cilento-2026/` pubblica su `viaggio-new.web.app`, e
-ha chiesto cosa succede quando un secondo viaggio (es. un futuro `trips/tokyo-2026/`) viene
-pubblicato. Verificato leggendo `firebase.json`/`.firebaserc` reali (nessuno dei due aveva mai
-avuto una chiave `"target"` o `"targets"`) e la sezione 11 di `README.md`, che documentava
-esplicitamente il comportamento: "l'ultimo `firebase deploy` eseguito, da qualunque cartella
-`trips/<nome>/`, è quello che risulta pubblicato" sull'unico URL condiviso del progetto. ADR-002/
-003 avevano risolto l'isolamento dei dati (Firestore namespaced per `TRIP_ID`) e del codice
-(cartella per viaggio), ma non quello dell'Hosting: pubblicare un secondo viaggio avrebbe
-sovrascritto il primo sullo stesso URL, un gap architetturale reale rimasto non affrontato dalle
-decisioni precedenti, non solo un'ipotesi.
-Decisione: ogni viaggio riceve un proprio sito *Firebase Hosting multi-site*[^1] dentro lo stesso
-progetto condiviso `viaggio-new` (nessun nuovo progetto Firebase, coerente con ADR-003), creato con
-`firebase hosting:sites:create holiday-template-<nome-viaggio>` e collegato alla cartella con
-`firebase target:apply hosting <nome-viaggio> holiday-template-<nome-viaggio>`. Il `firebase.json`
-di ogni viaggio guadagna la chiave `"target"` (valore uguale al nome della cartella); la mappatura
-verso il site-id effettivo la scrive il comando CLI nel `.firebaserc` locale (gitignored), non va
-scritta a mano. Site-id con prefisso `holiday-template-` invece del solo nome del viaggio, perché i
-site-id sono un namespace globale su tutto Firebase (come i project id): un nome breve come
-`cilento-2026` rischia una collisione con un progetto di un altro utente in tutto il mondo, un
-rischio già visto concretamente su Render con il nome `flight-search`.
-Motivazione: `firebase deploy` da una cartella pubblica ora sul sito dedicato di quel viaggio
-(`https://holiday-template-<nome-viaggio>.web.app`), non più sull'URL condiviso — nessuna
-sovrascrittura tra viaggi diversi, senza introdurre un secondo progetto Firebase (che avrebbe
-riaperto il problema originale di ADR-003, credenziali duplicate per ogni nuovo viaggio).
-Conseguenze: la procedura di creazione di un nuovo viaggio (`README.md` sezione 9, header di
-`trip.config.js`) guadagna due comandi CLI in più rispetto a prima; il viaggio già esistente
-(`cilento-2026`), pubblicato finora sull'URL condiviso, va migrato allo stesso modo per essere
-coerente con ogni viaggio futuro — non c'è un modo per far coesistere il vecchio comportamento
-condiviso con quello nuovo dedicato senza eseguire la migrazione. Conseguenza collaterale non
-opzionale: la restrizione referrer HTTP della `apiKey` (ADR-005) limitava l'accesso al solo
-dominio condiviso `viaggio-new.web.app`; ogni sito dedicato ha un dominio diverso, quindi la
-restrizione va allargata per ognuno. **Il jolly non copre questo caso** (verificato in sessione,
-non assunto): un pattern come `https://holiday-template-*.web.app/*` viene rifiutato dalla Console
-("Dominio sito web non valido"), perché il carattere jolly di Google sostituisce un'intera
-etichetta di sottodominio, non una porzione di un'etichetta come nel prefisso comune scelto sopra.
-Ogni nuovo viaggio richiede quindi due righe manuali in più nella lista referrer (dominio esatto
-`.web.app` e `.firebaseapp.com` del suo sito dedicato), non una regola unica valida per sempre —
-un piccolo costo operativo per viaggio, accettato esplicitamente dall'utente. Dettaglio in
-`design-and-security.md`.
+Data: 2026-07-08 Stato: accettata (configurazione scritta; la creazione effettiva del sito Hosting dedicato per `cilento-2026`, un'azione che muta il progetto Firebase live, resta un passo manuale non ancora eseguito in questa sessione) Contesto: l'utente ha fatto notare che `trips/cilento-2026/` pubblica su `viaggio-new.web.app`, e ha chiesto cosa succede quando un secondo viaggio (es. un futuro `trips/tokyo-2026/`) viene pubblicato. Verificato leggendo `firebase.json`/`.firebaserc` reali (nessuno dei due aveva mai avuto una chiave `"target"` o `"targets"`) e la sezione 11 di `README.md`, che documentava esplicitamente il comportamento: "l'ultimo `firebase deploy` eseguito, da qualunque cartella `trips/<nome>/`, è quello che risulta pubblicato" sull'unico URL condiviso del progetto. ADR-002/ 003 avevano risolto l'isolamento dei dati (Firestore namespaced per `TRIP_ID`) e del codice (cartella per viaggio), ma non quello dell'Hosting: pubblicare un secondo viaggio avrebbe sovrascritto il primo sullo stesso URL, un gap architetturale reale rimasto non affrontato dalle decisioni precedenti, non solo un'ipotesi. Decisione: ogni viaggio riceve un proprio sito *Firebase Hosting multi-site*[^1] dentro lo stesso progetto condiviso `viaggio-new` (nessun nuovo progetto Firebase, coerente con ADR-003), creato con `firebase hosting:sites:create holiday-template-<nome-viaggio>` e collegato alla cartella con `firebase target:apply hosting <nome-viaggio> holiday-template-<nome-viaggio>`. Il `firebase.json` di ogni viaggio guadagna la chiave `"target"` (valore uguale al nome della cartella); la mappatura verso il site-id effettivo la scrive il comando CLI nel `.firebaserc` locale (gitignored), non va scritta a mano. Site-id con prefisso `holiday-template-` invece del solo nome del viaggio, perché i site-id sono un namespace globale su tutto Firebase (come i project id): un nome breve come `cilento-2026` rischia una collisione con un progetto di un altro utente in tutto il mondo, un rischio già visto concretamente su Render con il nome `flight-search`. Motivazione: `firebase deploy` da una cartella pubblica ora sul sito dedicato di quel viaggio (`https://holiday-template-<nome-viaggio>.web.app`), non più sull'URL condiviso — nessuna sovrascrittura tra viaggi diversi, senza introdurre un secondo progetto Firebase (che avrebbe riaperto il problema originale di ADR-003, credenziali duplicate per ogni nuovo viaggio). Conseguenze: la procedura di creazione di un nuovo viaggio (`README.md` sezione 9, header di `trip.config.js`) guadagna due comandi CLI in più rispetto a prima; il viaggio già esistente (`cilento-2026`), pubblicato finora sull'URL condiviso, va migrato allo stesso modo per essere coerente con ogni viaggio futuro — non c'è un modo per far coesistere il vecchio comportamento condiviso con quello nuovo dedicato senza eseguire la migrazione. Conseguenza collaterale non opzionale: la restrizione referrer HTTP della `apiKey` (ADR-005) limitava l'accesso al solo dominio condiviso `viaggio-new.web.app`; ogni sito dedicato ha un dominio diverso, quindi la restrizione va allargata per ognuno. **Il jolly non copre questo caso** (verificato in sessione, non assunto): un pattern come `https://holiday-template-*.web.app/*` viene rifiutato dalla Console ("Dominio sito web non valido"), perché il carattere jolly di Google sostituisce un'intera etichetta di sottodominio, non una porzione di un'etichetta come nel prefisso comune scelto sopra. Ogni nuovo viaggio richiede quindi due righe manuali in più nella lista referrer (dominio esatto `.web.app` e `.firebaseapp.com` del suo sito dedicato), non una regola unica valida per sempre — un piccolo costo operativo per viaggio, accettato esplicitamente dall'utente. Dettaglio in `design-and-security.md`.
 
-[^1]: **Firebase Hosting multi-site** — funzionalità di Firebase Hosting che permette a un solo
-progetto di ospitare più siti indipendenti, ciascuno con il proprio URL `<site-id>.web.app`, fino
-a un massimo di 36 siti per progetto (limite dichiarato nella documentazione ufficiale Firebase).
+[^1]: **Firebase Hosting multi-site** — funzionalità di Firebase Hosting che permette a un solo progetto di ospitare più siti indipendenti, ciascuno con il proprio URL `<site-id>.web.app`, fino a un massimo di 36 siti per progetto (limite dichiarato nella documentazione ufficiale Firebase).
 
 ## ADR-010 — Categoria delle cose da fare dentro il testo della voce, non come campo dello schema
 
-Data: 2026-08-03
-Stato: accettata e applicata (venti voci annotate in `trips/polignano-2026/trip.config.js`,
-verificate a video dall'utente)
-Contesto: l'utente ha fornito il tipo di ciascuna delle venti cose da fare dei Giorni 1 e 2
-(punto panoramico, ristorante, museo, memoriale) e ha chiesto di renderlo visibile. Tutte e venti
-le etichette sono state verificate contro i tag reali di OpenStreetMap via Overpass e confermate.
-Il problema era dove metterle: lo schema di un todo è `{id, text, done}` (`_defaultTodosByDay` in
-`js/firestore.js`), quindi non esiste un campo per il tipo. Vincolo comune a ogni soluzione, non
-eliminabile scegliendo diversamente: i todos vivono nel documento Firestore `state/todos`, che ha
-la precedenza sul file, quindi qualunque modifica alla lista diventa visibile solo cancellando quel
-documento.
-Decisione: la categoria si scrive dentro la stringa `text` della voce, in italiano tra parentesi
-(`"La colonna (ristorante)"`), su tutte le voci e non solo su quelle sorprendenti. Nessuna modifica
-al codice della shell.
-Motivazione: tre ragioni, in ordine di peso. Un campo `category` vero avrebbe richiesto di
-modificare `_defaultTodosByDay` e `renderDayTodos` e poi di ricopiare quelle modifiche a mano in
-`public/` e in `trips/cilento-2026/`, perché tra le copie non esiste import a runtime (ADR-002):
-tre copie di codice condiviso toccate, senza un solo test automatico sul frontend, per un guadagno
-di sola presentazione. La strada dello schema non avrebbe nemmeno risparmiato il costo vero
-dell'operazione, cioè la cancellazione di `state/todos`, identica nei due casi. E `text` è l'unico
-campo che l'utente può scrivere dall'app quando aggiunge una voce a mano: tenendo la categoria nel
-testo, una voce aggiunta dall'app segue la stessa convenzione senza supporto nel codice, mentre con
-un campo separato nascerebbe sempre priva di categoria. L'annotazione è su tutte le voci perché
-con quella parziale l'assenza di etichetta diventa ambigua, non si distingue una voce senza tipo da
-una non classificata.
-Conseguenze: la categoria è testo, quindi non è filtrabile né raggruppabile per programma; se in
-futuro servisse ordinare o filtrare per tipo, questa decisione va rivista e allora il campo nello
-schema diventa la scelta giusta. Verificato a video che `state/todos` non esisteva per
-`polignano-2026`, quindi in questo caso la cancellazione non è servita e l'app ha ripiegato sulla
-lista del file (`load()` e `listen()` in `createStateDoc` tornano `defaultValue` se il documento
-manca). Attenzione operativa: dalla prima spunta o rimozione fatta dall'app il documento viene
-creato con `setDoc` e da quel momento ha la precedenza, quindi una futura modifica della lista nel
-file richiederà di cancellarlo.
+Data: 2026-08-03 Stato: accettata e applicata (venti voci annotate in `trips/polignano-2026/trip.config.js`, verificate a video dall'utente) Contesto: l'utente ha fornito il tipo di ciascuna delle venti cose da fare dei Giorni 1 e 2 (punto panoramico, ristorante, museo, memoriale) e ha chiesto di renderlo visibile. Tutte e venti le etichette sono state verificate contro i tag reali di OpenStreetMap via Overpass e confermate. Il problema era dove metterle: lo schema di un todo è `{id, text, done}` (`_defaultTodosByDay` in `js/firestore.js`), quindi non esiste un campo per il tipo. Vincolo comune a ogni soluzione, non eliminabile scegliendo diversamente: i todos vivono nel documento Firestore `state/todos`, che ha la precedenza sul file, quindi qualunque modifica alla lista diventa visibile solo cancellando quel documento. Decisione: la categoria si scrive dentro la stringa `text` della voce, in italiano tra parentesi (`"La colonna (ristorante)"`), su tutte le voci e non solo su quelle sorprendenti. Nessuna modifica al codice della shell. Motivazione: tre ragioni, in ordine di peso. Un campo `category` vero avrebbe richiesto di modificare `_defaultTodosByDay` e `renderDayTodos` e poi di ricopiare quelle modifiche a mano in `public/` e in `trips/cilento-2026/`, perché tra le copie non esiste import a runtime (ADR-002): tre copie di codice condiviso toccate, senza un solo test automatico sul frontend, per un guadagno di sola presentazione. La strada dello schema non avrebbe nemmeno risparmiato il costo vero dell'operazione, cioè la cancellazione di `state/todos`, identica nei due casi. E `text` è l'unico campo che l'utente può scrivere dall'app quando aggiunge una voce a mano: tenendo la categoria nel testo, una voce aggiunta dall'app segue la stessa convenzione senza supporto nel codice, mentre con un campo separato nascerebbe sempre priva di categoria. L'annotazione è su tutte le voci perché con quella parziale l'assenza di etichetta diventa ambigua, non si distingue una voce senza tipo da una non classificata. Conseguenze: la categoria è testo, quindi non è filtrabile né raggruppabile per programma; se in futuro servisse ordinare o filtrare per tipo, questa decisione va rivista e allora il campo nello schema diventa la scelta giusta. Verificato a video che `state/todos` non esisteva per `polignano-2026`, quindi in questo caso la cancellazione non è servita e l'app ha ripiegato sulla lista del file (`load()` e `listen()` in `createStateDoc` tornano `defaultValue` se il documento manca). Attenzione operativa: dalla prima spunta o rimozione fatta dall'app il documento viene creato con `setDoc` e da quel momento ha la precedenza, quindi una futura modifica della lista nel file richiederà di cancellarlo.
 
 ## ADR-011 — Uno sconto già usato si tiene inerte, e nel pannello alloggio si inserisce il netto pagato
 
-Data: 2026-08-03
-Stato: accettata (file allineato; la correzione dell'importo nel pannello Firestore resta un passo
-manuale dell'utente, non ancora eseguito)
-Contesto: `costEstimate.discount` era nato come sconto ancora disponibile su una prenotazione da
-fare (importo di coppia, `validUntil`), e `activeDiscount()` lo restituisce `null` dopo la scadenza
-per non mostrare uno sconto non più valido. Poi la prenotazione è stata fatta davvero: €784,78 di
-totale Booking meno €74,66 di credito wallet, cioè €710,12 versati. I €74,66 erano esattamente
-l'importo già scritto nel file, quindi lo sconto non era una stima ma proprio quel credito. Da qui
-il rischio concreto: la cifra pagata è già netta, e uno sconto riattivato la ridurrebbe una seconda
-volta.
-Decisione: uno sconto realmente utilizzato non si rimuove dal file e non si rinnova, si lascia con
-`validUntil` nel passato, si riscrive la sua `desc` per dire che è già incluso nel prezzo pagato, e
-si aggiunge accanto un avvertimento esplicito a non riportare la data in avanti. Nel pannello
-Alloggio confermato si inserisce sempre l'importo netto effettivamente versato, mai quello lordo.
-L'importo reale si scrive anche in un commento del file, oltre che su Firestore.
-Motivazione: la data passata rende lo sconto inerte per costruzione, quindi il comportamento
-corretto non dipende dal fatto che qualcuno si ricordi la regola; ma senza un avvertimento accanto,
-una data scaduta somiglia a una dimenticanza da correggere, ed è proprio la correzione a introdurre
-il doppio conteggio. Il netto nel pannello, e non il lordo più lo sconto, evita di rappresentare la
-stessa riduzione in due punti che l'app somma separatamente (`resolveAccommodationCost` per la riga
-alloggio, `activeDiscount` per il totale). Il commento nel file serve perché il dato sopravviva alla
-cancellazione del documento `state/costs`, che è stato azzerato più volte durante lo sviluppo.
-Conseguenze: la riga `Alloggio` del file porta ora un valore reale (€355,06 a persona) e non più una
-forbice indicativa, e il totale è salito da €452-805 a €582-760, perché la stima precedente era
-ottimista in basso. Il deposito cauzionale di €150 resta fuori dal totale perché rimborsabile: è
-liquidità da portare, non una spesa, e vive come voce di checklist. Effetto collaterale scoperto
-leggendo il codice e non previsto in partenza: quando una prenotazione risulta confermata,
-`renderInfoCosts` nasconde tutte le opzioni indicative dell'alloggio (`hideOptions`), quindi la voce
-sulla masseria in Valle d'Itria resta visibile solo nella sezione Cisternino del Giorno 3. Discrepanza
-aperta al momento della scrittura: il pannello contiene €804,78, venti euro esatti in più del totale
-dichiarato, e va chiarito quale sia il valore vero prima di considerare il totale attendibile.
+Data: 2026-08-03 Stato: accettata (file allineato; la correzione dell'importo nel pannello Firestore resta un passo manuale dell'utente, non ancora eseguito) Contesto: `costEstimate.discount` era nato come sconto ancora disponibile su una prenotazione da fare (importo di coppia, `validUntil`), e `activeDiscount()` lo restituisce `null` dopo la scadenza per non mostrare uno sconto non più valido. Poi la prenotazione è stata fatta davvero: €784,78 di totale Booking meno €74,66 di credito wallet, cioè €710,12 versati. I €74,66 erano esattamente l'importo già scritto nel file, quindi lo sconto non era una stima ma proprio quel credito. Da qui il rischio concreto: la cifra pagata è già netta, e uno sconto riattivato la ridurrebbe una seconda volta. Decisione: uno sconto realmente utilizzato non si rimuove dal file e non si rinnova, si lascia con `validUntil` nel passato, si riscrive la sua `desc` per dire che è già incluso nel prezzo pagato, e si aggiunge accanto un avvertimento esplicito a non riportare la data in avanti. Nel pannello Alloggio confermato si inserisce sempre l'importo netto effettivamente versato, mai quello lordo. L'importo reale si scrive anche in un commento del file, oltre che su Firestore. Motivazione: la data passata rende lo sconto inerte per costruzione, quindi il comportamento corretto non dipende dal fatto che qualcuno si ricordi la regola; ma senza un avvertimento accanto, una data scaduta somiglia a una dimenticanza da correggere, ed è proprio la correzione a introdurre il doppio conteggio. Il netto nel pannello, e non il lordo più lo sconto, evita di rappresentare la stessa riduzione in due punti che l'app somma separatamente (`resolveAccommodationCost` per la riga alloggio, `activeDiscount` per il totale). Il commento nel file serve perché il dato sopravviva alla cancellazione del documento `state/costs`, che è stato azzerato più volte durante lo sviluppo. Conseguenze: la riga `Alloggio` del file porta ora un valore reale (€355,06 a persona) e non più una forbice indicativa, e il totale è salito da €452-805 a €582-760, perché la stima precedente era ottimista in basso. Il deposito cauzionale di €150 resta fuori dal totale perché rimborsabile: è liquidità da portare, non una spesa, e vive come voce di checklist. Effetto collaterale scoperto leggendo il codice e non previsto in partenza: quando una prenotazione risulta confermata, `renderInfoCosts` nasconde tutte le opzioni indicative dell'alloggio (`hideOptions`), quindi la voce sulla masseria in Valle d'Itria resta visibile solo nella sezione Cisternino del Giorno 3. Discrepanza aperta al momento della scrittura: il pannello contiene €804,78, venti euro esatti in più del totale dichiarato, e va chiarito quale sia il valore vero prima di considerare il totale attendibile.

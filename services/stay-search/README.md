@@ -1,45 +1,22 @@
 # stay-search — Fase 2 della roadmap funzionalità
 
-Servizio FastAPI di ricerca alloggi, secondo tassello del comparatore descritto in
-`.claude/context/roadmap.md`. Un solo adapter (Airbnb via `pyairbnb`), nessuna chiave richiesta,
-nessuna cache ancora.
+Servizio FastAPI di ricerca alloggi, secondo tassello del comparatore descritto in `.claude/context/roadmap.md`. Un solo adapter (Airbnb via `pyairbnb`), nessuna chiave richiesta, nessuna cache ancora.
 
 ## Cosa c'è
 
-Un endpoint `POST /api/stays/search` che accetta un nome di località (non coordinate grezze),
-date di check-in/check-out, numero di adulti e prezzo massimo, e restituisce una lista di
-`StayOffer` normalizzati ordinati per prezzo crescente. Il nome di località viene geocodificato
-in un bounding box tramite Nominatim (OpenStreetMap, `app/geocoding.py`), gratuito e senza
-chiave; il bounding box alimenta la ricerca geografica di Airbnb (`app/adapters/pyairbnb_adapter.py`).
+Un endpoint `POST /api/stays/search` che accetta un nome di località (non coordinate grezze), date di check-in/check-out, numero di adulti e prezzo massimo, e restituisce una lista di `StayOffer` normalizzati ordinati per prezzo crescente. Il nome di località viene geocodificato in un bounding box tramite Nominatim (OpenStreetMap, `app/geocoding.py`), gratuito e senza chiave; il bounding box alimenta la ricerca geografica di Airbnb (`app/adapters/pyairbnb_adapter.py`).
 
-`StayOffer` porta anche `lat`/`lon` (0 se assenti): la libreria le espone in
-`coordinates.latitude`/`coordinates.longitud` (si', senza "e" finale — refuso reale della
-libreria installata, verificato leggendo il suo codice sorgente), usate dalla shell frontend per
-la mappetta prezzi nella scheda "Pianifica" (`public/index.html:renderPlanPriceMap`).
+`StayOffer` porta anche `lat`/`lon` (0 se assenti): la libreria le espone in `coordinates.latitude`/`coordinates.longitud` (si', senza "e" finale — refuso reale della libreria installata, verificato leggendo il suo codice sorgente), usate dalla shell frontend per la mappetta prezzi nella scheda "Pianifica" (`public/index.html:renderPlanPriceMap`).
 
 ## Stato di verifica
 
-Eseguito realmente in questa sessione: virtualenv, `pip install`, ricerca live per "Marina di
-Camerota" (15-20 settembre 2026, 2 adulti). Risultato: 40 alloggi reali con nomi, tipo, prezzo
-totale del soggiorno e valutazioni vere, tutti con coordinate valide (verificato: 40/40 avevano
-`lat`/`lon` diversi da 0).
+Eseguito realmente in questa sessione: virtualenv, `pip install`, ricerca live per "Marina di Camerota" (15-20 settembre 2026, 2 adulti). Risultato: 40 alloggi reali con nomi, tipo, prezzo totale del soggiorno e valutazioni vere, tutti con coordinate valide (verificato: 40/40 avevano `lat`/`lon` diversi da 0).
 
-**Due bug reali della libreria installata (`pyairbnb` 2.2.1), scoperti e aggirati in sessione,
-non documentati altrove:**
+**Due bug reali della libreria installata (`pyairbnb` 2.2.1), scoperti e aggirati in sessione, non documentati altrove:**
 
-`search_first_page()`/`search_all()` passano internamente `results_raw.get("searchResults", [])`
-alla funzione di normalizzazione, ma `"searchResults"` non è una chiave di primo livello della
-risposta grezza — è annidata in `data.presentation.staysSearch.results.searchResults`. Il
-risultato è che le funzioni pubbliche della libreria falliscono sempre con
-`AttributeError: 'list' object has no attribute 'get'`. Bypass: l'adapter chiama direttamente
-`pyairbnb.api.get()` e `pyairbnb.search.get()` per la richiesta grezza, poi passa il dizionario
-intero (non filtrato) a `pyairbnb.standardize.from_search()`, che naviga correttamente il
-percorso annidato.
+`search_first_page()`/`search_all()` passano internamente `results_raw.get("searchResults", [])` alla funzione di normalizzazione, ma `"searchResults"` non è una chiave di primo livello della risposta grezza — è annidata in `data.presentation.staysSearch.results.searchResults`. Il risultato è che le funzioni pubbliche della libreria falliscono sempre con `AttributeError: 'list' object has no attribute 'get'`. Bypass: l'adapter chiama direttamente `pyairbnb.api.get()` e `pyairbnb.search.get()` per la richiesta grezza, poi passa il dizionario intero (non filtrato) a `pyairbnb.standardize.from_search()`, che naviga correttamente il percorso annidato.
 
-Il campo `price.total` restituito è sempre `0`. Il prezzo reale sta nell'ultimo elemento di
-`price.break_down`: senza sconti c'è una sola voce (il totale); con uno sconto, l'ultima voce è
-esplicitamente "Totale" e somma le precedenti. Prendere l'ultimo elemento copre entrambi i casi,
-verificato su esempi reali di entrambe le forme nella stessa ricerca di prova.
+Il campo `price.total` restituito è sempre `0`. Il prezzo reale sta nell'ultimo elemento di `price.break_down`: senza sconti c'è una sola voce (il totale); con uno sconto, l'ultima voce è esplicitamente "Totale" e somma le precedenti. Prendere l'ultimo elemento copre entrambi i casi, verificato su esempi reali di entrambe le forme nella stessa ricerca di prova.
 
 ```bash
 pip install -r requirements.txt
@@ -51,15 +28,8 @@ curl -X POST http://localhost:8002/api/stays/search \
 
 ## Considerazioni ToS
 
-Nessuna API ufficiale Airbnb esiste; `pyairbnb` fa reverse-engineering della GraphQL interna.
-Usato qui senza login con account personale, solo richieste pubbliche anonime, come raccomandato
-dal repository upstream e già annotato in `roadmap.md`. Rischio ToS più alto delle fonti voli
-usate in `services/flight-search/`, accettato per uso privato a basso volume secondo lo stesso
-ragionamento della ricerca originale.
+Nessuna API ufficiale Airbnb esiste; `pyairbnb` fa reverse-engineering della GraphQL interna. Usato qui senza login con account personale, solo richieste pubbliche anonime, come raccomandato dal repository upstream e già annotato in `roadmap.md`. Rischio ToS più alto delle fonti voli usate in `services/flight-search/`, accettato per uso privato a basso volume secondo lo stesso ragionamento della ricerca originale.
 
 ## Cosa manca — vedi roadmap.md per il piano completo
 
-Nessuna seconda fonte (Booking.com è partner-only, non percorribile; Amadeus Hotel API condivide
-la chiusura del portale self-service descritta in `roadmap.md` e ADR-006). Hosting deciso: Render
-(ADR-008, `.claude/memory/decisions.md`), `render.yaml` alla radice del repository; creazione
-effettiva del servizio su Render non ancora eseguita.
+Nessuna seconda fonte (Booking.com è partner-only, non percorribile; Amadeus Hotel API condivide la chiusura del portale self-service descritta in `roadmap.md` e ADR-006). Hosting deciso: Render (ADR-008, `.claude/memory/decisions.md`), `render.yaml` alla radice del repository; creazione effettiva del servizio su Render non ancora eseguita.

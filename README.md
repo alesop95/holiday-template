@@ -1,8 +1,6 @@
 # Travel App — Documentazione Tecnica
 
-**Versione:** 2.0.0
-**Stack:** Vanilla JavaScript ES Modules · Firebase Firestore · Firebase Hosting · Leaflet.js
-**Autore:** generato con Claude (Anthropic)
+**Versione:** 2.0.0 **Stack:** Vanilla JavaScript ES Modules · Firebase Firestore · Firebase Hosting · Leaflet.js **Autore:** generato con Claude (Anthropic)
 
 ---
 
@@ -171,9 +169,7 @@ export const TRIP_META = {
 };
 ```
 
-Convenzione di contenuto, valida per ogni viaggio: nessuna emoji e nessun trattino lungo nei
-testi. La shell non usa emoji per le icone (il cerchio di ogni giorno mostra il numero, non
-un'icona), quindi neanche il contenuto ne introduce.
+Convenzione di contenuto, valida per ogni viaggio: nessuna emoji e nessun trattino lungo nei testi. La shell non usa emoji per le icone (il cerchio di ogni giorno mostra il numero, non un'icona), quindi neanche il contenuto ne introduce.
 
 Questa separazione consente a `index.html` di renderizzare l'intestazione immediatamente al caricamento, prima ancora che Firebase risponda, perché `renderHero()` viene invocata come prima istruzione di `init()` e non dipende da alcuna chiamata asincrona.
 

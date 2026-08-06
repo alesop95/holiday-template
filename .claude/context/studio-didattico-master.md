@@ -1,55 +1,15 @@
 # Studio didattico — holiday-template
 
-> Racconto evolutivo delle scelte di qualità non ovvie di questo progetto: non registra *cosa* è
-> vero oggi (quello vive nelle schede tecniche di `.claude/context/`), ma *perché* una forma
-> precedente era fragile e *perché* quella successiva è un salto di qualità. Cresce per voci
-> numerate in ordine cronologico, sempre in fondo al file; le voci precedenti non si toccano.
-> Adottato su richiesta esplicita dell'utente il 2026-07-09, a metà percorso del progetto: non
-> contiene voci retroattive per il lavoro già fatto prima di questa data.
+> Racconto evolutivo delle scelte di qualità non ovvie di questo progetto: non registra *cosa* è vero oggi (quello vive nelle schede tecniche di `.claude/context/`), ma *perché* una forma precedente era fragile e *perché* quella successiva è un salto di qualità. Cresce per voci numerate in ordine cronologico, sempre in fondo al file; le voci precedenti non si toccano. Adottato su richiesta esplicita dell'utente il 2026-07-09, a metà percorso del progetto: non contiene voci retroattive per il lavoro già fatto prima di questa data.
 
 ## 1. Render come deploy dei quattro servizi backend: Blueprint, Manual Deploy e Auto-Deploy
 
-Contesto. I quattro servizi FastAPI (`services/{flight-search,stay-search,poi-search,
-trip-planner}/`) girano su Render (ADR-008, `memory/decisions.md`) dal deploy iniziale dell'8
-luglio 2026. In questa sessione, dopo aver corretto un bug di `flight-search` (fissata la
-versione della libreria `fast-flights` a `3.0.2`, verificata funzionante), l'utente ha cliccato
-"Manual Deploy" su Render *prima* di aver committato e pushato la modifica — e ha poi chiesto
-perché quel deploy non conteneva il fix, e perché in quel caso specifico fosse stato necessario
-"forzare" un deploy manuale invece che lasciarlo accadere da solo.
+Contesto. I quattro servizi FastAPI (`services/{flight-search,stay-search,poi-search, trip-planner}/`) girano su Render (ADR-008, `memory/decisions.md`) dal deploy iniziale dell'8 luglio 2026. In questa sessione, dopo aver corretto un bug di `flight-search` (fissata la versione della libreria `fast-flights` a `3.0.2`, verificata funzionante), l'utente ha cliccato "Manual Deploy" su Render *prima* di aver committato e pushato la modifica — e ha poi chiesto perché quel deploy non conteneva il fix, e perché in quel caso specifico fosse stato necessario "forzare" un deploy manuale invece che lasciarlo accadere da solo.
 
-Com'era e perché era fragile. Il modello mentale implicito era che "deployare" leggesse in
-qualche modo lo stato attuale del progetto — magari i file sul disco locale, magari l'ultima
-modifica fatta in sessione. Con questa aspettativa, cliccare "Manual Deploy" subito dopo una
-modifica sembra l'azione corretta e sufficiente. È un'aspettativa ragionevole per chi viene da un
-modello "deploy = pubblica quello che ho adesso", ma è falsa per Render (e per la maggior parte
-delle piattaforme di hosting collegate a Git): Render non ha mai visto i file locali, perché non
-è collegato al filesystem della macchina di sviluppo, è collegato al repository GitHub
-(`alesop95/holiday-template`, branch `main`). "Manual Deploy" non fa altro che rieseguire
-`buildCommand` e `startCommand` sull'ultimo commit già presente su quel branch remoto — lo stesso
-identico codice del deploy precedente, se nel frattempo non è arrivato un push nuovo.
+Com'era e perché era fragile. Il modello mentale implicito era che "deployare" leggesse in qualche modo lo stato attuale del progetto — magari i file sul disco locale, magari l'ultima modifica fatta in sessione. Con questa aspettativa, cliccare "Manual Deploy" subito dopo una modifica sembra l'azione corretta e sufficiente. È un'aspettativa ragionevole per chi viene da un modello "deploy = pubblica quello che ho adesso", ma è falsa per Render (e per la maggior parte delle piattaforme di hosting collegate a Git): Render non ha mai visto i file locali, perché non è collegato al filesystem della macchina di sviluppo, è collegato al repository GitHub (`alesop95/holiday-template`, branch `main`). "Manual Deploy" non fa altro che rieseguire `buildCommand` e `startCommand` sull'ultimo commit già presente su quel branch remoto — lo stesso identico codice del deploy precedente, se nel frattempo non è arrivato un push nuovo.
 
-Il salto senior e perché è meglio. Il principio generale è che un servizio Render, come qualunque
-hosting *Git-based*[^1], non ha uno stato proprio indipendente dal repository: è, in ogni
-istante, una funzione del commit più recente che il branch collegato ha raggiunto. Due azioni
-distinte discendono da questo principio, e vanno tenute separate mentalmente. Il *push* su
-GitHub è l'unico evento che cambia *quale* codice Render può costruire. Il *deploy* — manuale o
-automatico — è sempre e solo l'atto di costruire ed eseguire quel codice, non di aggiornarlo.
-"Manual Deploy" serve quando non c'è un commit nuovo da propagare ma si vuole comunque forzare
-una nuova build (un tentativo fallito da rilanciare, una variabile d'ambiente appena cambiata da
-applicare, un servizio addormentato da svegliare prima che arrivi una richiesta reale): è
-esattamente il caso in cui si è trovato l'utente, con il fix non ancora pushato, quindi senza
-alcun commit nuovo su cui un deploy automatico potesse agire — l'unica leva disponibile in quel
-momento era forzare comunque una build, pur sapendo che avrebbe ricostruito lo stesso codice di
-prima. "Auto-Deploy" è il comportamento predefinito quando un servizio è collegato a un branch:
-ogni push su quel branch genera da solo un nuovo deploy, senza bisogno di cliccare nulla —
-osservato dal vivo subito dopo, quando il push del commit che conteneva davvero il fix ha fatto
-scattare in autonomia un redeploy di `flight-search-pfcn`, etichettato in Dashboard come "New
-commit via Auto-Deploy", senza alcuna azione manuale dell'utente su quel servizio. La sequenza
-corretta, quindi, è sempre commit, poi push, e solo a quel punto un deploy — manuale o automatico
-— ha davvero qualcosa di nuovo da costruire.
+Il salto senior e perché è meglio. Il principio generale è che un servizio Render, come qualunque hosting *Git-based*[^1], non ha uno stato proprio indipendente dal repository: è, in ogni istante, una funzione del commit più recente che il branch collegato ha raggiunto. Due azioni distinte discendono da questo principio, e vanno tenute separate mentalmente. Il *push* su GitHub è l'unico evento che cambia *quale* codice Render può costruire. Il *deploy* — manuale o automatico — è sempre e solo l'atto di costruire ed eseguire quel codice, non di aggiornarlo. "Manual Deploy" serve quando non c'è un commit nuovo da propagare ma si vuole comunque forzare una nuova build (un tentativo fallito da rilanciare, una variabile d'ambiente appena cambiata da applicare, un servizio addormentato da svegliare prima che arrivi una richiesta reale): è esattamente il caso in cui si è trovato l'utente, con il fix non ancora pushato, quindi senza alcun commit nuovo su cui un deploy automatico potesse agire — l'unica leva disponibile in quel momento era forzare comunque una build, pur sapendo che avrebbe ricostruito lo stesso codice di prima. "Auto-Deploy" è il comportamento predefinito quando un servizio è collegato a un branch: ogni push su quel branch genera da solo un nuovo deploy, senza bisogno di cliccare nulla — osservato dal vivo subito dopo, quando il push del commit che conteneva davvero il fix ha fatto scattare in autonomia un redeploy di `flight-search-pfcn`, etichettato in Dashboard come "New commit via Auto-Deploy", senza alcuna azione manuale dell'utente su quel servizio. La sequenza corretta, quindi, è sempre commit, poi push, e solo a quel punto un deploy — manuale o automatico — ha davvero qualcosa di nuovo da costruire.
 
 Dove leggere il dettaglio: `refactor-01-render-deploy-model.md`.
 
-[^1]: *Git-based hosting* — modello di hosting in cui la piattaforma (qui Render) è collegata a un
-repository Git remoto e costruisce/esegue sempre e solo il codice presente su un commit di quel
-repository, mai i file del filesystem locale di chi sviluppa.
+[^1]: *Git-based hosting* — modello di hosting in cui la piattaforma (qui Render) è collegata a un repository Git remoto e costruisce/esegue sempre e solo il codice presente su un commit di quel repository, mai i file del filesystem locale di chi sviluppa.

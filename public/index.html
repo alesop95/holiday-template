@@ -266,27 +266,47 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 .price-drop-badge{display:inline-block;background:#E3F7EE;color:#1DAD70;font-size:11px;font-weight:700;padding:2px 9px;border-radius:100px;}
 @media(min-width:600px){.map-leg{grid-template-columns:1fr 1fr 1fr;}}
 
-/* ── Esportazione/stampa dell'itinerario ("Esporta / Stampa itinerario", tab Itinerario) ────────
+/* ── Stampa e esportazione in PDF di una singola scheda ─────────────────────────────────────────
    window.print() nativo invece di una libreria PDF caricata da CDN: zero dipendenza nuova, e il
    dialogo di stampa del browser offre gia' "Salva come PDF" su ogni sistema operativo moderno,
-   coprendo sia "PDF" sia "stampa pulita" con lo stesso meccanismo. Forza sempre la vista
-   Itinerario indipendentemente dalla scheda attiva sullo schermo (un'esportazione e' un'azione
-   dedicata, non "stampa quello che vedi ora"), ed espande ogni day-card anche se collassata a
-   schermo (.day-body e' display:none di default, controllato da JS su clic): senza questa
-   regola l'esportazione mostrerebbe solo i giorni che l'utente aveva gia' aperto manualmente. */
+   coprendo sia "PDF" sia "stampa pulita" con lo stesso meccanismo.
+   Prima questa regola forzava sempre la vista Itinerario, qualunque scheda fosse attiva: rendeva
+   impossibile stampare la lista della valigia, i ristoranti o i costi, che sono esattamente le
+   pagine che si vogliono in tasca. Ora ogni scheda e' stampabile per conto suo. Il meccanismo:
+   printPage() (js/main.js) marca la scheda attiva con .print-target e mette .printing sul body,
+   e queste regole mostrano solo quella. Il fallback per una stampa lanciata da tastiera
+   (Ctrl+P, senza passare dal pulsante) stampa la scheda attiva, che e' il comportamento atteso.
+   Sull'Itinerario si espande ogni day-card anche se collassata a schermo (.day-body e'
+   display:none di default, controllato da JS su clic): senza questa regola si stamperebbero solo
+   i giorni aperti a mano. I link restano cliccabili dentro il PDF generato dal browser, quindi
+   non si stampa l'URL accanto al testo: sarebbe rumore in un documento che resta digitale. */
 @media print {
-  .nav-wrap, .hero-edit-btn, .hero-edit-panel, #export-print-btn,
-  .day-actions, .day-chv, .plan-rm-btn, .route-btn { display: none !important; }
+  @page { margin: 14mm; }
+  .nav-wrap, .hero-edit-btn, .hero-edit-panel, .sync-dot, #overlay, .print-fab,
+  .day-actions, .day-chv, .plan-rm-btn, .route-btn, .plan-form, button { display: none !important; }
   .panel { display: none !important; }
-  #itinerario { display: block !important; }
-  .day-body { display: block !important; }
+  body.printing .panel.print-target { display: block !important; }
+  body:not(.printing) .panel.active { display: block !important; }
+  body.printing #itinerario.print-target .day-body { display: block !important; }
+  body:not(.printing) #itinerario.active .day-body { display: block !important; }
   .day-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+  .ck-cat, .ck-item, .rest-card, .cost-row, .bg-row, .info-hotel, .sec-blk { break-inside: avoid; }
+  /* Le caselle spuntate hanno lo sfondo colorato: senza print-color-adjust il browser lo
+     scarta e una lista mezza spuntata si stampa come se fosse tutta da fare. */
+  .ck-box, .sec-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #map { height: 360px !important; }
   .hero { background: none !important; color: #111; }
   .hero h1 { color: #111; }
   .hero-sub, .hero-stat { color: #333 !important; }
   .hero-badge { background: none; border-color: #111; color: #111; }
   .hero-stat { background: none; border: 1px solid #999; }
+  a { color: #111; }
 }
+/* Pulsante di stampa flottante: sta fuori dalla barra delle schede (che e' uno scroller
+   orizzontale, dove un pulsante non-scheda si confonderebbe con una scheda) e resta
+   raggiungibile da qualunque pagina. Spostato a destra del sync-dot per non coprirlo. */
+.print-fab{position:fixed;bottom:14px;right:34px;z-index:250;background:var(--white);border:1.5px solid var(--border);border-radius:100px;padding:9px 15px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;color:var(--sea2);box-shadow:0 4px 16px var(--sh);cursor:pointer;}
+.print-fab:hover{border-color:var(--sea2);}
 </style>
 </head>
 <body>
@@ -298,6 +318,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
 </div>
 
 <div class="sync-dot" title="Connesso - sincronizzazione attiva"></div>
+
+<!-- Stampa della scheda attiva: vale per ogni pagina del sito, non solo per l'Itinerario. -->
+<button class="print-fab" onclick="printPage()" title="Stampa o salva in PDF la scheda che stai guardando">Stampa / PDF</button>
 
 <!-- Hero: renderizzato dinamicamente da S.meta (Firestore, con fallback a TRIP_META) -->
 <div id="hero-root" class="hero"></div>
@@ -320,7 +343,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
     <div class="sec-head">
       <h2>Il Programma</h2>
       <p id="program-summary"></p>
-      <button class="act-btn" id="export-print-btn" onclick="window.print()">Esporta / Stampa itinerario</button>
+      <button class="act-btn" id="export-print-btn" onclick="printPage()">Esporta / Stampa itinerario</button>
     </div>
     <div id="saved-links"></div>
     <div id="days-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
@@ -335,7 +358,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--text);m
     <div id="rest-container"><p style="color:var(--muted);font-size:13px;padding:20px 0;">Caricamento...</p></div>
   </div>
   <div id="valigia" class="panel">
-    <div class="sec-head"><h2>Lista Valigia</h2><p>Sincronizzata in tempo reale: se tu spunti qualcosa, lei lo vede subito.</p></div>
+    <div class="sec-head"><h2>Lista Valigia</h2><p>Sincronizzata in tempo reale: se tu spunti qualcosa, lei lo vede subito.</p>
+      <button class="act-btn" onclick="printPage()">Stampa / PDF della valigia</button>
+    </div>
     <div class="ck-prog">
       <div class="ck-prog-lbl"><span id="prog-status">Preparazione</span><span id="prog-txt">0 / 0</span></div>
       <div class="ck-bar"><div class="ck-fill" id="prog-fill" style="width:0%"></div></div>

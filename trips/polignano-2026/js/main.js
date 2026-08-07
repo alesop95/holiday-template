@@ -64,6 +64,29 @@ window.showTab = (id,btn) => {
   if(id==='mappa') renderMap();
   if(id==='pianifica') { ensureAirportsLoaded(); ensureCitiesLoaded(); warmupBackend(); checkPriceAlerts(); }
 };
+// Stampa (o "Salva come PDF" dal dialogo del browser) della sola scheda attiva: marca il pannello
+// con .print-target e il body con .printing, che sono le due classi su cui lavora il blocco
+// @media print in index.html. Serve perche' tutte le schede vivono nello stesso documento: senza
+// marcatura il browser stamperebbe l'intera app, e la regola precedente forzava sempre
+// l'Itinerario rendendo non stampabili valigia, ristoranti, costi e mappa.
+// La pulizia passa da afterprint, con un timer di riserva perche' non tutti i browser lo emettono
+// in modo affidabile (Safari): senza il fallback il body resterebbe in stato .printing a video.
+window.printPage = () => {
+  const panel = document.querySelector('.panel.active');
+  if (!panel) { window.print(); return; }
+  document.body.classList.add('printing');
+  panel.classList.add('print-target');
+  let cleaned = false;
+  const cleanup = () => {
+    if (cleaned) return; cleaned = true;
+    document.body.classList.remove('printing');
+    panel.classList.remove('print-target');
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(cleanup, 3000);
+  window.print();
+};
 window.tog = id => document.getElementById(`dc${id}`).classList.toggle('open');
 window.ckTog = (key,el) => {
   const v=!S.ckState[key]; S.ckState[key]=v;

@@ -8,7 +8,7 @@ covers-paths:
   - services/flight-search/**
   - README.md
   - .gitignore
-last-verified-commit: d77a62826234fd137b8bf16ad32cbaf6e558b37a
+last-verified-commit: 270fc1dd
 stato: in corso
 ---
 
@@ -212,8 +212,34 @@ Definition of done:
 - [x] Riscontro visivo chiuso su cinque screenshot dell'utente (Giorno 3, Giorno 4, mappa, Info & Costi, cose da fare del Giorno 2), non assunto dal codice.
 - [ ] **Discrepanza aperta sull'importo dell'alloggio**: il pannello Alloggio confermato su Firestore contiene €804,78, venti euro esatti in più del totale Booking dichiarato, e nessuna delle due cifre meno il wallet dà €710,12 tranne €784,78. Finché non è chiarito, il valore del pannello prevale sul file e il totale mostrato sovrastima di €47,33 a persona. Va guardata la conferma Booking e poi inserita nel pannello la cifra netta pagata.
 
-Domande aperte: se le due giornate alternative (Martina Franca e Ostuni) debbano prima o poi diventare due giornate distinte invece di una con sezioni opzionali, quando il viaggio avrà date fissate e si saprà quale delle due si fa davvero. Non deciso, non richiesto.
+Domande aperte: nessuna residua. La domanda aperta di questa feature (se Martina Franca e Ostuni dovessero diventare due giornate distinte, da decidere quando il viaggio avesse avuto date fissate) è stata risolta dalla feature successiva: con le date reali non entrano né l'una né l'altra.
+
+## Feature: itinerario di Polignano sulle date reali, grotte, link e stampa per scheda — chiusa salvo il riscontro visivo
+
+Cosa fa: tre cose distinte, arrivate in sequenza nella stessa sessione perché ognuna ha cambiato il quadro della precedente. La prima è di contenuto: Lama Monachile guadagna le informazioni pratiche che le mancavano (accessi, fondo di ciottoli, servizi assenti, parcheggi, orari reali) più una sezione che dichiara le discordanze tra le fonti su datazione del ponte e numero di accessi, e i tour delle grotte entrano su due fronti, quelle marine di Polignano con operatori e prezzi pubblicati e le Grotte di Castellana con il listino ufficiale 2026, SpeleoNight e Hell in the Cave. La seconda è strutturale: comunicate le date reali (partenza sabato 8 agosto, arrivo a Polignano alle 19:00-19:30, rientro giovedì 13), l'itinerario è stato riorganizzato su ciò che è umanamente fattibile. La terza è di codice: la stampa in PDF vale ora per ogni scheda del sito e non solo per l'Itinerario (ADR-012), e ogni affermazione che ha una fonte porta il link cliccabile anche fuori dalle sezioni dei giorni.
+
+File modificati: `trips/polignano-2026/trip.config.js` per tutto il contenuto; `public/index.html` e `public/js/main.js` per la stampa, propagati identici a `trips/polignano-2026/` e `trips/cilento-2026/` e verificati con `diff`.
+
+Definition of done:
+
+- [x] Contenuto di Lama Monachile e dei tour delle grotte da ricerca web con fonti citate accanto al testo. Trenta link distinti nel file, tutti con `rel="noopener noreferrer"`, verificati con uno script che importa il modulo e controlla i tag bilanciati.
+- [x] Grotte di Castellana aggiunta alla mappa, che non l'aveva pur essendo una tappa: coordinate reali dell'ingresso da Nominatim (`natural=cave_entrance`), non a memoria.
+- [x] Buco nei costi corretto: il Giorno 3 dichiarava €5-10 di attività con un biglietto da €25, la riga dei biglietti passa da €15-35 a €45-75 e le somme sono state riverificate contro le stime giornaliere con uno script, non a vista.
+- [x] Itinerario riorganizzato sulle date reali: Bari passa dall'andata al giorno del rientro, il Giorno 1 resta viaggio più cena più centro storico dopo cena, Alberobello e la cena a Cisternino stanno nella stessa serata, Martina Franca e Ostuni escono dal piano e diventano tappe non incluse in coda al Giorno 6 conservando le loro fonti.
+- [x] Le tre scelte che cambiavano il file (spettacolo del 9 agosto, sosta del rientro, forma della serata in Valle d'Itria) chieste all'utente invece di decise per ipotesi.
+- [x] Verificato che SpeleoNight è impossibile (prima data 15 agosto, due giorni dopo il rientro) e che Hell in the Cave ha come uniche date di agosto il 9, 14, 22 e 29, quindi solo il 9 cadeva nel viaggio: scartato dall'utente a favore della giornata di mare.
+- [x] Tutte le tratte del piano nuovo ricalcolate con OSRM e riga del carburante rifatta su 1075,3 km reali.
+- [x] Stampa per scheda attiva (ADR-012) con pulsante flottante su ogni pagina, più uno dedicato nella Valigia. `node --check` su `main.js`, tre copie della shell allineate con `diff`.
+- [x] Voci di valigia chieste dall'utente aggiunte in coda alle categorie, per non spostare le spunte: sacca da canoa impermeabile, chiave di riserva dell'auto, secondo caricabatterie con cavi, due power bank, ciabatta piccola.
+- [x] Corretta una citazione sbagliata prodotta in questa stessa sessione: gli orari dei turni di agosto erano attribuiti a una guida che riporta solo un generico 9:00-19:00, ora è citata la pagina che li elenca turno per turno e il testo dichiara che le due fonti non concordano sull'ultimo turno. Rimosso un link a TicketOne non verificabile (pagina in timeout).
+- [ ] **Nessun riscontro visivo dell'utente in browser** su questa sessione: né sull'itinerario riorganizzato né sull'anteprima di stampa della Valigia e dell'Itinerario. È l'unica verifica pendente sul lavoro fatto.
+- [ ] **Spunte da azzerare prima di usare l'app in viaggio**: le sezioni dei giorni e la categoria "Per la Coppia" sono state riscritte e le chiavi delle checkbox sono posizionali, quindi le spunte esistenti puntano a voci diverse. Le altre categorie della valigia sono salve, tranne la quinta voce di Documenti che ha cambiato contenuto.
+- [ ] **Discrepanza dell'alloggio ancora aperta**, ereditata dalla feature precedente e non affrontata qui.
+
+Domande aperte: se anche `trips/cilento-2026/` vada ripubblicato per avere la stampa (il codice è già propagato nel repository, ma il suo sito Hosting resta al deploy precedente finché non si lancia `firebase deploy` dalla sua cartella). Nessuna urgenza dichiarata dall'utente, il viaggio attivo è Polignano.
 
 ## Riconciliazione
 
-Ultima verifica: 2026-08-03, contro `d77a628`. Alla chiusura di quella sessione risultavano non committate due modifiche a `trips/polignano-2026/trip.config.js` (nome della struttura e nota sulla discrepanza dell'importo) e restavano modificati da prima cinque file sotto `.claude/templates/` più `.claude/PROJECT-SYSTEM.md`, con `scrub-claude-json.js` e `RESUME_PROMPT.md` non tracciati: roba di manutenzione del template, non di questo viaggio, lasciata deliberatamente fuori dai commit del contenuto. Controllare `git status` prima di assumere lo stato esatto. Nota che il work-log non copre le sessioni dei commit dal 13 al 15 luglio: i messaggi di commit sono l'unica traccia.
+Ultima verifica: 2026-08-07, contro `270fc1d`. Le tre voci di lavoro di questa sessione sono committate (`418fbda`, `3f56fb9`, `270fc1d`); restano modificati da prima cinque file sotto `.claude/templates/` più `.claude/PROJECT-SYSTEM.md`, con `scrub-claude-json.js` e `RESUME_PROMPT.md` non tracciati, cioè manutenzione del template lasciata deliberatamente fuori dai commit del viaggio. Controllare `git status` prima di assumere lo stato esatto.
+
+Verifica precedente: 2026-08-03, contro `d77a628`. Alla chiusura di quella sessione risultavano non committate due modifiche a `trips/polignano-2026/trip.config.js` (nome della struttura e nota sulla discrepanza dell'importo) e restavano modificati da prima cinque file sotto `.claude/templates/` più `.claude/PROJECT-SYSTEM.md`, con `scrub-claude-json.js` e `RESUME_PROMPT.md` non tracciati: roba di manutenzione del template, non di questo viaggio, lasciata deliberatamente fuori dai commit del contenuto. Controllare `git status` prima di assumere lo stato esatto. Nota che il work-log non copre le sessioni dei commit dal 13 al 15 luglio: i messaggi di commit sono l'unica traccia.

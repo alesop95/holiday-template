@@ -6,9 +6,9 @@
 
 ```
 Branch attivo:         main
-Commit di riferimento: d77a62826234fd137b8bf16ad32cbaf6e558b37a (verificare con git log: potrebbe
-                       essere avanzato, questo file viene aggiornato meno spesso dei commit)
-Data snapshot:         2026-08-03
+Commit di riferimento: 270fc1d (verificare con git log: potrebbe essere avanzato, questo file
+                       viene aggiornato meno spesso dei commit)
+Data snapshot:         2026-08-07
 ```
 
 Nota importante per chi riprende: la storia Git precedente a questo commit è stata riscritta (`git filter-repo`, ADR-005) per bonificare una `apiKey` Firebase esposta pubblicamente. Gli hash dei commit antecedenti a quell'operazione non coincidono più con eventuali riferimenti più vecchi di questo file o della chat. Non fidarsi di hash citati altrove precedenti al 2026-07-07.
@@ -21,7 +21,7 @@ Nota importante per chi riprende: la storia Git precedente a questo commit è st
 | design-and-security.md | fb591e5 | popolata, committata (hash pre-riscrittura storia, contenuto valido) |
 | deployment.md | fb591e5 | popolata, committata (hash pre-riscrittura storia, contenuto valido) |
 | dev-testing.md | 98e4395 | aggiornata in sessione (2026-07-07), non ancora committata |
-| current-work.md | d77a628 | aggiornata e riancorata a HEAD in sessione (2026-08-03) |
+| current-work.md | 270fc1d | aggiornata e riancorata a HEAD in sessione (2026-08-07) |
 | roadmap.md | 98e4395 | aggiornata in sessione (2026-07-07), non ancora committata |
 
 ## Punto di ripresa
@@ -38,5 +38,7 @@ Nessuno dei quattro backend è deployato da nessuna parte: girano solo in locale
 **Collegamento frontend-backend, primo pezzo (2026-07-08)**: la shell guadagna una scheda "Pianifica" che chiama `trip-planner` via `fetch` e salva un risultato scelto su un giorno specifico direttamente su Firestore dal browser, senza dare al backend un Admin SDK (ADR-007, `memory/decisions.md`) — CORS aperto sui quattro servizi per permettere la chiamata da browser. Verificato dal vivo lato rete (CORS, forma della risposta contro il rendering reale). **Primo test in browser reale fallito** con `Failed to fetch`: diagnosi confermata (screenshot dell'utente) è un blocco di *mixed content* del browser, la shell HTTPS non può chiamare un backend `http://localhost`. Deciso di conseguenza l'hosting dei quattro backend su **Render** (ADR-008), `render.yaml` alla radice, che risolve il blocco mettendo anche il backend su HTTPS — creazione effettiva dei servizi su Render non ancora eseguita (passo manuale). Il test visivo del salvataggio su Firestore resta sospeso fino a quel deploy, dettaglio in `current-work.md`.
 
 **Secondo viaggio, `trips/polignano-2026/` (aggiornamento 2026-08-03)**: esiste, è deployato su `https://holiday-template-polignano-2026.web.app` con il proprio sito Hosting dedicato (ADR-009) e il codice è stato spezzato in moduli ES nativi sotto `js/`, quindi `index.html` non contiene più lo script inline. In questa sessione è stato lavorato solo il contenuto, `trip.config.js`: Cisternino aggiunta al Giorno 3, Giorno 4 ricostruito su Martina Franca con Ostuni retrocessa a tappa opzionale, Matera e Bernalda tra le tappe di raggio più ampio, venti cose da fare tipizzate per categoria verificata su OpenStreetMap (ADR-010), costi dell'alloggio passati da stima a cifra reale pagata con lo sconto del wallet Booking tenuto inerte per non contarlo due volte (ADR-011). Tutto verificato con due controlli eseguibili più cinque screenshot dell'utente, dettaglio in `context/current-work.md`. **Una discrepanza resta aperta**: il pannello Alloggio confermato su Firestore contiene €804,78 contro i €784,78 di totale Booking dichiarati, e il totale mostrato sovrastima di €47,33 a persona finché non si inserisce la cifra netta pagata.
+
+**Aggiornamento 2026-08-07, viaggio Polignano su date reali e stampa per scheda**: il viaggio ha date vere (partenza sabato 8 agosto, arrivo a Polignano alle 19:00-19:30, rientro giovedì 13, cinque notti) e l'itinerario è stato riorganizzato di conseguenza, non più scritto senza calendario. Bari passa dall'andata al giorno del rientro, il Giorno 1 è solo viaggio più cena più centro storico dopo cena, Alberobello e la cena a Cisternino stanno nella stessa serata, Martina Franca e Ostuni escono dal piano e restano documentate come tappe non incluse. Aggiunti i contenuti su Lama Monachile e sui tour delle grotte, marine e di Castellana, con trenta link a fonti verificate anche fuori dalle sezioni dei giorni (biglietti, consigli di risparmio, note della checklist). Sul codice della shell: la stampa in PDF vale ora per ogni scheda e non solo per l'Itinerario (ADR-012), propagata alle tre copie. Due verifiche hanno chiuso opzioni invece di aprirle: SpeleoNight parte dal 15 agosto, dopo il rientro, e Hell in the Cave aveva come sola data utile il 9 agosto, scartata dall'utente. **Pendenze**: nessun riscontro visivo in browser su questa sessione, spunte delle attività e della categoria "Per la Coppia" da azzerare perché le chiavi sono posizionali e quelle sezioni sono state riscritte, discrepanza dell'alloggio (€804,78 contro €784,78) ancora aperta, e `trips/cilento-2026/` ha la stampa nel repository ma non nel suo sito finché non lo si ripubblica.
 
 Prossima azione dichiarata dall'utente: finire tutto lo sviluppo di puro codice possibile prima di tornare ai passi manuali, che ora sono tre: completare la registrazione Kiwi Tequila, creare i quattro servizi su Render da `render.yaml` (Dashboard Render > New > Blueprint) e collegarne gli URL pubblici, e infine il riscontro visivo in browser della scheda "Pianifica". Committare il lavoro descritto in questa voce se non ancora fatto al momento della lettura (controllare `git status` prima di assumere).

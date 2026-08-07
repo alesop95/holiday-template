@@ -29,6 +29,19 @@
  * (Trani, Locorotondo, Grotte di Castellana, Lecce, Brindisi, Otranto - Giorno 6). Non
  * è una fonte web citabile con un link: è testimonianza diretta di chi scrive questo
  * file, marcata come tale ovunque compare, non presentata come dato di una guida.
+ *
+ * Una quinta passata (2026-08-07, ricerca web dedicata su richiesta dell'utente) copre le due
+ * cose che restavano scoperte. Lama Monachile, che finora compariva in tre punti come immagine
+ * simbolo del paese ma senza nessuno dei dati che servono per organizzarci una mattina sopra,
+ * ha adesso una sezione pratica nel Giorno 1 con accessi, fondo, servizi assenti e orari reali.
+ * I tour delle grotte, che l'itinerario nominava senza mai dire come si fanno e quanto costano,
+ * sono coperti su entrambi i fronti: le grotte marine di Polignano nel Giorno 2, con operatori,
+ * durate e prezzi pubblicati, e le Grotte di Castellana nel Giorno 3, con la scelta tra percorso
+ * completo e parziale, i prezzi ufficiali 2026, la visita speleologica notturna SpeleoNight e lo
+ * spettacolo Hell in the Cave dentro la Caverna della Grave. Vale un avvertimento che riguarda
+ * tutta questa passata: prezzi, orari e date sono quelli pubblicati il 2026-08-07, non
+ * prenotazioni confermate, e le due esperienze serali di Castellana hanno date fisse che vanno
+ * incrociate con quelle del viaggio prima di contarci.
  */
 
 // ─── IDENTIFICATIVO DEL VIAGGIO ────────────────────────────────────────────────
@@ -82,6 +95,14 @@ export const MAP_LOCATIONS = [
   { lat:41.1172, lng:16.8706, nm:"Bari",             sub:"Sosta Giorno 1 (in itinere)", c:"#B03A2E" },
   { lat:40.9966, lng:17.2202, nm:"Polignano a Mare", sub:"Base · Giorni 1-6", c:"#2B5C8A" },
   { lat:40.9535, lng:17.3009, nm:"Monopoli",         sub:"Giorno 5",         c:"#1A7A6E" },
+  // Grotte di Castellana: coordinate reali dell'ingresso della grotta da geocoding Nominatim in
+  // sessione (2026-08-07, oggetto OSM natural=cave_entrance in Strada Comunale Chiancudd), non a
+  // memoria. Mancava dalla mappa pur essendo una tappa vera del Giorno 3. Collocata qui, prima di
+  // Alberobello, perche' l'ordine dell'array disegna la polyline e il segmento Castellana-
+  // Alberobello e' la tratta reale della giornata; la tappa e' comunque a ovest sia di Polignano
+  // sia di Alberobello, quindi qualunque posizione nell'array produce una piccola risalita sul
+  // disegno, che qui e' geografia e non un errore.
+  { lat:40.8763, lng:17.1485, nm:"Grotte di Castellana", sub:"Giorno 3",     c:"#C4832A" },
   { lat:40.7827, lng:17.2378, nm:"Alberobello",      sub:"Giorno 3",         c:"#C4832A" },
   // Martina Franca e Cisternino: coordinate reali da geocoding Nominatim in sessione
   // (2026-07-31), non a memoria. Inseriti qui e non in coda perche' l'ordine dell'array
@@ -131,8 +152,16 @@ export const TRIP_DATA = {
           tx:"Passeggiata nel centro storico, un dedalo di vicoli bianchi a picco sul mare. Sosta a <b>Lama Monachile</b>, la piccola insenatura tra le scogliere che è l'immagine simbolo del paese, e alla statua dedicata a <b>Domenico Modugno</b>, nato qui. Cena in centro storico, vista scogliera se possibile. Costo indicativo: €25-40 a persona." },
         { t:"Tre cose da non perdere, tutte a due passi",
           tx:"Testimonianza diretta di chi ha già fatto questo viaggio, non da una guida: Lama Monachile, Pescaria (panino o frittura di pesce, un'experience tipica del posto) e <b>Super Mago del Gelo</b> (un caffè speciale che pare si trovi solo lì, gusto amaretto e agrumi - vale la sosta) si trovano tutti nel giro di 20 metri l'uno dall'altro. Il resto del centro storico si visita comodamente in un'oretta, non serve pianificarci sopra mezza giornata." },
+        // Sezione aggiunta in coda alla giornata e non accanto alle altre menzioni di Lama
+        // Monachile per la stessa ragione tecnica documentata nel Giorno 3: le checkbox delle
+        // attivita' usano come chiave `${d.id}-${indice di sezione}` (js/itinerario.js), quindi un
+        // inserimento intermedio sposterebbe le spunte gia' salvate su Firestore.
+        { t:"Lama Monachile in pratica: accessi, fondo, orari",
+          tx:"Lama Monachile compare piu' volte in questo itinerario come immagine simbolo del paese, ma finora senza i dati che servono per organizzarci sopra una mattina. La caletta, chiamata anche <b>Cala Porto</b>, sta a circa <b>300 metri dal centro</b>, meno di cinque minuti a piedi, e l'ingresso e' <b>gratuito e libero tutto l'anno</b>. Il fondo e' di <b>ciottoli</b>, non di sabbia: le scarpette da scoglio non sono un accessorio ma la differenza tra stare comodi e non starci, e per questo sono finite in valigia nella scheda Checklist. La spiaggia <b>non e' attrezzata</b> - niente lettini, ombrelloni, docce pubbliche o punti ristoro sulla riva, i locali stanno sopra, non sotto - e in auto non si arriva: <b>non esiste un parcheggio dedicato</b>, si usano le strisce blu del centro (Via Pompeo Sarnelli, Via San Vito, Via Martiri di Dogali) oppure il parcheggio di <b>Via San Francesco da Paola</b>, a circa un chilometro a piedi. Sull'orario le fonti concordano e il consiglio e' netto: in estate la caletta si riempie molto presto, quindi <b>entro le 8:30-9:00</b> del mattino o <b>dopo le 17:00</b>, con i giorni feriali sensibilmente migliori dei weekend. Non e' adatta a passeggini e carrozzine: scalini e ciottoli, nessuna rampa. Fonti: <a href=\"https://www.spiagge.it/magazine/lama-monachile/\" target=\"_blank\" rel=\"noopener noreferrer\">Spiagge.it</a>, <a href=\"https://www.regionepuglia.org/lama-monachile/\" target=\"_blank\" rel=\"noopener noreferrer\">Regione Puglia</a>, <a href=\"https://lamamonachile.com/en/2025/10/21/how-to-get-to-lama-monachile-polignano-mare/\" target=\"_blank\" rel=\"noopener noreferrer\">come raggiungere Lama Monachile</a>." },
+        { t:"Lama Monachile - due punti su cui le fonti non concordano",
+          tx:"Due cose vanno dichiarate come discordanti invece di essere appiattite in un dato pulito. Sul <b>ponte</b> che sovrasta la caletta le guide si contraddicono: una lo chiama ponte romano della <b>Via Traiana</b> e attribuisce il ponte sopra la spiaggia al periodo <b>borbonico, Ottocento</b>; un'altra fonde le due cose in \"Ponte Borbonico della Via Traiana\" datandolo al <b>II secolo d.C.</b>, che con l'attributo borbonico non sta insieme. Nessuna delle fonti consultate chiude la questione, quindi qui resta aperta: il punto panoramico e' quello, la sua datazione no. Sugli <b>accessi</b> il conteggio cambia da fonte a fonte: due (la scalinata in pietra sotto il ponte, ripida e diretta, e un sentiero piu' dolce dalla parte del <b>Bastione di Santo Stefano</b>) secondo due guide, tre secondo una terza, che indica <b>Piazza Garibaldi</b> con una scalinata ripida, <b>Piazza Bonsante</b> dal lato del parcheggio San Francesco e <b>Largo Gelso</b> vicino alla statua di Modugno. Il pratico che resta valido a prescindere: se si scende con borse e attrezzatura da mare conviene la via meno ripida, non la scalinata sotto il ponte." },
       ],
-      tips:["Giornata lunga (guida + Bari + guida + arrivo): partire presto per non arrivare a Polignano troppo tardi","Bari Vecchia è ZTL: parcheggiare fuori e proseguire a piedi","Il tramonto da Lama Monachile è il momento migliore per le foto","Su Bari circolano allarmismi locali sui furti d'auto: nell'esperienza diretta di chi ha già fatto questo giro, parcheggiando nelle zone indicate sopra è stata una tappa tranquilla e vale assolutamente la sosta a Bari Vecchia"],
+      tips:["Giornata lunga (guida + Bari + guida + arrivo): partire presto per non arrivare a Polignano troppo tardi","Bari Vecchia è ZTL: parcheggiare fuori e proseguire a piedi","Il tramonto da Lama Monachile è il momento migliore per le foto","Su Bari circolano allarmismi locali sui furti d'auto: nell'esperienza diretta di chi ha già fatto questo giro, parcheggiando nelle zone indicate sopra è stata una tappa tranquilla e vale assolutamente la sosta a Bari Vecchia","Lama Monachile ha il fondo di ciottoli e nessun servizio: scarpette da scoglio e acqua da casa","Per fare il bagno a Lama Monachile in agosto servono le prime ore: entro le 8:30-9:00 o dopo le 17:00, altrimenti si va solo per la vista dal ponte"],
       cf:"25-40", ca:"0",
       // Cose da fare seminate per questo giorno (checkbox in Itinerario, spuntabili e
       // rimovibili dall'app): luoghi del centro storico di Polignano, non delle grotte marine
@@ -152,7 +181,7 @@ export const TRIP_DATA = {
     {
       id:2, color:"#4A90B8", label:"Giorno 2",
       title:"Polignano a Mare in profondità",
-      places:"Cala Porto · Cala Paura · Grotta Palazzese",
+      places:"Cala Porto · Cala Paura · Grotta Palazzese · Tour in barca alle grotte",
       sections:[
         { t:"Mattino - Spiagge e grotte marine",
           tx:"Giornata dedicata al mare: <b>Cala Porto</b> e <b>Cala Paura</b>, le due calette principali sotto il centro storico. Le scogliere sono ricche di grotte marine visitabili in barca o kayak (noleggio sul posto)." },
@@ -160,9 +189,17 @@ export const TRIP_DATA = {
           tx:"Il ristorante <b>Grotta Palazzese</b>, scavato in una vera grotta naturale a picco sul mare (aperta da Pasqua a ottobre), è tra i luoghi più fotografati della Puglia - ma con alcune informazioni pratiche che è meglio conoscere prima di prenotare, non solo dopo. Prezzo reale: <b>almeno €200 a persona</b> per un menu degustazione senza bevande (una bottiglia d'acqua costa già ~€10). I tavoli si assegnano all'arrivo, non alla prenotazione: prenotare con anticipo non garantisce uno dei tavoli a strapiombo sul mare. Le recensioni sono discordanti (3,4/5 su Tripadvisor, migliaia di recensioni): l'atmosfera è elogiata, ma diversi ospiti segnalano servizio lento e cucina non all'altezza del prezzo." },
         { t:"Sera",
           tx:"Cena in centro storico, oppure Grotta Palazzese consapevoli del compromesso reale (prezzo/qualità) sopra - è un'esperienza da vivere per l'ambiente, non da aspettarsi come miglior pasto del viaggio." },
+        // Sezioni sui tour in barca aggiunte in coda alla giornata, non accanto alla sezione delle
+        // grotte marine a cui appartengono per argomento: le checkbox delle attivita' hanno chiave
+        // posizionale `${d.id}-${indice di sezione}` (js/itinerario.js) e un inserimento intermedio
+        // sposterebbe le spunte gia' salvate su Firestore.
+        { t:"Tour in barca alle grotte marine: operatori e prezzi reali",
+          tx:"Le grotte elencate qui sotto nelle cose da fare sono quasi tutte <b>visitabili solo dal mare</b>, quindi il tour in barca non e' un extra ma il modo per vederle davvero. Le escursioni collettive partono dal porto turistico <b>Cala Ponte Marina</b> o dal porticciolo di <b>San Vito</b>, poco fuori il centro, e durano tra <b>un'ora e mezza e due ore</b>, con sosta per il bagno e in molti casi un aperitivo a bordo. Prezzi a persona pubblicati su un aggregatore di prenotazioni al 2026-08-07, quindi confrontabili tra loro ma da riverificare: <b>Dorino Gite in Barca €20</b> per 1h30 con snorkeling e aperitivo, <b>Rent Me Charter €20</b> per 1h45, <b>Escursioni Sofia €25</b> per 2h, <b>Pugliamare €30</b> per 1h30 con aperitivo, <b>Blue Wave €30</b> per 2h in partenza da San Vito. Un operatore che espone il proprio listino sul sito, <b>MammaMia Boat</b>, chiede <b>€40 a persona</b> per l'escursione di gruppo di 2 ore con transfer incluso, massimo 12 persone, con giubbotti e teli mare compresi. Le grotte tipicamente incluse nel giro sono <b>Grotta delle Rondinelle, Grotta Ardito, Grotta Palazzese, il Grottone, Cala Paura, Cala Port'Alga, Grotta degli Innamorati</b> e lo <b>Scoglio dell'Eremita</b>, cioe' esattamente i nomi che compaiono nelle cose da fare di questa giornata. Fonti: <a href=\"https://www.checkyeti.com/it/boat-tours/italia/polignano-a-mare/gite-in-barca-alle-grotte\" target=\"_blank\" rel=\"noopener noreferrer\">listino comparato CheckYeti</a>, <a href=\"https://mammamiaboat.com/\" target=\"_blank\" rel=\"noopener noreferrer\">MammaMia Boat</a>." },
+        { t:"Quale tour conviene in due, e cosa puo' farlo saltare",
+          tx:"In due la scelta economicamente sensata e' il <b>collettivo</b>: le stesse grotte, la stessa costa, €20-40 a testa. Il tour <b>privato</b> si paga a barca e non a persona - €300-400 per due ore secondo gli stessi listini, €380 di partenza per l'Exclusive di MammaMia - quindi per una coppia significa <b>€150-200 a testa</b> per avere la barca da soli e l'aperitivo servito: si giustifica solo se la privacy e' il punto della serata, non per vedere piu' grotte. Chi vuole entrare nelle cavita' piu' piccole, dove il gozzo non passa, ha come alternativa il <b>kayak</b>, che diversi operatori del posto propongono con istruttore fino alla Grotta Palazzese: qui non e' stato trovato un prezzo pubblicato verificabile, quindi non lo invento e resta da chiedere sul porticciolo. Due avvertenze pratiche prima di dare la giornata per fatta. Il mare comanda: con onda o vento le uscite si annullano, quindi conviene prenotare una data con <b>cancellazione gratuita</b> (tutti gli operatori del listino comparato la offrono) e tenere il giro come attivita' spostabile tra Giorno 2 e Giorno 6, non fissarlo. E le partenze piu' richieste in agosto sono quelle del tardo pomeriggio, per il tramonto dal mare: se e' quella che interessa, va prenotata prima, non il giorno stesso." },
       ],
-      tips:["Se si prenota Grotta Palazzese, farlo sapendo che il tavolo vista mare non è garantito","Kayak e barca a noleggio sul porticciolo per vedere le grotte dal mare"],
-      cf:"25-60", ca:"10-25",
+      tips:["Se si prenota Grotta Palazzese, farlo sapendo che il tavolo vista mare non è garantito","Kayak e barca a noleggio sul porticciolo per vedere le grotte dal mare","Il tour in barca collettivo costa €20-40 a testa e mostra le stesse grotte del privato, che in due verrebbe €150-200 a testa","Prenotare il tour in barca con cancellazione gratuita: con mare mosso le uscite si annullano","La maggior parte delle grotte di questa giornata si vede solo dal mare: senza barca o kayak restano un nome sulla mappa"],
+      cf:"25-60", ca:"20-45",
       // Cose da fare seminate per questo giorno: le grotte marine della costa di Polignano
       // (categoria "viewpoint" su OpenStreetMap, verificate dal vivo via Overpass in sessione,
       // vedi services/poi-search/) piu' due ristoranti di pesce sulla stessa zona di costa.
@@ -198,9 +235,19 @@ export const TRIP_DATA = {
         // su Firestore verso la voce sbagliata.
         { t:"Cisternino, alternativa per la sera",
           tx:"Testimonianza diretta, non da fonte web: <b>Cisternino</b> è già stata visitata nel 2023, mezza giornata di passaggio, e la cosa che vale la pena è prenotare una cena dentro i vicoli del centro storico. È l'alternativa concreta alla trattoria di Alberobello della sezione sopra, non un'aggiunta: si sceglie una delle due cene, non entrambe. Da Alberobello sono <b>18,1 km, circa 20 minuti</b>; da Polignano <b>43 km, circa 38 minuti</b>, e il rientro serale Cisternino-Polignano è di <b>41,5 km, 39 minuti</b> (distanze da routing reale, non stimate). Chi ha già girato questa zona non alloggiava in paese ma fuori, in campagna, alla <a href=\"https://www.tripadvisor.com/Hotel_Review-g652000-d4225796-Reviews-Masseria_Peppeturro-Cisternino_Province_of_Brindisi_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Masseria Peppeturro</a>, masseria di inizio Novecento con due trulli ristrutturati e piscina a pochi chilometri da Cisternino: il contatto telefonico diretto non sta in questo file ma negli appunti privati del viaggio, perché il repository è pubblico." },
+        // Le tre sezioni che seguono, tutte sulle Grotte di Castellana, stanno in coda e non
+        // accanto alla sezione "Grotte di Castellana" a cui appartengono per argomento, per la
+        // stessa ragione tecnica dichiarata sopra per Cisternino: le chiavi delle checkbox delle
+        // attivita' sono posizionali (`${d.id}-${indice di sezione}`, js/itinerario.js).
+        { t:"Grotte di Castellana: quale percorso, quanto costa, a che ora",
+          tx:"La visita si fa solo con guida e a turni, e la scelta e' tra due percorsi. Il <b>percorso completo</b> e' di <b>3 km</b> e dura circa <b>100 minuti</b>, e arriva alla <b>Grotta Bianca</b>, l'ambiente piu' spettacolare del complesso; il <b>percorso parziale</b> e' di <b>1 km</b> per circa <b>50 minuti</b> e la Grotta Bianca non la vede. Prezzi ufficiali 2026 in biglietteria: <b>intero dai 15 anni €25</b> il completo e <b>€22</b> il parziale, ridotto 6-14 anni €22 e €19, gratis sotto i 5 anni, piu' un biglietto famiglia da €61 disponibile solo online. Attenzione a un errore facile: diverse guide secondarie riportano ancora €22 e €19 come prezzi <b>interi</b>, che nel listino ufficiale sono invece i ridotti, quindi il preventivo va fatto sul sito e non su una guida. L'acquisto online aggiunge commissioni di servizio e un supplemento di prenotazione anticipata, ma in agosto e' la scelta giusta perche' i turni si esauriscono. Sugli orari va dichiarato il livello di verifica: il calendario ufficiale e' pubblicato come immagine, quindi non leggibile come testo, e la scansione che circola per agosto - completo ogni ora dalle <b>9:00 alle 18:00</b>, parziale alle 13:15, 14:15, 18:15 e 19:15 - viene da una fonte secondaria e va confermata sul sito prima di costruirci la giornata. L'indirizzo e' <b>Piazzale Anelli</b> a Castellana Grotte, con i parcheggi a pagamento P1 e P2 accanto all'ingresso e un P3 al centro commerciale di Via Putignano servito da navetta. Due note pratiche: il fondo e' umido e in alcuni tratti scivoloso, quindi scarpe con suola antiscivolo e non infradito, e la temperatura sotterranea resta costante e bassa (le fonti secondarie indicano circa 16-18 gradi, il dato ufficiale non l'ho trovato), il che conferma la testimonianza sul fresco ma significa portarsi una felpa leggera in pieno agosto. Fonti: <a href=\"https://www.grottedicastellana.it/informazioni-utili/orari-e-prezzi/\" target=\"_blank\" rel=\"noopener noreferrer\">orari e prezzi ufficiali</a>, <a href=\"https://www.grottedicastellana.it/informazioni-utili/come-raggiungerci-2/\" target=\"_blank\" rel=\"noopener noreferrer\">come raggiungerci e parcheggi</a>, <a href=\"https://www.informazioni-turistiche.it/grotte-di-castellana-orari-prezzi-percorsi-e-consigli-per-visitarle/\" target=\"_blank\" rel=\"noopener noreferrer\">scansione orari di agosto, fonte secondaria</a>." },
+        { t:"SpeleoNight: la visita al buio con gli speleologi",
+          tx:"E' il tour piu' interessante che le grotte offrono e non e' la visita turistica: <b>SpeleoNight</b> percorre i 3 km fino alla Grotta Bianca <b>di notte e al buio</b>, su un tracciato alternativo a quello turistico, illuminati solo dalla lampada del proprio caschetto e accompagnati da speleologi del Gruppo Puglia Grotte, con l'andata fatta in oscurita' totale e la Grotta Bianca illuminata solo all'arrivo. Dati ufficiali: <b>€28 a persona</b> piu' commissioni online, durata <b>non inferiore a 2 ore</b>, circa <b>3 km a piedi</b>, <b>eta' minima 7 anni</b>, massimo 25 persone per gruppo, caschetto con lampada frontale fornito, ritrovo <b>30 minuti prima</b> della partenza. Le date del calendario estivo 2026 sono fisse e poche, tutte alle <b>20:30</b>: <b>25 luglio, 15, 21 e 31 agosto, 11 e 25 settembre</b>. Qui c'e' una decisione da prendere, non una comodita' da aggiungere: essere dentro la grotta alle 20:30 significa rinunciare alla serata di Alberobello con le lucine o alla cena nei vicoli di Cisternino, che sono le due opzioni serali di questa giornata. Se una di quelle date cade nel viaggio, la cosa sensata e' spostare Alberobello o Cisternino su un altro giorno invece di comprimere tutto. Una discordanza da sapere: un comunicato dello stesso sito indica €25, mentre la scheda dell'esperienza dice €28 piu' commissioni, quindi il prezzo si legge in fase di acquisto e non si da' per fissato. Fonte: <a href=\"https://www.grottedicastellana.it/esperienze/speleonight/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda ufficiale SpeleoNight</a>, prenotazione su <a href=\"https://shop.grottedicastellana.it/webshop/webticket/timeslot\" target=\"_blank\" rel=\"noopener noreferrer\">shop.grottedicastellana.it</a>." },
+        { t:"Hell in the Cave: l'Inferno di Dante dentro la Grave",
+          tx:"La seconda esperienza serale non e' una visita ma uno spettacolo: <b>Hell in the Cave</b> mette in scena l'Inferno di Dante con danza, voci, suoni e luci dentro la <b>Caverna della Grave</b>, la prima e piu' vasta cavita' del sistema sotterraneo, <b>100 metri di lunghezza per 50 di larghezza e 60 di profondita'</b>. Biglietti: <b>€25</b> intero, <b>€20</b> per i minori fino a 17 anni, e un <b>combinato visita piu' spettacolo a €42</b>, che e' l'opzione da valutare se le grotte si visitano lo stesso giorno. Le date pubblicate per la stagione 2026 nella finestra utile a questo viaggio sono <b>9, 14, 22 e 29 agosto</b>, poi 13, 19 e 26 settembre, con orario dichiarato <b>21:00 il sabato e 20:00 la domenica</b>. Una verifica va fatta, e la dico invece di nasconderla: quella regola non copre tutte le date pubblicate, perche' nel 2026 il <b>14 agosto cade di venerdi'</b> (il 9 e' una domenica, il 22 e il 29 sono sabati), quindi per quella data l'orario di inizio non e' deducibile e va chiesto. Le prenotazioni si fanno per telefono o WhatsApp al numero indicato dal sito ufficiale, non con acquisto online diretto. Vale la stessa avvertenza di SpeleoNight: uno spettacolo alle 20:00-21:00 dentro la grotta e la sera tra i trulli illuminati non stanno nello stesso giorno." },
       ],
-      tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo: la mattina a Polignano e le Grotte (fresche) coprono bene la parte più calda della giornata","Da testimonianza diretta: tenere Alberobello per il tardo pomeriggio/sera, sia per le lucine sui trulli sia per evitare il caldo peggiore","Da testimonianza diretta: tra Locorotondo e Martina Franca è meglio la seconda, che ora è la tappa principale del Giorno 4 - Locorotondo si aggiunge solo se resta tempo, è carina ma molto piccola e non è nel percorso diretto Castellana-Alberobello","Se si sceglie Cisternino per la sera, la cena nei vicoli va prenotata: è il motivo per cui ci si va"],
-      cf:"20-35", ca:"5-10"
+      tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo: la mattina a Polignano e le Grotte (fresche) coprono bene la parte più calda della giornata","Da testimonianza diretta: tenere Alberobello per il tardo pomeriggio/sera, sia per le lucine sui trulli sia per evitare il caldo peggiore","Da testimonianza diretta: tra Locorotondo e Martina Franca è meglio la seconda, che ora è la tappa principale del Giorno 4 - Locorotondo si aggiunge solo se resta tempo, è carina ma molto piccola e non è nel percorso diretto Castellana-Alberobello","Se si sceglie Cisternino per la sera, la cena nei vicoli va prenotata: è il motivo per cui ci si va","Alle Grotte di Castellana conviene il percorso completo: €3 in più del parziale e in cambio c'è la Grotta Bianca","Biglietto delle grotte online in agosto: i turni guidati si esauriscono e la fila in biglietteria è reale","Felpa leggera e scarpe con suola antiscivolo per le grotte: dentro ci sono circa 16-18 gradi costanti e il fondo è umido","SpeleoNight (20:30) e Hell in the Cave (20:00-21:00) hanno date fisse e occupano la serata: se si scelgono, Alberobello o Cisternino si spostano su un altro giorno"],
+      cf:"20-35", ca:"25-30"
       // Distanze/tempi Polignano-Castellana e Castellana-Alberobello: calcolo reale via OSRM
       // (router.project-osrm.org) da coordinate geocodificate con Nominatim, verificato dal vivo
       // in sessione (2026-07-15), non stimato.
@@ -349,6 +396,8 @@ export const TRIP_DATA = {
       { t:"Copricostume / pareo" },
       { t:"Cappello da sole" },
       { t:"Occhiali da sole" },
+      // Voce aggiunta in coda alla categoria, non in mezzo: chiavi posizionali delle checkbox.
+      { t:"Felpa leggera x 2",                        n:"Grotte di Castellana: circa 16-18 gradi costanti anche ad agosto" },
     ]},
     { cat:"Mare & Spiaggia", items:[
       { t:"Crema solare 50+ (abbondante)" },
@@ -357,6 +406,9 @@ export const TRIP_DATA = {
       { t:"Borsa / sacca impermeabile" },
       { t:"Maschera e boccaglio",       n:"Grotte marine di Polignano" },
       { t:"Ciabatte da mare" },
+      // Voci aggiunte in coda alla categoria, non in mezzo: chiavi posizionali delle checkbox.
+      { t:"Scarpette da scoglio",       n:"Lama Monachile ha il fondo di ciottoli, non di sabbia" },
+      { t:"Borraccia / acqua da casa",  n:"A Lama Monachile non ci sono punti ristoro sulla riva" },
     ]},
     { cat:"Salute & Farmacia", items:[
       { t:"Farmaci personali (scorta completa)" },
@@ -388,6 +440,11 @@ export const TRIP_DATA = {
       // inserimento intermedio sposterebbe le spunte gia' salvate su Firestore.
       { t:"Prenotare la cena nei vicoli a Cisternino", n:"Giorno 3, alternativa alla cena ad Alberobello" },
       { t:"Controllare le date del Festival della Valle d'Itria", n:"Giorno 4, edizione 2026 dal 14 luglio al 2 agosto" },
+      { t:"Bagno a Lama Monachile entro le 9 del mattino", n:"Giorno 1 o 6: dopo si riempie e restano solo la vista e le foto dal ponte" },
+      { t:"Prenotare il tour in barca alle grotte marine", n:"Giorno 2, collettivo €20-40 a persona, con cancellazione gratuita" },
+      { t:"Comprare online il biglietto delle Grotte di Castellana", n:"Giorno 3, percorso completo: in agosto i turni si esauriscono" },
+      { t:"Incrociare le date di SpeleoNight con quelle del viaggio", n:"Giorno 3: 15, 21 e 31 agosto alle 20:30, €28 a persona" },
+      { t:"Incrociare le date di Hell in the Cave con quelle del viaggio", n:"Giorno 3: 9, 14, 22 e 29 agosto, €25 o €42 in combinato con la visita" },
     ]},
   ],
 
@@ -445,7 +502,7 @@ export const TRIP_DATA = {
     rows: [
       { label:"Alloggio", desc:"Cifra reale, non piu' una stima: €710,12 pagati su Booking per 5 notti a Polignano (€784,78 meno €74,66 di credito wallet), divisi tra due persone. Resta il valore di partenza del file: inserendo l'importo nel pannello Alloggio confermato, questa riga viene sostituita dal valore risolto da Firestore.", amount:"€355,06", kind:"accommodation" },
       { label:"Pasti", desc:"Somma delle stime giornaliere sopra (Giorni 1-6)", amount:"€120-225" },
-      { label:"Biglietti e attività", desc:"Grotta Palazzese/Pescaria escluse (già in Pasti se scelte), Trullo Sovrano incluso", amount:"€15-35" },
+      { label:"Biglietti e attività", desc:"Somma delle stime ca dei singoli giorni, ricalcolata il 2026-08-07 con i prezzi reali delle grotte, che prima non erano contati: Giorno 2 €20-45 (tour in barca collettivo alle grotte marine, €20-40, più maschera/kayak) e Giorno 3 €25-30 (Grotte di Castellana percorso completo €25 più Trullo Sovrano €2,50). Grotta Palazzese e Pescaria restano escluse perché già in Pasti se scelte. Le due esperienze serali di Castellana non sono nel totale perché hanno date fisse e sono alternative alla serata di Alberobello, non aggiunte: se si fanno, SpeleoNight aggiunge €28 a persona e Hell in the Cave €25, oppure €42 in combinato con la visita al posto dei €25 del solo percorso completo.", amount:"€45-75" },
       { label:"Carburante diesel", desc:"1092,7 km reali calcolati con OSRM: Civitanova-Bari-Polignano A/R 924,4 km, giro del Giorno 3 (Polignano-Castellana-Alberobello-Polignano) 65,6 km, Martina Franca A/R 79,9 km, Monopoli A/R 22,8 km. Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone. Due varianti che spostano il conto: scegliere Ostuni al posto di Martina Franca aggiunge circa 21 km (100,9 km A/R contro 79,9), e chiudere il Giorno 3 con la cena a Cisternino invece del rientro diretto da Alberobello ne aggiunge altri 28,8. Fonti: <a href=\"https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/\" target=\"_blank\" rel=\"noopener noreferrer\">Motor1</a>, <a href=\"https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda tecnica</a>.", amount:"€42-45" },
       { label:"Extra e imprevisti", amount:"€50-100" },
     ],
@@ -462,9 +519,20 @@ export const TRIP_DATA = {
     discount: { amount: 74.66, desc: "Sconto gia' usato: incluso nel prezzo realmente pagato", validUntil: "2026-07-30" }
   },
 
+  // Voci aggiunte il 2026-08-07 con i prezzi ufficiali o pubblicati alla stessa data: Lama
+  // Monachile (gratuita, fonte Regione Puglia e Spiagge.it), Grotte di Castellana nei due
+  // percorsi e le due esperienze serali (listino ufficiale grottedicastellana.it), tour in barca
+  // di Polignano (listino comparato CheckYeti e sito MammaMia Boat). Nessun prezzo stimato qui.
   tickets: [
     { name:"Basilica di San Nicola (Bari)", price:"Gratuito", free:true },
     { name:"Bari Vecchia (passeggiata)", price:"Gratuito", free:true },
+    { name:"Lama Monachile / Cala Porto (Polignano)", price:"Gratuito", free:true },
+    { name:"Tour in barca alle grotte marine di Polignano", price:"€20-40 a persona (collettivo, 1h30-2h)" },
+    { name:"Tour in barca privato alle grotte (per barca, non a persona)", price:"€300-400 (2 ore)" },
+    { name:"Grotte di Castellana, percorso completo 3 km con Grotta Bianca", price:"€25 (ridotto 6-14 anni €22)" },
+    { name:"Grotte di Castellana, percorso parziale 1 km", price:"€22 (ridotto 6-14 anni €19)" },
+    { name:"SpeleoNight, visita notturna al buio con speleologi", price:"€28 + commissioni online" },
+    { name:"Hell in the Cave, spettacolo nella Caverna della Grave", price:"€25 (€42 in combinato con la visita)" },
     { name:"Trullo Sovrano (Alberobello)", price:"€2,50" },
     { name:"Centro storico Cisternino", price:"Gratuito", free:true },
     { name:"Centro storico Martina Franca", price:"Gratuito", free:true },
@@ -477,5 +545,9 @@ export const TRIP_DATA = {
     "Pescaria è un'alternativa economica di qualità a Grotta Palazzese per un pasto di pesce, senza il conto da occasione speciale",
     "Aia Piccola ad Alberobello ha gli stessi trulli di Rione Monti, meno negozi per turisti",
     "Spiagge libere (Torre Pozzelle, Porto Ghiacciolo, Cala Verde) invece di stabilimenti a pagamento",
+    "Lama Monachile è gratuita e senza stabilimento: l'unico costo è il parcheggio, e arrivando entro le 9 si evita anche di girare a vuoto per trovarlo",
+    "Il tour in barca collettivo alle grotte (€20-40 a persona, 1h30-2h) mostra le stesse grotte del privato, che si paga a barca: €300-400 per due ore, cioè €150-200 a testa in due",
+    "Alle Grotte di Castellana il percorso completo costa solo €3 in più del parziale e in cambio include la Grotta Bianca: risparmiare qui è il taglio sbagliato",
+    "Se si vede lo spettacolo Hell in the Cave lo stesso giorno della visita, il biglietto combinato a €42 costa €8 in meno dei due separati",
   ],
 };

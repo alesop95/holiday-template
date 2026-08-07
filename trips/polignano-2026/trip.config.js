@@ -6,42 +6,50 @@
  * non va mai modificato per un nuovo viaggio.
  *
  * Nota di onestà sui contenuti: la prima stesura di questo file (giorni, ristoranti,
- * consigli) veniva da conoscenza generale, non da una ricerca dedicata. Una seconda
- * passata (2026-07-13, ricerca web sequenziale su richiesta esplicita dell'utente) ha
- * verificato con fonti reali e citabili, ORA VISIBILI COME LINK CLICCABILI dentro
- * l'app stessa (non solo in questi commenti): la sosta a Bari (Giorno 1, scheda
- * Itinerario), Grotta Palazzese e Pescaria (Giorno 2 e scheda Ristoranti), le spiagge
- * meno affollate di Ostuni e Monopoli (Giorni 4 e 5), il consumo reale dell'Alfa Romeo
- * Giulietta diesel usato per il carburante in costEstimate. Una terza passata
- * (2026-07-13, stessa modalità sequenziale) ha coperto Alberobello (Rione Monti/Aia
- * Piccola, orari consigliati, Trullo Sovrano con prezzo reale €2,50), Ostuni (Piazza
- * della Libertà, parcheggio ZTL, e un fatto rilevante: la Concattedrale risulta chiusa
- * per restauro secondo un aggiornamento di aprile 2026 - da riverificare sul posto,
- * non assumere che abbia riaperto) e Monopoli (Castello di Carlo V, Piazza Giuseppe
- * Garibaldi). Le voci ristoranti di Alberobello e Ostuni restano indicative (tipo di
- * cucina, non un nome verificato), non coperte da nessuna delle passate finora.
+ * consigli) veniva da conoscenza generale, non da una ricerca dedicata. Le passate
+ * successive hanno verificato con fonti reali e citabili, visibili come link cliccabili
+ * dentro l'app stessa e non solo in questi commenti: la sosta a Bari, Grotta Palazzese e
+ * Pescaria, le spiagge meno affollate di Monopoli, il consumo reale dell'Alfa Romeo
+ * Giulietta diesel usato per il carburante in costEstimate, Alberobello (Rione Monti e Aia
+ * Piccola, Trullo Sovrano con prezzo reale €2,50), le Grotte di Castellana con il listino
+ * ufficiale 2026, le escursioni in barca alle grotte marine di Polignano con operatori e
+ * prezzi pubblicati, e le informazioni pratiche di Lama Monachile. Dove la fonte è una
+ * testimonianza diretta di chi ha già fatto questo viaggio, e non una guida citabile, è
+ * marcata come tale nel testo: non è un dato verificabile con un link e non va presentato
+ * come tale.
  *
- * Una quarta passata (2026-07-13) integra un'esperienza diretta e reale dell'utente,
- * che questi luoghi li ha già visitati: Super Mago del Gelo e il consiglio sull'orario
- * di Alberobello (Giorno 1 e 3), il molo e il panino al polpo di Monopoli (Giorno 5),
- * il giro con l'ape calessino sotto le mura di Ostuni (Giorno 4), la rassicurazione su
- * Bari (Giorno 1) e le gite extra sulla via del ritorno o se restano giorni liberi
- * (Trani, Locorotondo, Grotte di Castellana, Lecce, Brindisi, Otranto - Giorno 6). Non
- * è una fonte web citabile con un link: è testimonianza diretta di chi scrive questo
- * file, marcata come tale ovunque compare, non presentata come dato di una guida.
+ * RIORGANIZZAZIONE SU DATE REALI (2026-08-07). Fino a questa passata l'itinerario era
+ * scritto senza date calendariali, con una sosta a Bari in itinere il primo giorno e una
+ * giornata piena in Valle d'Itria. L'utente ha comunicato i dati reali: partenza sabato
+ * 8 agosto 2026, arrivo a Polignano a Mare alle 19:00-19:30, rientro giovedì 13 agosto,
+ * cinque notti. Le conseguenze sono strutturali e non cosmetiche, e sono tutte applicate
+ * qui: la sosta a Bari non è più possibile all'andata (si arriva a sera) e si è spostata al
+ * giorno del rientro, che passa da Bari sulla strada di casa; il Giorno 1 non contiene più
+ * nessuna attività diurna, solo viaggio, check-in, cena e la passeggiata serale nel centro
+ * storico; le giornate di contenuto scendono da cinque a quattro e per starci dentro sono
+ * state accorpate, con Alberobello e la cena a Cisternino nella stessa serata (scelta
+ * dell'utente) e con Martina Franca e Ostuni fuori dal piano, retrocesse a tappe non
+ * incluse nel Giorno 6 dove conservano le loro fonti; SpeleoNight è impossibile perché la
+ * prima data del calendario 2026 è il 15 agosto, due giorni dopo il rientro, e Hell in the
+ * Cave ha come uniche date utili il 9 e il 14 agosto, quindi solo il 9 cadeva nel viaggio
+ * ed è stato scartato dall'utente a favore della giornata di mare.
  *
- * Una quinta passata (2026-08-07, ricerca web dedicata su richiesta dell'utente) copre le due
- * cose che restavano scoperte. Lama Monachile, che finora compariva in tre punti come immagine
- * simbolo del paese ma senza nessuno dei dati che servono per organizzarci una mattina sopra,
- * ha adesso una sezione pratica nel Giorno 1 con accessi, fondo, servizi assenti e orari reali.
- * I tour delle grotte, che l'itinerario nominava senza mai dire come si fanno e quanto costano,
- * sono coperti su entrambi i fronti: le grotte marine di Polignano nel Giorno 2, con operatori,
- * durate e prezzi pubblicati, e le Grotte di Castellana nel Giorno 3, con la scelta tra percorso
- * completo e parziale, i prezzi ufficiali 2026, la visita speleologica notturna SpeleoNight e lo
- * spettacolo Hell in the Cave dentro la Caverna della Grave. Vale un avvertimento che riguarda
- * tutta questa passata: prezzi, orari e date sono quelli pubblicati il 2026-08-07, non
- * prenotazioni confermate, e le due esperienze serali di Castellana hanno date fisse che vanno
- * incrociate con quelle del viaggio prima di contarci.
+ * ATTENZIONE, effetto tecnico della riorganizzazione: le checkbox delle attività usano come
+ * chiave `${d.id}-${indice di sezione}` (js/itinerario.js) e le sezioni di ogni giorno sono
+ * state riscritte, quindi le eventuali spunte già salvate su Firestore ora puntano a
+ * sezioni diverse da quelle su cui erano state messe. Conviene azzerarle dall'app o dalla
+ * Console prima di partire. Sulla checklist della valigia il quadro è più sfumato e va detto
+ * per intero: le categorie Abbigliamento, Mare & Spiaggia, Salute & Farmacia, Tecnologia e
+ * Per l'Auto conservano posizioni e significato di ogni voce, quindi le spunte restano
+ * valide; in Documenti la quinta voce ha cambiato contenuto (era la prenotazione di Grotta
+ * Palazzese, ora è il biglietto online delle Grotte di Castellana); la categoria Per la
+ * Coppia è stata riscritta e ridotta da undici a sei voci, perché metà riguardava esperienze
+ * e verifiche non più in programma con queste date, quindi le sue spunte vanno azzerate.
+ * Le "cose da fare" seminate per giorno (todos) restano quelle verificate su OpenStreetMap
+ * nel 2026-08-03 e sono state riportate sui giorni corrispondenti del piano nuovo: i luoghi
+ * del centro storico sul Giorno 1, le grotte marine sul Giorno 2. Nota tecnica: state/todos
+ * è seed-once, quindi sul sito già in uso restano quelle già presenti su Firestore e queste
+ * righe valgono per un eventuale reseed, non per la sessione corrente.
  */
 
 // ─── IDENTIFICATIVO DEL VIAGGIO ────────────────────────────────────────────────
@@ -74,301 +82,220 @@ export const CURRENCY_SYMBOL = "€";
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 
 export const TRIP_META = {
-  badge:    "Viaggio di Coppia · Estate 2026",
+  badge:    "Viaggio di Coppia · 8-13 Agosto 2026",
   title:    "Polignano a Mare & Valle d'Itria",
-  subtitle: "6 giorni tra scogliere, trulli e centri storici",
+  subtitle: "6 giorni tra scogliere, trulli e grotte",
   stats:    [
-    "6 giorni · 5 notti",
-    "Sosta a Bari in itinere",
+    "8-13 agosto · 5 notti",
+    "Arrivo sabato sera",
     "Una sola base",
-    "Trulli UNESCO",
+    "Bari al rientro",
     "Per due"
   ]
 };
 
 // ─── MAPPA ───────────────────────────────────────────────────────────────────
-// Coordinate approssimate dei centri storici (note generali, non rilevate sul posto):
+// Coordinate dei centri storici: quelle di Bari, Martina Franca e Cisternino vengono da
+// geocoding Nominatim reale fatto in sessione, quella delle Grotte di Castellana
+// dall'oggetto OSM natural=cave_entrance (2026-08-07), le altre sono note generali
 // sufficienti per un marker su Leaflet, da non trattare come precisione da rilevamento.
+// L'ordine dell'array disegna la polyline: Martina Franca e Ostuni sono state rimosse
+// insieme alle rispettive tappe, che non fanno più parte del piano.
 
 export const MAP_LOCATIONS = [
-  // Bari: coordinate reali da geocoding Nominatim in sessione (Bari Centrale), non a memoria.
-  { lat:41.1172, lng:16.8706, nm:"Bari",             sub:"Sosta Giorno 1 (in itinere)", c:"#B03A2E" },
-  { lat:40.9966, lng:17.2202, nm:"Polignano a Mare", sub:"Base · Giorni 1-6", c:"#2B5C8A" },
-  { lat:40.9535, lng:17.3009, nm:"Monopoli",         sub:"Giorno 5",         c:"#1A7A6E" },
-  // Grotte di Castellana: coordinate reali dell'ingresso della grotta da geocoding Nominatim in
-  // sessione (2026-08-07, oggetto OSM natural=cave_entrance in Strada Comunale Chiancudd), non a
-  // memoria. Mancava dalla mappa pur essendo una tappa vera del Giorno 3. Collocata qui, prima di
-  // Alberobello, perche' l'ordine dell'array disegna la polyline e il segmento Castellana-
-  // Alberobello e' la tratta reale della giornata; la tappa e' comunque a ovest sia di Polignano
-  // sia di Alberobello, quindi qualunque posizione nell'array produce una piccola risalita sul
-  // disegno, che qui e' geografia e non un errore.
-  { lat:40.8763, lng:17.1485, nm:"Grotte di Castellana", sub:"Giorno 3",     c:"#C4832A" },
-  { lat:40.7827, lng:17.2378, nm:"Alberobello",      sub:"Giorno 3",         c:"#C4832A" },
-  // Martina Franca e Cisternino: coordinate reali da geocoding Nominatim in sessione
-  // (2026-07-31), non a memoria. Inseriti qui e non in coda perche' l'ordine dell'array
-  // disegna la polyline: da Alberobello verso est la sequenza Martina Franca, Cisternino,
-  // Ostuni e' quella geograficamente coerente.
-  { lat:40.7042, lng:17.3400, nm:"Martina Franca",   sub:"Giorno 4",         c:"#7B4F9E" },
-  { lat:40.7430, lng:17.4257, nm:"Cisternino",       sub:"Giorno 3 · sera",  c:"#C4832A" },
-  { lat:40.7302, lng:17.5741, nm:"Ostuni",           sub:"Giorno 4 · opzionale", c:"#7B4F9E" },
+  { lat:41.1172, lng:16.8706, nm:"Bari",                 sub:"Giorno 6 · sosta al rientro", c:"#B03A2E" },
+  { lat:40.9966, lng:17.2202, nm:"Polignano a Mare",     sub:"Base · 8-13 agosto", c:"#2B5C8A" },
+  { lat:40.9535, lng:17.3009, nm:"Monopoli",             sub:"Giorno 5 · mer 12",  c:"#1A7A6E" },
+  { lat:40.8763, lng:17.1485, nm:"Grotte di Castellana", sub:"Giorno 3 · lun 10",  c:"#C4832A" },
+  { lat:40.7827, lng:17.2378, nm:"Alberobello",          sub:"Giorno 4 · mar 11",  c:"#7B4F9E" },
+  { lat:40.7430, lng:17.4257, nm:"Cisternino",           sub:"Giorno 4 · cena",    c:"#7B4F9E" },
 ];
 
 // ─── DATI DEL VIAGGIO ────────────────────────────────────────────────────────
 
 export const TRIP_DATA = {
 
-  // Prima era testo scritto a mano nella shell condivisa con la sintesi di Cilento - bug
-  // template gia' corretto per "Cambio Hotel" e "Info & Costi", qui era sfuggito finche'
-  // l'utente non l'ha notato sul sito live di Polignano.
-  programSummary: "Sosta a Bari in itinere, poi 5 notti a Polignano a Mare con gite in Valle d'Itria (Grotte di Castellana, Alberobello, Cisternino, Martina Franca) e a Monopoli. Ostuni resta come tappa opzionale del Giorno 4. Una sola base, nessun cambio hotel.",
+  programSummary: "Cinque notti a Polignano a Mare, una sola base, nessun cambio hotel. Sabato 8 si arriva a sera e la giornata è solo viaggio e centro storico dopo cena. Domenica 9 mare a Polignano e tour in barca alle grotte marine, lunedì 10 Grotte di Castellana nel pomeriggio, martedì 11 Alberobello al tramonto con cena nei vicoli di Cisternino, mercoledì 12 Monopoli. Giovedì 13 check-out con sosta a Bari Vecchia sulla strada del rientro. Martina Franca e Ostuni non entrano in questo piano: restano documentate tra le tappe non incluse del Giorno 6.",
 
   // Video salvati durante la pianificazione, identificati il 2026-07-31: i link brevi sono stati
   // risolti seguendo i redirect e i titoli letti dall'endpoint oEmbed pubblico di TikTok. Quindi
   // autore e titolo sono reali, non inventati, ma il contenuto dei video non e' stato guardato da
   // qui (TikTok richiede login): cio' che ne e' stato estratto sta nelle descrizioni pubbliche.
-  // Il primo e il secondo hanno prodotto contenuto vero, finito nel Giorno 4 (percorso a piedi di
-  // Ostuni) e nel Giorno 5 (Cala Tre Buchi); il terzo e' un vlog generico, nessun dato utile.
+  // Il video su Ostuni resta nell'elenco per completezza dello storico, ma la tappa non fa piu'
+  // parte del piano: il contenuto utile che ne era stato estratto vive ora nella sezione delle
+  // tappe non incluse, in coda al Giorno 6.
   savedLinks: [
-    { label: "Mini tour di Ostuni a piedi (JohnPietro_PugliaSpoiler)", url: "https://vm.tiktok.com/ZNRou1gpL/" },
     { label: "Cala Tre Buchi, caletta sulla costa di Monopoli (Toboat)", url: "https://vm.tiktok.com/ZNRoucgd7/" },
     { label: "Vlog di due giorni a Polignano a Mare (sofiabossi)", url: "https://vm.tiktok.com/ZNRousSDE/" },
+    { label: "Mini tour di Ostuni a piedi (JohnPietro_PugliaSpoiler), tappa non inclusa", url: "https://vm.tiktok.com/ZNRou1gpL/" },
   ],
 
   days: [
     {
       id:1, color:"#2B5C8A", label:"Giorno 1",
-      title:"Civitanova Marche → Bari (sosta) → Polignano a Mare",
-      places:"Bari Vecchia (sosta) · Centro storico Polignano · Lama Monachile",
+      title:"Sabato 8 agosto - Viaggio, arrivo a sera, centro storico",
+      places:"Civitanova Marche → Polignano a Mare · Centro storico · Lama Monachile dal ponte",
       sections:[
-        { t:"Il viaggio: perché fermarsi a Bari",
-          tx:"Da Via Aurora, Civitanova Marche Alta a Bari: <b>425 km, circa 4h 18min</b>. Da Bari a Polignano a Mare: altri <b>36 km, 35 min</b>. Il totale (4h 53min) è solo ~7 minuti più lungo del tragitto diretto Civitanova-Polignano (4h 46min, 460 km): Bari non è una deviazione, è sulla strada - calcolato con un routing reale, non stimato. Partire presto (indicativamente 6:00-6:30) per arrivare a Bari a metà mattina." },
-        { t:"Sosta a Bari - Bari Vecchia",
-          tx:"Percorso a piedi consigliato: <b>Piazza del Ferrarese</b> come punto di partenza, poi dentro il centro storico verso la <b>Basilica di San Nicola</b> (tappa centrale). <b>Via dell'Arco Basso</b>, la \"strada della pasta\": le massaie preparano a mano le orecchiette sugli usci di casa, si può comprare pasta fresca o solo guardare. <b>Piazza Mercantile</b> per una sosta caffè/pranzo veloce. 2-3 ore bastano per il percorso essenziale." },
-        { t:"Parcheggio a Bari",
-          tx:"L'intera Bari Vecchia è <b>ZTL</b> (zona a traffico limitato): non entrare in auto. Per una sosta breve, le strisce blu lato mare (Zona D) costano ~€1/ora; in alternativa il parcheggio Cesare Battisti (sotterraneo, quartiere Murat, da ~€1,90/ora) è a pochi minuti a piedi dal centro storico. Fonti: <a href=\"https://www.regionepuglia.org/itinerario-bari-mezza-giornata/\" target=\"_blank\" rel=\"noopener noreferrer\">itinerario mezza giornata</a>, <a href=\"https://www.bariexperience.com/en/what-to-do-in-bari/parking-in-bari-where-to-park-your-car-parkride-multi-storey-car-park-ztl-paid-parking/\" target=\"_blank\" rel=\"noopener noreferrer\">parcheggi a Bari</a>." },
-        { t:"Arrivo a Polignano & Check-in",
-          tx:"Ultimi 35 minuti di guida da Bari. Arrivo indicativo a Polignano a Mare nel primo pomeriggio. Sistemazione in hotel/appartamento - una sola base per tutto il soggiorno, nessun cambio alloggio nei giorni successivi." },
-        { t:"Sera - Centro storico di Polignano",
-          tx:"Passeggiata nel centro storico, un dedalo di vicoli bianchi a picco sul mare. Sosta a <b>Lama Monachile</b>, la piccola insenatura tra le scogliere che è l'immagine simbolo del paese, e alla statua dedicata a <b>Domenico Modugno</b>, nato qui. Cena in centro storico, vista scogliera se possibile. Costo indicativo: €25-40 a persona." },
-        { t:"Tre cose da non perdere, tutte a due passi",
-          tx:"Testimonianza diretta di chi ha già fatto questo viaggio, non da una guida: Lama Monachile, Pescaria (panino o frittura di pesce, un'experience tipica del posto) e <b>Super Mago del Gelo</b> (un caffè speciale che pare si trovi solo lì, gusto amaretto e agrumi - vale la sosta) si trovano tutti nel giro di 20 metri l'uno dall'altro. Il resto del centro storico si visita comodamente in un'oretta, non serve pianificarci sopra mezza giornata." },
-        // Sezione aggiunta in coda alla giornata e non accanto alle altre menzioni di Lama
-        // Monachile per la stessa ragione tecnica documentata nel Giorno 3: le checkbox delle
-        // attivita' usano come chiave `${d.id}-${indice di sezione}` (js/itinerario.js), quindi un
-        // inserimento intermedio sposterebbe le spunte gia' salvate su Firestore.
-        { t:"Lama Monachile in pratica: accessi, fondo, orari",
-          tx:"Lama Monachile compare piu' volte in questo itinerario come immagine simbolo del paese, ma finora senza i dati che servono per organizzarci sopra una mattina. La caletta, chiamata anche <b>Cala Porto</b>, sta a circa <b>300 metri dal centro</b>, meno di cinque minuti a piedi, e l'ingresso e' <b>gratuito e libero tutto l'anno</b>. Il fondo e' di <b>ciottoli</b>, non di sabbia: le scarpette da scoglio non sono un accessorio ma la differenza tra stare comodi e non starci, e per questo sono finite in valigia nella scheda Checklist. La spiaggia <b>non e' attrezzata</b> - niente lettini, ombrelloni, docce pubbliche o punti ristoro sulla riva, i locali stanno sopra, non sotto - e in auto non si arriva: <b>non esiste un parcheggio dedicato</b>, si usano le strisce blu del centro (Via Pompeo Sarnelli, Via San Vito, Via Martiri di Dogali) oppure il parcheggio di <b>Via San Francesco da Paola</b>, a circa un chilometro a piedi. Sull'orario le fonti concordano e il consiglio e' netto: in estate la caletta si riempie molto presto, quindi <b>entro le 8:30-9:00</b> del mattino o <b>dopo le 17:00</b>, con i giorni feriali sensibilmente migliori dei weekend. Non e' adatta a passeggini e carrozzine: scalini e ciottoli, nessuna rampa. Fonti: <a href=\"https://www.spiagge.it/magazine/lama-monachile/\" target=\"_blank\" rel=\"noopener noreferrer\">Spiagge.it</a>, <a href=\"https://www.regionepuglia.org/lama-monachile/\" target=\"_blank\" rel=\"noopener noreferrer\">Regione Puglia</a>, <a href=\"https://lamamonachile.com/en/2025/10/21/how-to-get-to-lama-monachile-polignano-mare/\" target=\"_blank\" rel=\"noopener noreferrer\">come raggiungere Lama Monachile</a>." },
-        { t:"Lama Monachile - due punti su cui le fonti non concordano",
-          tx:"Due cose vanno dichiarate come discordanti invece di essere appiattite in un dato pulito. Sul <b>ponte</b> che sovrasta la caletta le guide si contraddicono: una lo chiama ponte romano della <b>Via Traiana</b> e attribuisce il ponte sopra la spiaggia al periodo <b>borbonico, Ottocento</b>; un'altra fonde le due cose in \"Ponte Borbonico della Via Traiana\" datandolo al <b>II secolo d.C.</b>, che con l'attributo borbonico non sta insieme. Nessuna delle fonti consultate chiude la questione, quindi qui resta aperta: il punto panoramico e' quello, la sua datazione no. Sugli <b>accessi</b> il conteggio cambia da fonte a fonte: due (la scalinata in pietra sotto il ponte, ripida e diretta, e un sentiero piu' dolce dalla parte del <b>Bastione di Santo Stefano</b>) secondo due guide, tre secondo una terza, che indica <b>Piazza Garibaldi</b> con una scalinata ripida, <b>Piazza Bonsante</b> dal lato del parcheggio San Francesco e <b>Largo Gelso</b> vicino alla statua di Modugno. Il pratico che resta valido a prescindere: se si scende con borse e attrezzatura da mare conviene la via meno ripida, non la scalinata sotto il ponte." },
+        { t:"Il viaggio: percorso diretto, nessuna sosta",
+          tx:"Da Via Aurora, Civitanova Marche Alta a Polignano a Mare in diretta sono <b>460 km, circa 4h 46min</b> di guida (routing reale, non stimato), a cui vanno aggiunti i tempi morti di carburante, pause e traffico estivo di sabato. L'arrivo dichiarato è tra le <b>19:00 e le 19:30</b>, quindi la sosta a Bari che questo itinerario prevedeva all'andata non è più possibile: si è spostata al giorno del rientro, giovedì 13, dove Bari è comunque sulla strada di casa. Questa giornata non ha nessuna attività diurna, ed è meglio saperlo prima che scoprirlo guidando." },
+        { t:"Check-in e il deposito cauzionale",
+          tx:"Sistemazione alla <b>Magda Relax Suites</b>, unica base per tutte e cinque le notti, prenotata e già pagata su Booking. Sul posto va consegnato a parte un <b>deposito cauzionale di €150 in contanti</b>, che è rimborsabile e torna indietro al check-out di giovedì: va portato in contanti e va ricordato di riprenderlo, per questo è anche una voce della checklist." },
+        { t:"Cena, con un piano B che regge un arrivo alle 19:30",
+          tx:"Un sabato di agosto a Polignano senza prenotazione è realisticamente pieno, quindi la cena in un ristorante del centro storico va prenotata prima di partire, non cercata all'arrivo. Il piano B verificato è <b>Pescaria</b> in Piazza Aldo Moro 6-8, il fast food di pesce nato qui: è informale, <b>non prende prenotazioni</b> e secondo gli orari pubblicati è aperto <b>tutti i giorni dalle 11:30 alle 23:30</b>, quindi copre senza problemi un arrivo alle 19:30, con l'avvertenza che nelle ore di punta la fila c'è. Costo indicativo della serata: €25-40 a persona in ristorante, meno da Pescaria. Fonti: <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>, <a href=\"https://www.oraridiapertura24.it/filiale/Polignano%2520a%2520Mare-Pescaria-873345J.html\" target=\"_blank\" rel=\"noopener noreferrer\">orari pubblicati</a>." },
+        { t:"Dopo cena: il centro storico e Lama Monachile dall'alto",
+          tx:"È l'unica cosa che questa sera ci sta, ed è anche il modo giusto di iniziare: il centro storico è un dedalo di vicoli bianchi a picco sul mare e di sera è fresco e vivo. Il giro essenziale sta in un'ora: la <b>balconata su Lama Monachile</b>, che di notte si vede illuminata dal ponte e resta il punto panoramico simbolo del paese, la statua dedicata a <b>Domenico Modugno</b>, nato qui, <b>Piazza Ardito</b> e la Galleria Santo Stefano. In spiaggia non si scende: il bagno a Lama Monachile è programmato per domani mattina presto, quando la caletta è ancora vuota. Testimonianza diretta di chi ha già fatto questo viaggio: <b>Super Mago del Gelo</b>, a due passi da Pescaria, fa un caffè particolare (amaretto e agrumi) che pare si trovi solo lì e vale la sosta, con l'orario di chiusura da verificare sul posto perché non ho una fonte per gli orari estivi." },
+        { t:"Cosa è stato spostato da questa giornata",
+          tx:"Per chiarezza, visto che l'itinerario precedente prometteva altro. La <b>sosta a Bari Vecchia</b> è nel Giorno 6, al rientro, con lo stesso percorso a piedi e le stesse indicazioni di parcheggio già verificate. Il <b>mare</b> e le <b>grotte marine</b> sono nel Giorno 2. Le <b>Grotte di Castellana</b> sono nel Giorno 3. Nulla è stato cancellato per fare spazio all'arrivo serale, tranne le tappe che non entravano comunque in cinque giorni, elencate in coda al Giorno 6." },
       ],
-      tips:["Giornata lunga (guida + Bari + guida + arrivo): partire presto per non arrivare a Polignano troppo tardi","Bari Vecchia è ZTL: parcheggiare fuori e proseguire a piedi","Il tramonto da Lama Monachile è il momento migliore per le foto","Su Bari circolano allarmismi locali sui furti d'auto: nell'esperienza diretta di chi ha già fatto questo giro, parcheggiando nelle zone indicate sopra è stata una tappa tranquilla e vale assolutamente la sosta a Bari Vecchia","Lama Monachile ha il fondo di ciottoli e nessun servizio: scarpette da scoglio e acqua da casa","Per fare il bagno a Lama Monachile in agosto servono le prime ore: entro le 8:30-9:00 o dopo le 17:00, altrimenti si va solo per la vista dal ponte"],
+      tips:["Partire con calma ma non tardi: 460 km più le pause vogliono la mattina intera","Prenotare la cena di sabato prima di partire, oppure contare su Pescaria, che non prende prenotazioni e chiude alle 23:30","Portare i €150 del deposito cauzionale in contanti: non è una spesa, torna al check-out","Stasera solo centro storico: il bagno a Lama Monachile è domani entro le 9"],
       cf:"25-40", ca:"0",
-      // Cose da fare seminate per questo giorno (checkbox in Itinerario, spuntabili e
-      // rimovibili dall'app): luoghi del centro storico di Polignano, non delle grotte marine
-      // (quelle sono nel Giorno 2). La lista era un'indicazione dell'utente senza fonte; il tipo
-      // di ciascun luogo e' stato verificato il 2026-08-03 interrogando Overpass su OpenStreetMap
-      // (tutti e sei trovati con il nome esatto entro 9 km da Polignano) e scritto in italiano tra
-      // parentesi: tourism=viewpoint -> punto panoramico, amenity=restaurant -> ristorante,
-      // tourism=museum -> museo, historic=memorial -> memoriale. Serviva perche' dai soli nomi non
-      // si capiva che "La colonna" e "La Veranda di Giselda" sono ristoranti.
+      // Cose da fare seminate per questo giorno: luoghi del centro storico di Polignano, tutti
+      // raggiungibili a piedi dopo cena. Il tipo di ciascun luogo e' stato verificato il
+      // 2026-08-03 interrogando Overpass su OpenStreetMap (tutti e sei trovati con il nome esatto
+      // entro 9 km da Polignano) e scritto in italiano tra parentesi: tourism=viewpoint ->
+      // punto panoramico, amenity=restaurant -> ristorante, tourism=museum -> museo,
+      // historic=memorial -> memoriale. Serviva perche' dai soli nomi non si capiva che
+      // "La colonna" e "La Veranda di Giselda" sono ristoranti.
       todos:["Balconata Lama Monachile (punto panoramico)","Galleria Santo Stefano, ex chiesetta (museo)","La colonna (ristorante)","La Veranda di Giselda (ristorante)","Monumento ai caduti (memoriale)","Piazza Ardito (punto panoramico)"]
-      // Fonti (ricerca web 2026-07-13): percorso Bari Vecchia e parcheggio da
-      // https://www.regionepuglia.org/itinerario-bari-mezza-giornata/ e
-      // https://www.bariexperience.com/en/what-to-do-in-bari/parking-in-bari-where-to-park-your-car-parkride-multi-storey-car-park-ztl-paid-parking/
-      // Tempi/distanze di guida: calcolo reale via OSRM (router.project-osrm.org) da coordinate
-      // geocodificate con Nominatim per l'indirizzo di partenza fornito dall'utente.
+      // Distanza e tempo Civitanova-Polignano diretti: OSRM reale, coerenti con il calcolo della
+      // sessione 2026-07-13 (460 km, 4h46) che allora serviva a giustificare la sosta a Bari.
+      // Orari di Pescaria: fonte secondaria di orari pubblicati, non il sito dell'insegna, che non
+      // espone un orario. Verificati due riscontri concordi (11:30-23:30, tutti i giorni).
     },
     {
       id:2, color:"#4A90B8", label:"Giorno 2",
-      title:"Polignano a Mare in profondità",
-      places:"Cala Porto · Cala Paura · Grotta Palazzese · Tour in barca alle grotte",
+      title:"Domenica 9 agosto - Lama Monachile presto e grotte marine dal mare",
+      places:"Lama Monachile · Cala Porto · Cala Paura · Tour in barca alle grotte",
       sections:[
-        { t:"Mattino - Spiagge e grotte marine",
-          tx:"Giornata dedicata al mare: <b>Cala Porto</b> e <b>Cala Paura</b>, le due calette principali sotto il centro storico. Le scogliere sono ricche di grotte marine visitabili in barca o kayak (noleggio sul posto)." },
-        { t:"Grotta Palazzese - da sapere prima di prenotare",
-          tx:"Il ristorante <b>Grotta Palazzese</b>, scavato in una vera grotta naturale a picco sul mare (aperta da Pasqua a ottobre), è tra i luoghi più fotografati della Puglia - ma con alcune informazioni pratiche che è meglio conoscere prima di prenotare, non solo dopo. Prezzo reale: <b>almeno €200 a persona</b> per un menu degustazione senza bevande (una bottiglia d'acqua costa già ~€10). I tavoli si assegnano all'arrivo, non alla prenotazione: prenotare con anticipo non garantisce uno dei tavoli a strapiombo sul mare. Le recensioni sono discordanti (3,4/5 su Tripadvisor, migliaia di recensioni): l'atmosfera è elogiata, ma diversi ospiti segnalano servizio lento e cucina non all'altezza del prezzo." },
-        { t:"Sera",
-          tx:"Cena in centro storico, oppure Grotta Palazzese consapevoli del compromesso reale (prezzo/qualità) sopra - è un'esperienza da vivere per l'ambiente, non da aspettarsi come miglior pasto del viaggio." },
-        // Sezioni sui tour in barca aggiunte in coda alla giornata, non accanto alla sezione delle
-        // grotte marine a cui appartengono per argomento: le checkbox delle attivita' hanno chiave
-        // posizionale `${d.id}-${indice di sezione}` (js/itinerario.js) e un inserimento intermedio
-        // sposterebbe le spunte gia' salvate su Firestore.
+        { t:"Prima cosa, entro le 9: Lama Monachile",
+          tx:"La caletta, chiamata anche <b>Cala Porto</b>, sta a circa <b>300 metri dal centro</b>, meno di cinque minuti a piedi, e l'ingresso è <b>gratuito e libero tutto l'anno</b>. Sull'orario le fonti concordano e il consiglio è netto: in estate si riempie molto presto, quindi <b>entro le 8:30-9:00</b> del mattino oppure <b>dopo le 17:00</b>, e una domenica di agosto è il caso peggiore possibile, quindi qui la sveglia presto non è un vezzo. Il fondo è di <b>ciottoli</b>, non di sabbia: le scarpette da scoglio sono la differenza tra stare comodi e non starci, e per questo sono in valigia. La spiaggia <b>non è attrezzata</b> - niente lettini, ombrelloni, docce pubbliche o punti ristoro sulla riva, i locali stanno sopra - e in auto non si arriva: <b>nessun parcheggio dedicato</b>, si usano le strisce blu del centro (Via Pompeo Sarnelli, Via San Vito, Via Martiri di Dogali) o il parcheggio di <b>Via San Francesco da Paola</b>, a circa un chilometro a piedi. Non è adatta a passeggini e carrozzine: scalini e ciottoli, nessuna rampa. Fonti: <a href=\"https://www.spiagge.it/magazine/lama-monachile/\" target=\"_blank\" rel=\"noopener noreferrer\">Spiagge.it</a>, <a href=\"https://www.regionepuglia.org/lama-monachile/\" target=\"_blank\" rel=\"noopener noreferrer\">Regione Puglia</a>, <a href=\"https://lamamonachile.com/en/2025/10/21/how-to-get-to-lama-monachile-polignano-mare/\" target=\"_blank\" rel=\"noopener noreferrer\">come raggiungere Lama Monachile</a>." },
+        { t:"Lama Monachile: due punti su cui le fonti non concordano",
+          tx:"Due cose vanno dichiarate come discordanti invece di essere appiattite in un dato pulito. Sul <b>ponte</b> che sovrasta la caletta le guide si contraddicono: una lo chiama ponte romano della <b>Via Traiana</b> e attribuisce il ponte sopra la spiaggia al periodo <b>borbonico, Ottocento</b>; un'altra fonde le due cose in \"Ponte Borbonico della Via Traiana\" datandolo al <b>II secolo d.C.</b>, che con l'attributo borbonico non sta insieme. Nessuna fonte consultata chiude la questione, quindi resta aperta: il punto panoramico è quello, la sua datazione no. Sugli <b>accessi</b> il conteggio cambia: due secondo due guide (la scalinata in pietra sotto il ponte, ripida e diretta, e un sentiero più dolce dalla parte del <b>Bastione di Santo Stefano</b>), tre secondo una terza, che indica <b>Piazza Garibaldi</b> con una scalinata ripida, <b>Piazza Bonsante</b> dal lato del parcheggio San Francesco e <b>Largo Gelso</b> vicino alla statua di Modugno. Il pratico che resta valido: scendendo con borse e attrezzatura conviene la via meno ripida, non la scalinata sotto il ponte." },
+        { t:"Le calette e le grotte, dopo la prima mattina",
+          tx:"Quando Lama Monachile si affolla, le alternative a piedi o a pochi minuti sono <b>Cala Paura</b>, più grande e frequentata dai locali, e le calette sotto il centro storico. Le grotte marine invece non si raggiungono da terra: sono la ragione della barca, prevista nel pomeriggio." },
         { t:"Tour in barca alle grotte marine: operatori e prezzi reali",
-          tx:"Le grotte elencate qui sotto nelle cose da fare sono quasi tutte <b>visitabili solo dal mare</b>, quindi il tour in barca non e' un extra ma il modo per vederle davvero. Le escursioni collettive partono dal porto turistico <b>Cala Ponte Marina</b> o dal porticciolo di <b>San Vito</b>, poco fuori il centro, e durano tra <b>un'ora e mezza e due ore</b>, con sosta per il bagno e in molti casi un aperitivo a bordo. Prezzi a persona pubblicati su un aggregatore di prenotazioni al 2026-08-07, quindi confrontabili tra loro ma da riverificare: <b>Dorino Gite in Barca €20</b> per 1h30 con snorkeling e aperitivo, <b>Rent Me Charter €20</b> per 1h45, <b>Escursioni Sofia €25</b> per 2h, <b>Pugliamare €30</b> per 1h30 con aperitivo, <b>Blue Wave €30</b> per 2h in partenza da San Vito. Un operatore che espone il proprio listino sul sito, <b>MammaMia Boat</b>, chiede <b>€40 a persona</b> per l'escursione di gruppo di 2 ore con transfer incluso, massimo 12 persone, con giubbotti e teli mare compresi. Le grotte tipicamente incluse nel giro sono <b>Grotta delle Rondinelle, Grotta Ardito, Grotta Palazzese, il Grottone, Cala Paura, Cala Port'Alga, Grotta degli Innamorati</b> e lo <b>Scoglio dell'Eremita</b>, cioe' esattamente i nomi che compaiono nelle cose da fare di questa giornata. Fonti: <a href=\"https://www.checkyeti.com/it/boat-tours/italia/polignano-a-mare/gite-in-barca-alle-grotte\" target=\"_blank\" rel=\"noopener noreferrer\">listino comparato CheckYeti</a>, <a href=\"https://mammamiaboat.com/\" target=\"_blank\" rel=\"noopener noreferrer\">MammaMia Boat</a>." },
-        { t:"Quale tour conviene in due, e cosa puo' farlo saltare",
-          tx:"In due la scelta economicamente sensata e' il <b>collettivo</b>: le stesse grotte, la stessa costa, €20-40 a testa. Il tour <b>privato</b> si paga a barca e non a persona - €300-400 per due ore secondo gli stessi listini, €380 di partenza per l'Exclusive di MammaMia - quindi per una coppia significa <b>€150-200 a testa</b> per avere la barca da soli e l'aperitivo servito: si giustifica solo se la privacy e' il punto della serata, non per vedere piu' grotte. Chi vuole entrare nelle cavita' piu' piccole, dove il gozzo non passa, ha come alternativa il <b>kayak</b>, che diversi operatori del posto propongono con istruttore fino alla Grotta Palazzese: qui non e' stato trovato un prezzo pubblicato verificabile, quindi non lo invento e resta da chiedere sul porticciolo. Due avvertenze pratiche prima di dare la giornata per fatta. Il mare comanda: con onda o vento le uscite si annullano, quindi conviene prenotare una data con <b>cancellazione gratuita</b> (tutti gli operatori del listino comparato la offrono) e tenere il giro come attivita' spostabile tra Giorno 2 e Giorno 6, non fissarlo. E le partenze piu' richieste in agosto sono quelle del tardo pomeriggio, per il tramonto dal mare: se e' quella che interessa, va prenotata prima, non il giorno stesso." },
+          tx:"Le grotte di questa costa sono quasi tutte <b>visitabili solo dal mare</b>, quindi il tour in barca non è un extra ma il modo per vederle. Le escursioni collettive partono dal porto turistico <b>Cala Ponte Marina</b> o dal porticciolo di <b>San Vito</b> e durano tra <b>un'ora e mezza e due ore</b>, con sosta per il bagno e spesso un aperitivo a bordo. Prezzi a persona pubblicati al 2026-08-07 su un aggregatore di prenotazioni, quindi confrontabili tra loro ma da riverificare in fase di acquisto: <b>Dorino Gite in Barca €20</b> per 1h30 con snorkeling e aperitivo, <b>Rent Me Charter €20</b> per 1h45, <b>Escursioni Sofia €25</b> per 2h, <b>Pugliamare €30</b> per 1h30 con aperitivo, <b>Blue Wave €30</b> per 2h da San Vito. Un operatore che espone il listino sul proprio sito, <b>MammaMia Boat</b>, chiede <b>€40 a persona</b> per l'escursione di gruppo di 2 ore con transfer incluso, massimo 12 persone, giubbotti e teli mare compresi. Le grotte tipicamente incluse sono <b>Grotta delle Rondinelle, Grotta Ardito, Grotta Palazzese, il Grottone, Cala Paura, Cala Port'Alga, Grotta degli Innamorati</b> e lo <b>Scoglio dell'Eremita</b>. Fonti: <a href=\"https://www.checkyeti.com/it/boat-tours/italia/polignano-a-mare/gite-in-barca-alle-grotte\" target=\"_blank\" rel=\"noopener noreferrer\">listino comparato CheckYeti</a>, <a href=\"https://mammamiaboat.com/\" target=\"_blank\" rel=\"noopener noreferrer\">MammaMia Boat</a>." },
+        { t:"Quale tour conviene in due, e cosa può farlo saltare",
+          tx:"In due la scelta economicamente sensata è il <b>collettivo</b>: le stesse grotte, la stessa costa, €20-40 a testa. Il <b>privato</b> si paga a barca e non a persona - €300-400 per due ore secondo gli stessi listini, €380 di partenza per l'Exclusive di MammaMia - quindi per una coppia sono <b>€150-200 a testa</b> per avere la barca da soli: si giustifica se la privacy è il punto, non per vedere più grotte. Chi vuole entrare nelle cavità più piccole ha come alternativa il <b>kayak</b>, che diversi operatori propongono con istruttore fino alla Grotta Palazzese: qui non ho trovato un prezzo pubblicato verificabile, quindi non lo invento e resta da chiedere sul porticciolo. Due avvertenze pratiche. Il mare comanda: con onda o vento le uscite si annullano, quindi conviene prenotare con <b>cancellazione gratuita</b> (tutti gli operatori del listino comparato la offrono) e sapere che se domenica il mare è mosso il tour si sposta a lunedì mattina o a mercoledì, non si perde. E la partenza del tardo pomeriggio, quella per il tramonto dal mare, è la più richiesta di agosto: va prenotata oggi, non domenica mattina." },
+        { t:"Grotta Palazzese: cosa sapere, e il realismo su una domenica di agosto",
+          tx:"Il ristorante <b>Grotta Palazzese</b>, scavato in una vera grotta naturale a picco sul mare, è tra i luoghi più fotografati della Puglia, ma le informazioni pratiche vanno sapute prima. Prezzo reale: <b>almeno €200 a persona</b> per un menu degustazione senza bevande. I tavoli si assegnano all'arrivo, non alla prenotazione: prenotare con anticipo non garantisce uno dei tavoli a strapiombo. Le recensioni sono discordanti (3,4/5 su Tripadvisor, migliaia di recensioni): l'atmosfera è elogiata, servizio e cucina no, non a quel prezzo. Il realismo su queste date: senza una prenotazione già in mano, una domenica di metà agosto è la sera meno probabile dell'anno per trovare posto, quindi non è su questa cena che si costruisce la serata. Fonti: <a href=\"https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/\" target=\"_blank\" rel=\"noopener noreferrer\">Dissapore</a>, <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>." },
+        { t:"Sera",
+          tx:"Cena in centro storico o da Pescaria, senza spostamenti in auto: è l'unica giornata del viaggio completamente a piedi, e conviene tenerla tale perché domani si guida e martedì si rientra tardi." },
       ],
-      tips:["Se si prenota Grotta Palazzese, farlo sapendo che il tavolo vista mare non è garantito","Kayak e barca a noleggio sul porticciolo per vedere le grotte dal mare","Il tour in barca collettivo costa €20-40 a testa e mostra le stesse grotte del privato, che in due verrebbe €150-200 a testa","Prenotare il tour in barca con cancellazione gratuita: con mare mosso le uscite si annullano","La maggior parte delle grotte di questa giornata si vede solo dal mare: senza barca o kayak restano un nome sulla mappa"],
-      cf:"25-60", ca:"20-45",
-      // Cose da fare seminate per questo giorno: le grotte marine della costa di Polignano
-      // (categoria "viewpoint" su OpenStreetMap, verificate dal vivo via Overpass in sessione,
-      // vedi services/poi-search/) piu' due ristoranti di pesce sulla stessa zona di costa.
-      // Tipo verificato di nuovo il 2026-08-03 sugli stessi 14 nomi: tutti trovati in OSM con il
-      // nome esatto, dodici tourism=viewpoint (quasi tutti anche natural=cave_entrance), Cozze
-      // Nere amenity=restaurant, e Grotta Palazzese che porta entrambi i tag - per questo qui e'
-      // annotata come ristorante e punto panoramico insieme, non solo come ristorante.
+      tips:["Sveglia presto: una domenica di agosto Lama Monachile si riempie prima delle 9","Scarpette da scoglio e acqua da casa: sulla riva non c'è nulla","Prenotare il tour in barca oggi, con cancellazione gratuita: gli slot del tramonto vanno via prima","Se il mare è mosso il tour si annulla: si recupera lunedì mattina o mercoledì, non si perde","Giornata senza auto: approfittarne, domani e dopodomani si guida"],
+      cf:"25-45", ca:"20-40",
+      // Cose da fare seminate per questo giorno: le grotte marine della costa di Polignano, cioe'
+      // esattamente quelle che il tour in barca costeggia, piu' due ristoranti sulla stessa zona di
+      // costa. Tipo verificato il 2026-08-03 via Overpass su OpenStreetMap sugli stessi 14 nomi:
+      // tutti trovati con il nome esatto, dodici tourism=viewpoint (quasi tutti anche
+      // natural=cave_entrance), Cozze Nere amenity=restaurant, e Grotta Palazzese che porta
+      // entrambi i tag - per questo e' annotata come ristorante e punto panoramico insieme.
       todos:["Arco Cala Di Luna (punto panoramico)","Cozze Nere (ristorante)","Grotta Ardito (punto panoramico)","Grotta delle monache (punto panoramico)","Grotta delle rondinelle (punto panoramico)","Grotta di Pietro e Paolo 1 e 2 (punto panoramico)","Grotta di Santa Caterina 2 (punto panoramico)","Grotta Frascina (punto panoramico)","Grotta Palazzese (ristorante e punto panoramico)","Grotta piana - Grotta del basso porto (punto panoramico)","Grotta Pietropaolo - Grotticella sotto Favale (punto panoramico)","Grotta San Gennaro (punto panoramico)","Grotticella di Santo Stefano (punto panoramico)","Pietra Piatta (punto panoramico)"]
-      // Fonti (ricerca web 2026-07-13): prezzo, assegnazione tavoli, valutazione Tripadvisor da
-      // https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/ e
-      // https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html
     },
     {
       id:3, color:"#C4832A", label:"Giorno 3",
-      title:"Polignano (mattina) → Grotte di Castellana → Alberobello (sera)",
-      places:"Polignano a Mare (mattina) · Grotte di Castellana · Rione Monti · Aia Piccola · Cisternino (sera, alternativa)",
+      title:"Lunedì 10 agosto - Grotte di Castellana nel pomeriggio",
+      places:"Mattina libera a Polignano · Grotte di Castellana · Sera in centro",
       sections:[
-        { t:"Mattina - Ultimo relax a Polignano",
-          tx:"Non c'è fretta: le Grotte di Castellana sono a soli <b>17 km, circa 20 minuti</b> di auto da Polignano (calcolato con un routing reale, non stimato). Ultimo bagno in una delle calette o una colazione con calma in centro, poi si parte nel primo pomeriggio." },
-        { t:"Grotte di Castellana",
-          tx:"Testimonianza diretta di chi ha già fatto questo viaggio, non da una guida: paragonabili alle Grotte di Frasassi, forse un po' meno spettacolari, ma offrono un po' di fresco rispetto al caldo di agosto. Non sembra serva prenotare con grande anticipo, ma verificare comunque i posti disponibili vista la stagione estiva prima di contarci." },
-        { t:"Verso Alberobello",
-          tx:"Da Grotte di Castellana ad Alberobello: altri <b>17 km, circa 20 minuti</b> di auto (calcolato con un routing reale). Il percorso Polignano → Castellana → Alberobello è tutto sensato come spostamento: nessuna delle due tappe è fuori strada rispetto all'altra." },
-        { t:"Sera - Rione Monti & Aia Piccola",
-          tx:"Da chi ha già fatto questo viaggio: Alberobello vale la pena tenerla per la sera, quando i trulli si accendono con le lucine - è molto più bella così che di giorno, e in agosto significa anche non \"schiattare\" di caldo tra i vicoli senza ombra. È abbastanza una turistata (al 99% negozi di souvenir), ma comunque una tappa da fare una volta nella vita. Alberobello è patrimonio <b>UNESCO</b> per i suoi <b>trulli</b>, le caratteristiche case in pietra a secco con tetto conico bianco. <b>Rione Monti</b> (oltre 1.000 trulli) è il quartiere principale, denso di trulli - molti oggi negozi di souvenir. <b>Aia Piccola</b> (400 trulli), dall'altra parte del paese, è molto meno turistica - ancora abitazioni di famiglia vere, il nucleo più antico del paese - ed è particolarmente suggestiva la sera. Percorso consigliato: dal belvedere, scendere nel Rione Monti, poi Aia Piccola per capire la differenza tra la parte scenografica e quella vissuta. Fonte: <a href=\"https://www.marcotogni.it/cosa-vedere-alberobello/\" target=\"_blank\" rel=\"noopener noreferrer\">Marco Togni</a>." },
-        { t:"Trullo Sovrano",
-          tx:"L'unico trullo a due piani della città (fine XVIII secolo, monumento nazionale dal 1930), oggi piccolo museo con ambienti ricostruiti (panificio, camera da letto, cucina). Biglietto: <b>€2,50</b> (Piazza Sacramento 10). Fonte: <a href=\"https://www.trullosovrano.eu/ingresso-biglietti/\" target=\"_blank\" rel=\"noopener noreferrer\">sito ufficiale</a>." },
-        { t:"Cena",
-          tx:"Cena in una trattoria del centro storico: cucina della Valle d'Itria, orecchiette, verdure locali." },
-        // Sezione aggiunta in coda e non in mezzo alla giornata per una ragione tecnica, non
-        // estetica: le checkbox delle attivita' usano come chiave `${d.id}-${indice di sezione}`
-        // (js/itinerario.js), quindi un inserimento intermedio sposterebbe le spunte gia' salvate
-        // su Firestore verso la voce sbagliata.
-        { t:"Cisternino, alternativa per la sera",
-          tx:"Testimonianza diretta, non da fonte web: <b>Cisternino</b> è già stata visitata nel 2023, mezza giornata di passaggio, e la cosa che vale la pena è prenotare una cena dentro i vicoli del centro storico. È l'alternativa concreta alla trattoria di Alberobello della sezione sopra, non un'aggiunta: si sceglie una delle due cene, non entrambe. Da Alberobello sono <b>18,1 km, circa 20 minuti</b>; da Polignano <b>43 km, circa 38 minuti</b>, e il rientro serale Cisternino-Polignano è di <b>41,5 km, 39 minuti</b> (distanze da routing reale, non stimate). Chi ha già girato questa zona non alloggiava in paese ma fuori, in campagna, alla <a href=\"https://www.tripadvisor.com/Hotel_Review-g652000-d4225796-Reviews-Masseria_Peppeturro-Cisternino_Province_of_Brindisi_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Masseria Peppeturro</a>, masseria di inizio Novecento con due trulli ristrutturati e piscina a pochi chilometri da Cisternino: il contatto telefonico diretto non sta in questo file ma negli appunti privati del viaggio, perché il repository è pubblico." },
-        // Le tre sezioni che seguono, tutte sulle Grotte di Castellana, stanno in coda e non
-        // accanto alla sezione "Grotte di Castellana" a cui appartengono per argomento, per la
-        // stessa ragione tecnica dichiarata sopra per Cisternino: le chiavi delle checkbox delle
-        // attivita' sono posizionali (`${d.id}-${indice di sezione}`, js/itinerario.js).
-        { t:"Grotte di Castellana: quale percorso, quanto costa, a che ora",
-          tx:"La visita si fa solo con guida e a turni, e la scelta e' tra due percorsi. Il <b>percorso completo</b> e' di <b>3 km</b> e dura circa <b>100 minuti</b>, e arriva alla <b>Grotta Bianca</b>, l'ambiente piu' spettacolare del complesso; il <b>percorso parziale</b> e' di <b>1 km</b> per circa <b>50 minuti</b> e la Grotta Bianca non la vede. Prezzi ufficiali 2026 in biglietteria: <b>intero dai 15 anni €25</b> il completo e <b>€22</b> il parziale, ridotto 6-14 anni €22 e €19, gratis sotto i 5 anni, piu' un biglietto famiglia da €61 disponibile solo online. Attenzione a un errore facile: diverse guide secondarie riportano ancora €22 e €19 come prezzi <b>interi</b>, che nel listino ufficiale sono invece i ridotti, quindi il preventivo va fatto sul sito e non su una guida. L'acquisto online aggiunge commissioni di servizio e un supplemento di prenotazione anticipata, ma in agosto e' la scelta giusta perche' i turni si esauriscono. Sugli orari va dichiarato il livello di verifica: il calendario ufficiale e' pubblicato come immagine, quindi non leggibile come testo, e la scansione che circola per agosto - completo ogni ora dalle <b>9:00 alle 18:00</b>, parziale alle 13:15, 14:15, 18:15 e 19:15 - viene da una fonte secondaria e va confermata sul sito prima di costruirci la giornata. L'indirizzo e' <b>Piazzale Anelli</b> a Castellana Grotte, con i parcheggi a pagamento P1 e P2 accanto all'ingresso e un P3 al centro commerciale di Via Putignano servito da navetta. Due note pratiche: il fondo e' umido e in alcuni tratti scivoloso, quindi scarpe con suola antiscivolo e non infradito, e la temperatura sotterranea resta costante e bassa (le fonti secondarie indicano circa 16-18 gradi, il dato ufficiale non l'ho trovato), il che conferma la testimonianza sul fresco ma significa portarsi una felpa leggera in pieno agosto. Fonti: <a href=\"https://www.grottedicastellana.it/informazioni-utili/orari-e-prezzi/\" target=\"_blank\" rel=\"noopener noreferrer\">orari e prezzi ufficiali</a>, <a href=\"https://www.grottedicastellana.it/informazioni-utili/come-raggiungerci-2/\" target=\"_blank\" rel=\"noopener noreferrer\">come raggiungerci e parcheggi</a>, <a href=\"https://www.informazioni-turistiche.it/grotte-di-castellana-orari-prezzi-percorsi-e-consigli-per-visitarle/\" target=\"_blank\" rel=\"noopener noreferrer\">scansione orari di agosto, fonte secondaria</a>." },
-        { t:"SpeleoNight: la visita al buio con gli speleologi",
-          tx:"E' il tour piu' interessante che le grotte offrono e non e' la visita turistica: <b>SpeleoNight</b> percorre i 3 km fino alla Grotta Bianca <b>di notte e al buio</b>, su un tracciato alternativo a quello turistico, illuminati solo dalla lampada del proprio caschetto e accompagnati da speleologi del Gruppo Puglia Grotte, con l'andata fatta in oscurita' totale e la Grotta Bianca illuminata solo all'arrivo. Dati ufficiali: <b>€28 a persona</b> piu' commissioni online, durata <b>non inferiore a 2 ore</b>, circa <b>3 km a piedi</b>, <b>eta' minima 7 anni</b>, massimo 25 persone per gruppo, caschetto con lampada frontale fornito, ritrovo <b>30 minuti prima</b> della partenza. Le date del calendario estivo 2026 sono fisse e poche, tutte alle <b>20:30</b>: <b>25 luglio, 15, 21 e 31 agosto, 11 e 25 settembre</b>. Qui c'e' una decisione da prendere, non una comodita' da aggiungere: essere dentro la grotta alle 20:30 significa rinunciare alla serata di Alberobello con le lucine o alla cena nei vicoli di Cisternino, che sono le due opzioni serali di questa giornata. Se una di quelle date cade nel viaggio, la cosa sensata e' spostare Alberobello o Cisternino su un altro giorno invece di comprimere tutto. Una discordanza da sapere: un comunicato dello stesso sito indica €25, mentre la scheda dell'esperienza dice €28 piu' commissioni, quindi il prezzo si legge in fase di acquisto e non si da' per fissato. Fonte: <a href=\"https://www.grottedicastellana.it/esperienze/speleonight/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda ufficiale SpeleoNight</a>, prenotazione su <a href=\"https://shop.grottedicastellana.it/webshop/webticket/timeslot\" target=\"_blank\" rel=\"noopener noreferrer\">shop.grottedicastellana.it</a>." },
-        { t:"Hell in the Cave: l'Inferno di Dante dentro la Grave",
-          tx:"La seconda esperienza serale non e' una visita ma uno spettacolo: <b>Hell in the Cave</b> mette in scena l'Inferno di Dante con danza, voci, suoni e luci dentro la <b>Caverna della Grave</b>, la prima e piu' vasta cavita' del sistema sotterraneo, <b>100 metri di lunghezza per 50 di larghezza e 60 di profondita'</b>. Biglietti: <b>€25</b> intero, <b>€20</b> per i minori fino a 17 anni, e un <b>combinato visita piu' spettacolo a €42</b>, che e' l'opzione da valutare se le grotte si visitano lo stesso giorno. Le date pubblicate per la stagione 2026 nella finestra utile a questo viaggio sono <b>9, 14, 22 e 29 agosto</b>, poi 13, 19 e 26 settembre, con orario dichiarato <b>21:00 il sabato e 20:00 la domenica</b>. Una verifica va fatta, e la dico invece di nasconderla: quella regola non copre tutte le date pubblicate, perche' nel 2026 il <b>14 agosto cade di venerdi'</b> (il 9 e' una domenica, il 22 e il 29 sono sabati), quindi per quella data l'orario di inizio non e' deducibile e va chiesto. Le prenotazioni si fanno per telefono o WhatsApp al numero indicato dal sito ufficiale, non con acquisto online diretto. Vale la stessa avvertenza di SpeleoNight: uno spettacolo alle 20:00-21:00 dentro la grotta e la sera tra i trulli illuminati non stanno nello stesso giorno." },
+        { t:"Come si incastra la giornata",
+          tx:"Le Grotte di Castellana sono a <b>17,4 km, 20 minuti</b> di auto da Polignano (routing reale ricalcolato in sessione), quindi non serve dedicargli una giornata intera: mattina lenta, bagno o centro storico, partenza nel primo pomeriggio, visita nelle ore più calde, rientro per cena. È l'incastro giusto anche per il caldo, perché sottoterra la temperatura è bassa e costante mentre fuori sono le ore peggiori." },
+        { t:"Quale percorso, quanto costa, a che ora",
+          tx:"La visita si fa solo con guida e a turni, e la scelta è tra due percorsi. Il <b>percorso completo</b> è di <b>3 km</b> per circa <b>100 minuti</b> e arriva alla <b>Grotta Bianca</b>, l'ambiente più spettacolare del complesso; il <b>percorso parziale</b> è di <b>1 km</b> per circa <b>50 minuti</b> e la Grotta Bianca non la vede. Prezzi ufficiali 2026 in biglietteria: <b>intero dai 15 anni €25</b> il completo e <b>€22</b> il parziale, ridotto 6-14 anni €22 e €19, gratis sotto i 5 anni. Attenzione a un errore facile: diverse guide secondarie riportano ancora €22 e €19 come prezzi <b>interi</b>, che nel listino ufficiale sono i ridotti, quindi il preventivo si fa sul sito e non su una guida. L'acquisto online aggiunge commissioni e un supplemento di prenotazione anticipata, ma a metà agosto è la scelta giusta perché i turni si esauriscono: va comprato prima di partire, non davanti alla cassa. Sugli orari va dichiarato il livello di verifica: il calendario ufficiale è pubblicato come immagine, quindi non leggibile come testo, e la scansione che circola per agosto - completo <b>ogni ora dalle 9:00 alle 18:00</b>, parziale alle 13:15, 14:15, 18:15 e 19:15 - viene da una fonte secondaria e va confermata sul sito. L'indirizzo è <b>Piazzale Anelli</b> a Castellana Grotte, con i parcheggi a pagamento P1 e P2 accanto all'ingresso e un P3 al centro commerciale di Via Putignano servito da navetta. Fonti: <a href=\"https://www.grottedicastellana.it/informazioni-utili/orari-e-prezzi/\" target=\"_blank\" rel=\"noopener noreferrer\">orari e prezzi ufficiali</a>, <a href=\"https://www.grottedicastellana.it/informazioni-utili/come-raggiungerci-2/\" target=\"_blank\" rel=\"noopener noreferrer\">come raggiungerci e parcheggi</a>, <a href=\"https://www.informazioni-turistiche.it/grotte-di-castellana-orari-prezzi-percorsi-e-consigli-per-visitarle/\" target=\"_blank\" rel=\"noopener noreferrer\">scansione orari di agosto, fonte secondaria</a>." },
+        { t:"Cosa portarsi dietro, e la testimonianza di chi ci è già stato",
+          tx:"Il fondo è umido e in alcuni tratti scivoloso: servono scarpe chiuse con suola antiscivolo, non infradito. La temperatura sotterranea resta costante e bassa - le fonti secondarie indicano circa 16-18 gradi, il dato ufficiale non l'ho trovato - quindi una felpa leggera serve davvero anche in pieno agosto, ed è in valigia per questo. Testimonianza diretta di chi ha già fatto questo viaggio, non una guida: sono paragonabili alle Grotte di Frasassi, forse un po' meno spettacolari, e il fresco rispetto al caldo di agosto è reale e non un dettaglio." },
+        { t:"Le due esperienze speciali che con queste date non si possono fare",
+          tx:"Le grotte offrono due cose molto più interessanti della visita turistica, e vanno dette insieme al motivo per cui non rientrano, così non le si cerca invano. <b>SpeleoNight</b> è la visita al buio con gli speleologi, 3 km fino alla Grotta Bianca illuminati solo dal caschetto, €28 più commissioni, minimo 2 ore, età minima 7 anni: il calendario estivo 2026 parte dal <b>15 agosto</b>, due giorni dopo il rientro, quindi è fuori portata per questo viaggio. <b>Hell in the Cave</b> è l'Inferno di Dante messo in scena con danza, voci e luci nella <b>Caverna della Grave</b> (100 metri per 50, profonda 60), €25 a persona o <b>€42 in combinato</b> con la visita: le date di agosto sono <b>9, 14, 22 e 29 alle 21:00</b>, quindi l'unica compatibile era domenica 9, che è stata scelta come giornata di mare e tour in barca. Se i piani cambiassero, i biglietti si trovano anche sul circuito TicketOne oltre che al numero indicato dal sito ufficiale. Fonti: <a href=\"https://www.grottedicastellana.it/esperienze/speleonight/\" target=\"_blank\" rel=\"noopener noreferrer\">SpeleoNight</a>, <a href=\"https://www.grottedicastellana.it/esperienze/hell-in-the-cave/\" target=\"_blank\" rel=\"noopener noreferrer\">Hell in the Cave</a>." },
+        { t:"Sera libera a Polignano",
+          tx:"Rientro a Polignano in venti minuti e serata in centro storico, volutamente scarica: domani si rientra tardi da Cisternino e conviene arrivarci riposati." },
       ],
-      tips:["Rione Monti è molto turistico: Aia Piccola offre scorci più tranquilli","Nelle ore centrali fa molto caldo: la mattina a Polignano e le Grotte (fresche) coprono bene la parte più calda della giornata","Da testimonianza diretta: tenere Alberobello per il tardo pomeriggio/sera, sia per le lucine sui trulli sia per evitare il caldo peggiore","Da testimonianza diretta: tra Locorotondo e Martina Franca è meglio la seconda, che ora è la tappa principale del Giorno 4 - Locorotondo si aggiunge solo se resta tempo, è carina ma molto piccola e non è nel percorso diretto Castellana-Alberobello","Se si sceglie Cisternino per la sera, la cena nei vicoli va prenotata: è il motivo per cui ci si va","Alle Grotte di Castellana conviene il percorso completo: €3 in più del parziale e in cambio c'è la Grotta Bianca","Biglietto delle grotte online in agosto: i turni guidati si esauriscono e la fila in biglietteria è reale","Felpa leggera e scarpe con suola antiscivolo per le grotte: dentro ci sono circa 16-18 gradi costanti e il fondo è umido","SpeleoNight (20:30) e Hell in the Cave (20:00-21:00) hanno date fisse e occupano la serata: se si scelgono, Alberobello o Cisternino si spostano su un altro giorno"],
+      tips:["Comprare il biglietto online prima di partire: a metà agosto i turni guidati si esauriscono","Percorso completo, non parziale: €3 in più e in cambio c'è la Grotta Bianca","Felpa leggera e scarpe chiuse antiscivolo: dentro ci sono 16-18 gradi costanti e il fondo è umido","Andarci nel pomeriggio, non la mattina: sono le ore in cui fuori si sta peggio","Gli orari dei turni di agosto nel file vengono da una fonte secondaria: confermarli sul sito ufficiale"],
       cf:"20-35", ca:"25-30"
-      // Distanze/tempi Polignano-Castellana e Castellana-Alberobello: calcolo reale via OSRM
-      // (router.project-osrm.org) da coordinate geocodificate con Nominatim, verificato dal vivo
-      // in sessione (2026-07-15), non stimato.
-      // Tratte di Cisternino aggiunte con lo stesso metodo (2026-07-31): Alberobello-Cisternino
-      // 18,1 km / 20 min; Polignano-Cisternino 43,0 km / 38 min; Cisternino-Polignano 41,5 km /
-      // 39 min. La testimonianza ricordava Cisternino "poco piu' giu' di 50 km": il dato reale
-      // conferma l'ordine di grandezza.
     },
     {
       id:4, color:"#7B4F9E", label:"Giorno 4",
-      title:"Martina Franca, il barocco della Valle d'Itria",
-      places:"Piazza Roma · Palazzo Ducale · Basilica di San Martino · Ostuni (opzionale)",
+      title:"Martedì 11 agosto - Alberobello al tramonto, cena a Cisternino",
+      places:"Rione Monti · Aia Piccola · Trullo Sovrano · Cisternino",
       sections:[
-        { t:"Perché questa giornata è cambiata",
-          tx:"Testimonianza diretta, non da fonte web: chi ha già girato questa zona ha preferito la <b>Valle d'Itria</b> a Ostuni, e tra Locorotondo e Martina Franca indica senza esitazione la seconda. Nella stessa testimonianza Ostuni e Matera venivano ricordate come \"altre centinaia di chilometri\" rispetto a Cisternino, e questo il dato reale non lo conferma: va detto, perché è l'informazione su cui si decide. Da Polignano, Martina Franca è a <b>40,9 km, 39 minuti</b> e Ostuni a <b>51,3 km, 44 minuti</b>, quindi come spostamento le due tappe sono praticamente equivalenti (routing reale, non stime). Ostuni non sparisce quindi per una questione di distanza, ma per una preferenza dichiarata: scende a tappa opzionale di questa giornata e conserva tutto il suo contenuto più sotto. Martina Franca ha in più il vantaggio di stare a <b>9,7 km, 13 minuti</b> da Cisternino, la tappa serale del Giorno 3." },
-        { t:"Come arrivare e parcheggio",
-          tx:"Da Polignano a Martina Franca: <b>40,9 km, circa 39 minuti</b>, e <b>39,0 km, 39 minuti</b> al ritorno (routing reale). Si parcheggia vicino al centro storico a prezzi contenuti e si prosegue a piedi; un'alternativa indicata è lasciare l'auto nell'area di <b>Villa Garibaldi</b> e raggiungere a piedi <b>Piazza XX Settembre</b>, da cui si entra nel centro storico attraverso la <b>Porta di Santo Stefano</b>. Una cosa va dichiarata invece di riempita per ipotesi: a differenza di Bari e di Ostuni, per Martina Franca non ho trovato una fonte che documenti una ZTL con orari precisi, quindi va verificata sul posto alla segnaletica e non data per assente. Fonte: <a href=\"https://www.lafinestraaccanto.com/2024/citta/martina-franca-itinerario-a-piedi-nel-centro-storico/\" target=\"_blank\" rel=\"noopener noreferrer\">La finestra accanto</a>." },
-        { t:"Il centro storico barocco",
-          tx:"Martina Franca è il centro barocco della Valle d'Itria: case bianche a calce, vicoli stretti, balconi in ferro battuto e facciate nobiliari decorate. Il <b>Palazzo Ducale</b>, edificato nel <b>1668</b> su un progetto approvato da <b>Gian Lorenzo Bernini</b>, ha una balconata in ferro battuto di <b>74 metri</b> lungo tutta la facciata che dà su <b>Piazza Roma</b>, e ospita all'interno due musei, uno di scienze naturali e uno di arte pittorica. La <b>Basilica di San Martino</b> (<b>1747</b>) è il monumento simbolo della città, e la <b>Chiesa di San Domenico</b> completa il giro del barocco locale. Il prezzo dei biglietti dei due musei dentro il Palazzo Ducale non è verificato e non lo invento: la passeggiata nel centro storico è in ogni caso gratuita. Fonti: <a href=\"https://www.idealista.it/news/vacanze/mete-turistiche/2026/04/18/353411-che-cosa-vedere-a-martina-franca-il-borgo-barocco-della-valle-d-itria\" target=\"_blank\" rel=\"noopener noreferrer\">idealista</a>, <a href=\"https://www.iltarantino.it/turismo/2026/06/02/cosa-vedere-a-martina-franca-guida-completa-del-gioiello-barocco-della-valle-ditria/\" target=\"_blank\" rel=\"noopener noreferrer\">Il Tarantino</a>." },
-        { t:"Festival della Valle d'Itria, da controllare contro le date del viaggio",
-          tx:"Da verificare prima di partire, perché può cambiare del tutto l'atmosfera della giornata e la disponibilità di alloggi in zona: la <b>52ª edizione del Festival della Valle d'Itria</b>, festival lirico tra i più importanti d'Europa, si tiene a Martina Franca dal <b>14 luglio al 2 agosto 2026</b>, con sede principale il Palazzo Ducale e i chiostri del centro storico. Se il viaggio cade nei primissimi giorni di agosto il festival è ancora in corso e conviene guardare il programma con anticipo; se cade più avanti nel mese è già chiuso. Questo itinerario non ha date calendariali fissate, quindi la verifica resta da fare. Fonti: <a href=\"https://www.festivaldellavalleditria.it/en/program-2026\" target=\"_blank\" rel=\"noopener noreferrer\">programma ufficiale 2026</a>, <a href=\"https://www.laterradipuglia.it/2026/eventi-spettacoli/concerti-musica/festival-della-valle-ditria-2026-programma-artisti-e-guida-completa.htm\" target=\"_blank\" rel=\"noopener noreferrer\">La Terra di Puglia</a>." },
-        { t:"Ostuni (opzionale) - come arrivare",
-          tx:"Ostuni resta un'opzione piena, non una tappa cancellata: se si preferisce la Città Bianca al barocco della Valle d'Itria, questa giornata si scambia con quella descritta sopra. Da Polignano sono <b>51,3 km, 44 minuti</b> all'andata e <b>49,6 km, 45 minuti</b> al ritorno (routing reale ricalcolato in sessione), cioè circa 101 km in giornata contro gli 80 di Martina Franca." },
-        { t:"Ostuni (opzionale) - parcheggio",
-          tx:"Il centro storico è in gran parte <b>ZTL</b>, strade strette e affollate in alta stagione: meglio lasciare l'auto in un parcheggio esterno a pagamento (es. Ostuni Parking Area1, o i parcheggi di Via Antonia Specchia) e proseguire a piedi. Fonte: <a href=\"https://www.ostunicentralparking.it/2025/06/20/cosa-vedere-a-ostuni-in-un-giorno-con-mappa-e-consigli-di-parcheggio/\" target=\"_blank\" rel=\"noopener noreferrer\">Ostuni Central Parking</a>." },
-        { t:"Ostuni (opzionale) - il centro storico",
-          tx:"Ostuni è nota come <b>la Città Bianca</b> per il centro storico interamente imbiancato a calce, arroccato su una collina con vista sulla piana degli ulivi e sul mare. Vicoli stretti, scalinate, molti vicoli ciechi. <b>Piazza della Libertà</b>, con la Colonna di Sant'Oronzo, è il punto d'incontro tra la città nuova e il borgo antico. <b>Attenzione</b>: la Concattedrale di Ostuni, con il suo rosone gotico, risulta <b>chiusa per lavori di ristrutturazione</b> secondo un aggiornamento di aprile 2026 - verificare sul posto se ha riaperto prima di contarci come tappa, non è detto che sia già visitabile ad agosto. Un percorso a piedi concreto arriva da uno dei video salvati in cima all'Itinerario, di cui è stata letta la descrizione pubblica e non il video stesso: partire dal <b>Parcheggio Comunale</b>, seguire <b>Via Giosuè Pinto</b> in direzione del centro storico fino alla <b>Colonna di Sant'Oronzo</b>, che sta davanti al Comune, poi imboccare <b>Via Cattedrale</b> e percorrerla fino alla <b>Cattedrale di Santa Maria Assunta</b>. Da tenere presente che quel percorso termina proprio sul monumento segnalato come chiuso per lavori: il giro resta valido, la tappa finale no. Fonti: <a href=\"https://www.eleonoraongaro.it/ostuni-cosa-vedere/\" target=\"_blank\" rel=\"noopener noreferrer\">Sarà Perché Viaggio</a>, <a href=\"https://vm.tiktok.com/ZNRou1gpL/\" target=\"_blank\" rel=\"noopener noreferrer\">video salvato sul mini tour di Ostuni</a>." },
-        { t:"Ostuni (opzionale) - la vista dalle mura e l'ape calessino",
-          tx:"Testimonianza diretta, non da fonte web: sotto le mura c'è un tratto panoramico da cui si vede tutta Ostuni, la Città Bianca, in un colpo d'occhio - da non perdere. Da lì si può anche fare un giro con l'ape calessino (turistico e un po' \"da turisti basic\", ma ci sta). Questa tappa va vissuta di giorno, non di sera: il bianco della città risalta molto di più con la luce piena." },
-        { t:"Ostuni (opzionale) - mare, meno affollato",
-          tx:"Sulla costa di Ostuni, <b>Torre Pozzelle</b> ha una serie di calette selvagge tra gli scogli, e <b>Costa Merlata</b> insenature rocciose meno battute delle spiagge principali - alternative valide a Rosa Marina se si cerca meno folla. Fonte: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>." },
+        { t:"Perché si parte nel tardo pomeriggio",
+          tx:"Testimonianza diretta di chi ha già fatto questo viaggio: Alberobello va tenuta per la sera, quando i trulli si accendono con le lucine, perché è molto più bella così che di giorno, e in agosto vuol dire anche non prendere il caldo peggiore tra vicoli senza ombra. Da Polignano ad Alberobello sono <b>33,1 km, 34 minuti</b> (routing reale), quindi partendo intorno alle 17:30-18:00 si arriva con la luce ancora buona, si gira mentre cala il sole e si resta per il buio, che è il momento delle lucine. Va detto anche il rovescio: è abbastanza una turistata, al novantanove per cento negozi di souvenir, ma è una tappa da fare una volta nella vita." },
+        { t:"Rione Monti e Aia Piccola",
+          tx:"Alberobello è patrimonio <b>UNESCO</b> per i suoi <b>trulli</b>, le case in pietra a secco con tetto conico. <b>Rione Monti</b> (oltre 1.000 trulli) è il quartiere principale e scenografico, oggi in gran parte negozi; <b>Aia Piccola</b> (400 trulli), dall'altra parte del paese, è molto meno turistica, ancora abitazioni vere, il nucleo più antico, e la sera è la parte più suggestiva. Percorso consigliato: dal belvedere si scende nel Rione Monti, poi si passa ad Aia Piccola per vedere la differenza tra la parte in vetrina e quella vissuta. Fonte: <a href=\"https://www.marcotogni.it/cosa-vedere-alberobello/\" target=\"_blank\" rel=\"noopener noreferrer\">Marco Togni</a>." },
+        { t:"Trullo Sovrano, se si arriva in orario",
+          tx:"L'unico trullo a due piani della città (fine XVIII secolo, monumento nazionale dal 1930), oggi piccolo museo con ambienti ricostruiti: panificio, camera da letto, cucina. Biglietto <b>€2,50</b>, in Piazza Sacramento 10. È l'unica cosa della serata che dipende da un orario di chiusura, quindi va verificato sul <a href=\"https://www.trullosovrano.eu/ingresso-biglietti/\" target=\"_blank\" rel=\"noopener noreferrer\">sito ufficiale</a> prima di contarci: arrivando per il tramonto potrebbe essere già chiuso, e in quel caso salta solo questo, non la serata." },
+        { t:"Cena nei vicoli di Cisternino",
+          tx:"Testimonianza diretta, non fonte web: <b>Cisternino</b> era già stata visitata nel 2023 e la cosa che vale la pena è prenotare una cena dentro i vicoli del centro storico. Da Alberobello sono <b>18,1 km, 20 minuti</b>, quindi lo spostamento dopo il giro tra i trulli è breve. La testimonianza non indica un locale preciso, quindi qui non c'è un nome da citare: va scelto e <b>prenotato</b>, perché la prenotazione è esattamente il punto, e un martedì di metà agosto senza tavolo prenotato è una scommessa persa. Sempre dalla stessa testimonianza, chi ha girato questa zona alloggiava fuori paese, in campagna, alla <a href=\"https://www.tripadvisor.com/Hotel_Review-g652000-d4225796-Reviews-Masseria_Peppeturro-Cisternino_Province_of_Brindisi_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Masseria Peppeturro</a>: informazione di contesto, non un'alternativa praticabile ora che l'alloggio è pagato." },
+        { t:"È la serata più lunga del viaggio: come chiuderla",
+          tx:"Il rientro da Cisternino a Polignano è di <b>41,5 km, 39 minuti</b> (routing reale), tutto di sera e in parte su strade di campagna. Sommando il giro di Alberobello e la cena, si rientra tardi, plausibilmente dopo mezzanotte: è l'unica giornata del viaggio in cui conviene decidere prima chi guida e regolarsi con il vino di conseguenza. Chilometri totali della serata: <b>92,7 km</b>, il giro più lungo dopo il viaggio di andata e ritorno." },
       ],
-      tips:["Il centro storico di Martina Franca si gira a piedi senza un percorso obbligato: il barocco è il motivo della tappa","Da testimonianza diretta: tra Locorotondo e Martina Franca è meglio la seconda","Se il viaggio cade entro il 2 agosto, controllare il programma del Festival della Valle d'Itria prima di arrivare","Ostuni, se scelta al posto di Martina Franca: centro storico ripido e acciottolato, scarpe comode","Ostuni, se scelta: vista migliore sulla città bianca dalla strada che arriva da sud","Ostuni, se scelta: da testimonianza diretta va vista di giorno e non di sera, perché il bianco risalta con la luce piena"],
-      cf:"20-35", ca:"0"
-      // Fonte spiagge Ostuni (ricerca web 2026-07-13): https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/
-      // Contenuto Martina Franca (ricerca web 2026-07-31): Palazzo Ducale, balconata di 74 m,
-      // Basilica di San Martino, parcheggio Villa Garibaldi / Porta di Santo Stefano da
-      // https://www.idealista.it/news/vacanze/mete-turistiche/2026/04/18/353411-che-cosa-vedere-a-martina-franca-il-borgo-barocco-della-valle-d-itria
-      // https://www.iltarantino.it/turismo/2026/06/02/cosa-vedere-a-martina-franca-guida-completa-del-gioiello-barocco-della-valle-ditria/
-      // https://www.lafinestraaccanto.com/2024/citta/martina-franca-itinerario-a-piedi-nel-centro-storico/
-      // Date Festival della Valle d'Itria 2026 (14 luglio - 2 agosto) da
-      // https://www.festivaldellavalleditria.it/en/program-2026
-      // Nessuna fonte trovata su una ZTL di Martina Franca: dichiarato come da verificare sul
-      // posto, non riempito per analogia con Ostuni e Bari.
-      // Distanze Polignano-Martina Franca (40,9 / 39,0 km) e Polignano-Ostuni (51,3 / 49,6 km):
-      // OSRM reale in sessione (2026-07-31). La stima "centinaia di km" della testimonianza non e'
-      // confermata e non e' stata riportata nel testo.
+      tips:["Partire verso le 17:30-18:00: si arriva con la luce e si resta per le lucine","Aia Piccola ha gli stessi trulli di Rione Monti e molti meno negozi","Il Trullo Sovrano ha un orario di chiusura: verificarlo, alla sera potrebbe essere già chiuso","Prenotare la cena a Cisternino oggi: senza tavolo un martedì di agosto è una scommessa","Si rientra dopo mezzanotte e si guidano 92,7 km in serata: decidere prima chi guida"],
+      cf:"25-45", ca:"0-5"
+      // Tratte ricalcolate con OSRM in sessione (2026-08-07): Polignano-Alberobello 33,1 km / 34
+      // min, Alberobello-Cisternino 18,1 km / 20 min, Cisternino-Polignano 41,5 km / 39 min.
+      // Il vecchio dato "Polignano-Alberobello A/R 60,2 km" del carburante era piu' basso perche'
+      // derivava da un calcolo diverso: qui vale la misura diretta appena rifatta.
     },
     {
       id:5, color:"#1A7A6E", label:"Giorno 5",
-      title:"Monopoli",
-      places:"Centro storico · Porto · Castello di Carlo V",
+      title:"Mercoledì 12 agosto - Monopoli, giornata leggera",
+      places:"Spiagge · Centro storico · Porto · Castello di Carlo V",
       sections:[
-        { t:"Come Arrivare",
-          tx:"Da Polignano a Monopoli: solo 12 km, 15-20 minuti in auto - la tappa più vicina, giornata più rilassata." },
-        { t:"Centro storico & Porto",
-          tx:"Monopoli ha un centro storico bianco simile a Polignano ma più esteso, cinto da mura, con un <b>porto peschereccio</b> ancora attivo - barche colorate (i tradizionali gozzi), pescatori che riparano le reti. Il <b>Castello di Carlo V</b> (XVI secolo), sul mare accanto al centro storico, domina il porto vecchio: non è visitabile ovunque all'interno (parte ospita uffici comunali), ma l'esterno vale comunque la sosta. Fonte: <a href=\"https://www.regionepuglia.org/monopoli/\" target=\"_blank\" rel=\"noopener noreferrer\">Regione Puglia</a>." },
-        { t:"Il molo con le barchette blu",
-          tx:"Testimonianza diretta, non da fonte web: Monopoli è bellissima tutta, ma soprattutto il molo con le barchette blu - molto colorato, da non perdere. Lì si trova ovunque il panino con il polpo fritto, uno street food diffuso in tutta la zona del porto. Il centro è pieno di locali per fare aperitivo, specialmente sul tardo pomeriggio/sera." },
-        { t:"Mare, meno affollato",
-          tx:"A sud del centro, <b>Spiaggia di Porto Ghiacciolo</b> (5 minuti in auto) è segnalata come la spiaggia migliore della zona, sabbia dorata e acqua limpida. Più selvagge: <b>Port'Alga</b> (Scoglio dell'Eremita) e <b>Torre Incina</b>, buone per lo snorkeling; <b>Cala Verde</b>, dietro il campeggio Santo Stefano, è la più remota e meno frequentata. Da uno dei video salvati in cima all'Itinerario, di cui è stata letta la descrizione pubblica: <b>Cala Tre Buchi</b>, incassata tra gli scogli della costa di Monopoli, prende il nome dalle tre piccole grotte che la formano ed è riparata dal mare aperto, quindi con acqua calma e limpida tutto il giorno. Da valutare sapendo due cose: la fonte è un operatore di gite in barca, quindi non è un consiglio neutrale, e l'accesso descritto è dal mare, non a piedi. Fonti: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>, <a href=\"https://roamandthrive.com/best-beaches-monopoli-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Roam & Thrive</a>, <a href=\"https://vm.tiktok.com/ZNRoucgd7/\" target=\"_blank\" rel=\"noopener noreferrer\">video salvato su Cala Tre Buchi</a>." },
-        { t:"Sera - Porto vecchio",
-          tx:"A fine giornata, rientro nel centro storico per l'atmosfera serale intorno al porto vecchio e <b>Piazza Giuseppe Garibaldi</b>, il ritrovo serale della città." },
+        { t:"Come arrivare, e perché questa giornata è volutamente scarica",
+          tx:"Da Polignano a Monopoli sono <b>13,4 km, 14 minuti</b> (routing reale): è la tappa più vicina di tutto il viaggio ed è collocata il giorno dopo la serata lunga in Valle d'Itria proprio per questo. Nessuna corsa: mattina in spiaggia, pomeriggio e sera in centro." },
+        { t:"Mattina - le spiagge, anche quelle meno battute",
+          tx:"A sud del centro, la <b>Spiaggia di Porto Ghiacciolo</b> (cinque minuti in auto) è segnalata come la migliore della zona, sabbia dorata e acqua limpida. Più selvagge: <b>Port'Alga</b> (Scoglio dell'Eremita) e <b>Torre Incina</b>, buone per lo snorkeling, e <b>Cala Verde</b>, dietro il campeggio Santo Stefano, la più remota. Da uno dei video salvati, di cui è stata letta la descrizione pubblica e non guardato il contenuto: <b>Cala Tre Buchi</b>, incassata tra gli scogli, prende il nome dalle tre piccole grotte che la formano ed è riparata dal mare aperto, quindi con acqua calma tutto il giorno - da valutare sapendo due cose, che la fonte è un operatore di gite in barca e quindi non è neutrale, e che l'accesso descritto è dal mare e non a piedi. Fonti: <a href=\"https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Villa Gapanthus</a>, <a href=\"https://roamandthrive.com/best-beaches-monopoli-puglia/\" target=\"_blank\" rel=\"noopener noreferrer\">Roam & Thrive</a>, <a href=\"https://vm.tiktok.com/ZNRoucgd7/\" target=\"_blank\" rel=\"noopener noreferrer\">video salvato su Cala Tre Buchi</a>." },
+        { t:"Centro storico, porto e Castello di Carlo V",
+          tx:"Monopoli ha un centro storico bianco simile a Polignano ma più esteso, cinto da mura, con un <b>porto peschereccio</b> ancora attivo, gozzi colorati e reti in riparazione. Il <b>Castello di Carlo V</b> (XVI secolo), sul mare accanto al centro, domina il porto vecchio: l'interno non è visitabile per intero, parte ospita uffici comunali, ma l'esterno vale la sosta. Fonte: <a href=\"https://www.regionepuglia.org/monopoli/\" target=\"_blank\" rel=\"noopener noreferrer\">Regione Puglia</a>." },
+        { t:"Il molo con le barchette blu, e il panino col polpo",
+          tx:"Testimonianza diretta, non fonte web: Monopoli è bella tutta, ma soprattutto il molo con le barchette blu, molto colorato, da non perdere. Lì intorno si trova ovunque il panino con il polpo fritto, street food diffuso in tutta la zona del porto, e il centro è pieno di locali per l'aperitivo, specialmente sul tardo pomeriggio e la sera." },
+        { t:"Sera - Piazza Garibaldi e rientro",
+          tx:"A fine giornata, atmosfera serale intorno al porto vecchio e <b>Piazza Giuseppe Garibaldi</b>, il ritrovo della città. Rientro a Polignano in un quarto d'ora: è anche l'ultima sera piena del viaggio, quindi se è rimasto qualcosa da vedere nel centro storico di Polignano, questa è l'occasione." },
       ],
-      tips:["Giornata volutamente leggera, vicina alla base: buon giorno per riposare dagli spostamenti"],
+      tips:["Giornata vicina alla base e volutamente leggera: serve dopo il rientro tardi da Cisternino","Porto Ghiacciolo è a cinque minuti dal centro di Monopoli: buona come prima spiaggia della mattina","Ultima sera piena: se manca qualcosa del centro storico di Polignano, si recupera stasera"],
       cf:"20-35", ca:"0"
-      // Fonti spiagge (ricerca web 2026-07-13): https://www.villagapanthus.it/en/best-beaches-polignano-monopoli-ostuni-puglia/
-      // e https://roamandthrive.com/best-beaches-monopoli-puglia/
     },
     {
       id:6, color:"#B03A2E", label:"Giorno 6",
-      title:"Ultimo Mare & Partenza",
-      places:"Polignano a Mare · Partenza",
+      title:"Giovedì 13 agosto - Check-out, Bari Vecchia e rientro",
+      places:"Check-out · Bari Vecchia · Rientro a Civitanova Marche",
       sections:[
-        { t:"Mattino Libero",
-          tx:"Ultima mattinata a Polignano a Mare: ultimo bagno o ultima passeggiata nel centro storico, secondo l'orario di partenza." },
-        { t:"Check-out & Partenza",
-          tx:"Check-out e partenza per il rientro." },
-        { t:"Sulla via del ritorno: Trani",
-          tx:"Testimonianza diretta, non da fonte web: se il percorso di rientro lo permette, una sosta a Trani vale la pena - ha un mercato del pesce molto famoso, con crudi di mare descritti come \"la fine del mondo\". Da valutare in base a quanto tempo/deviazione comporta rispetto al rientro." },
-        { t:"Se restano giorni liberi nell'itinerario",
-          tx:"Sempre da esperienza diretta: con più giorni a disposizione, quasi tutto qui intorno vale una visita perché le tappe sono piccole e il costo della vita è basso ovunque. <b>Lecce</b> ha un bel centro storico, un po' distante dalla base ma comunque consigliata se c'è tempo. <b>Brindisi</b> è invece sconsigliata senza mezzi termini: descritta come uno \"scenario post apocalittico\", niente da vedere. <b>Otranto e la Grotta della Poesia</b> sono decisamente fuori mano rispetto a questa base (più adatte a un futuro tour della Puglia centro/sud), non rientrano in questo itinerario. <b>Matera</b> è stata vista dalla stessa testimonianza, ma dieci anni fa: da Polignano sono <b>139,2 km, circa 2 ore e 20 minuti</b> (routing reale), quindi è una giornata intera da programmare, non un salto - ed è anche la ragione per cui non entra nell'itinerario a base unica. A <b>28,3 km</b> da Matera, verso Metaponto, c'è <b>Bernalda</b>, dove nella stessa occasione si alloggiava in un grande albergo per cerimonie di un amico, usato come base per le battute di caccia in zona. Bernalda è il paese di origine dei nonni paterni di <b>Francis Ford Coppola</b>, emigrati da lì: non il suo paese natale, perché Coppola è nato a Detroit nel 1939, e la differenza vale la pena saperla prima di raccontarla sul posto (fonte: <a href=\"https://en.wikipedia.org/wiki/Francis_Ford_Coppola\" target=\"_blank\" rel=\"noopener noreferrer\">Wikipedia</a>)." },
+        { t:"Come si incastra il rientro con la sosta a Bari",
+          tx:"È qui che si recupera la tappa saltata all'andata, e i numeri dicono che ci sta. Da Polignano a Bari sono <b>36 km, 35 minuti</b>; da Bari a Civitanova Marche <b>425 km, circa 4h 18min</b> (routing reale). Con un check-out puntuale la mattina si è in Bari Vecchia a metà mattina, si gira <b>2-3 ore</b> a piedi, si pranza lì e si riparte nel primo pomeriggio. Il totale di guida è praticamente identico al rientro diretto, perché Bari è sulla strada e non una deviazione." },
+        { t:"Prima di lasciare l'alloggio",
+          tx:"Due cose da non dimenticare al check-out: farsi restituire il <b>deposito cauzionale di €150 in contanti</b>, che è rimborsabile e va recuperato, e fare il giro delle prese e del bagno, perché con la partenza di prima mattina è il momento in cui si lasciano indietro caricabatterie e costumi stesi." },
+        { t:"Bari Vecchia a piedi",
+          tx:"Percorso consigliato: <b>Piazza del Ferrarese</b> come punto di partenza, poi dentro il centro storico verso la <b>Basilica di San Nicola</b>, tappa centrale. <b>Via dell'Arco Basso</b>, la strada della pasta, dove le massaie preparano a mano le orecchiette sugli usci di casa e si può comprare pasta fresca o solo guardare. <b>Piazza Mercantile</b> per la sosta caffè o il pranzo veloce. Due o tre ore bastano per il percorso essenziale. Fonte: <a href=\"https://www.regionepuglia.org/itinerario-bari-mezza-giornata/\" target=\"_blank\" rel=\"noopener noreferrer\">itinerario di mezza giornata</a>." },
+        { t:"Parcheggio a Bari e la questione sicurezza",
+          tx:"L'intera Bari Vecchia è <b>ZTL</b>: non si entra in auto. Per una sosta breve le strisce blu lato mare (Zona D) costano circa €1 l'ora; in alternativa il parcheggio Cesare Battisti, sotterraneo, quartiere Murat, da circa €1,90 l'ora, è a pochi minuti a piedi dal centro storico - e con l'auto carica di bagagli per il rientro, il coperto è la scelta più tranquilla. Su Bari circolano allarmismi locali sui furti d'auto: nell'esperienza diretta di chi ha già fatto questo giro, parcheggiando nelle zone indicate è stata una tappa tranquilla e la sosta vale assolutamente. Fonte: <a href=\"https://www.bariexperience.com/en/what-to-do-in-bari/parking-in-bari-where-to-park-your-car-parkride-multi-storey-car-park-ztl-paid-parking/\" target=\"_blank\" rel=\"noopener noreferrer\">parcheggi a Bari</a>." },
+        { t:"Tappe che non entrano in questo piano, e perché",
+          tx:"Conservate qui con le loro fonti, così restano disponibili per un ritorno senza dover rifare la ricerca. <b>Martina Franca</b>, il centro barocco della Valle d'Itria, a <b>40,9 km</b> da Polignano: Palazzo Ducale del 1668 su progetto approvato da Gian Lorenzo Bernini, con la balconata in ferro battuto di 74 metri su Piazza Roma, e la Basilica di San Martino del 1747. È uscita per fare spazio all'accorpamento Alberobello più Cisternino, non per un difetto (<a href=\"https://www.idealista.it/news/vacanze/mete-turistiche/2026/04/18/353411-che-cosa-vedere-a-martina-franca-il-borgo-barocco-della-valle-d-itria\" target=\"_blank\" rel=\"noopener noreferrer\">fonte</a>). <b>Ostuni</b>, la Città Bianca, a <b>51,3 km</b>: da vedere di giorno perché il bianco risalta con la luce piena, con il tratto panoramico sotto le mura e le calette selvagge di Torre Pozzelle e Costa Merlata; attenzione, la Concattedrale risultava <b>chiusa per restauro</b> ad aprile 2026 (<a href=\"https://www.eleonoraongaro.it/ostuni-cosa-vedere/\" target=\"_blank\" rel=\"noopener noreferrer\">fonte</a>). <b>Trani</b>, testimonianza diretta, ha un mercato del pesce famoso e crudi descritti come la fine del mondo, ed è a nord di Bari, quindi già sulla strada del rientro: è l'unica di questo elenco che si potrebbe aggiungere davvero oggi, al costo di circa un'ora in più. <b>Locorotondo</b> è carina ma piccola e, da testimonianza diretta, perde il confronto con Martina Franca. <b>Lecce</b> vale il viaggio ma è lontana dalla base. <b>Brindisi</b> è sconsigliata senza mezzi termini dalla stessa testimonianza. <b>Otranto e la Grotta della Poesia</b> sono decisamente fuori mano. <b>Matera</b> è a <b>139,2 km, circa 2h 20min</b>: una giornata intera da programmare, non un salto, ed è la ragione per cui non entra in un itinerario a base unica." },
       ],
-      tips:["Tenere conto del traffico estivo sulla statale se si parte nel weekend"],
-      cf:"10-20", ca:"0"
+      tips:["Check-out puntuale: la sosta a Bari funziona solo se si è in città a metà mattina","Farsi restituire i €150 del deposito cauzionale prima di andare via","Con l'auto carica, parcheggio coperto (Cesare Battisti) meglio delle strisce blu","Traffico estivo sulla statale: metà agosto in direzione nord non è una giornata vuota","Trani è l'unica tappa extra ancora aggiungibile: circa un'ora in più sul rientro"],
+      cf:"10-25", ca:"0"
     },
   ],
 
-  // Fonti Pescaria (ricerca web 2026-07-13): indirizzo, valutazioni e descrizione da
-  // https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html
-  // e https://www.yelp.com/biz/pescaria-polignano-a-mare
-  // Grotta Palazzese: fonti citate accanto al Giorno 2 sopra.
   restaurants: [
-    { area:"Bari (sosta Giorno 1)", days:"Giorno 1, in itinere", items:[
-      { nm:"Via dell'Arco Basso", tags:["Street food","$"], note:"Non un ristorante ma una strada: le massaie di Bari Vecchia preparano orecchiette a mano davanti casa, vendute fresche. Esperienza autentica più che un pasto vero e proprio.", sp:"Sosta breve, non un pranzo completo" },
-    ]},
-    { area:"Polignano a Mare", days:"Giorni 1, 2, 6", items:[
-      { nm:"Grotta Palazzese", tags:["Pesce","$$$$"], note:"Ristorante scavato in una grotta naturale a picco sul mare. Prezzo reale almeno €200/persona, tavolo vista mare non garantito anche prenotando, recensioni discordanti (3,4/5 Tripadvisor) - dettaglio completo nel Giorno 2. Fonte: <a href=\"https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/\" target=\"_blank\" rel=\"noopener noreferrer\">Dissapore</a>, <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>.", sp:"Esperienza per l'ambiente, non il miglior pasto del viaggio", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html" },
+    { area:"Polignano a Mare", days:"Giorni 1, 2, 3 e 5 (sera)", items:[
+      { nm:"Pescaria", tags:["Pesce","Street food","$"], note:"Piazza Aldo Moro 6-8. Il primo fast food di pesce d'Italia, nato qui: panini di mare, tartare di tonno, fish and chips. Informale, senza prenotazione, aperto secondo gli orari pubblicati tutti i giorni dalle 11:30 alle 23:30 - è il piano B che regge l'arrivo di sabato alle 19:30. 4,8/5 su Restaurant Guru, #10 su 205 ristoranti di Polignano su Tripadvisor. Fonti: <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>, <a href=\"https://www.oraridiapertura24.it/filiale/Polignano%2520a%2520Mare-Pescaria-873345J.html\" target=\"_blank\" rel=\"noopener noreferrer\">orari</a>.", sp:"Cena di sabato senza prenotazione", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html", thefork:"https://www.thefork.it/ristorante/pescaria-polignano-r849503" },
+      { nm:"Grotta Palazzese", tags:["Pesce","$$$$"], note:"Ristorante scavato in una grotta naturale a picco sul mare. Prezzo reale almeno €200/persona, tavolo vista mare non garantito anche prenotando, recensioni discordanti (3,4/5 Tripadvisor). Senza prenotazione già in mano, a metà agosto è realisticamente pieno: dettaglio completo nel Giorno 2. Fonti: <a href=\"https://www.dissapore.com/ristoranti/grotta-palazzese-cosa-sapere-prima-di-prenotare/\" target=\"_blank\" rel=\"noopener noreferrer\">Dissapore</a>, <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>.", sp:"Esperienza per l'ambiente, non il miglior pasto del viaggio", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d1022607-Reviews-Ristorante_Grotta_Palazzese-Polignano_a_Mare_Province_of_Bari_Puglia.html" },
       // Nessun campo thefork per Grotta Palazzese: verificato che non ha una scheda su TheFork,
       // prenota solo dal proprio sito ufficiale (grottapalazzese.it) - non inventato un link.
-      { nm:"Pescaria", tags:["Pesce","Street food","$"], note:"Piazza Aldo Moro 6-8. Il primo fast food di pesce d'Italia, nato qui a Polignano: panini di mare, tartare di tonno, fish and chips. Informale, senza prenotazione. 4,8/5 su Restaurant Guru, #10 su 205 ristoranti di Polignano su Tripadvisor. Fonte: <a href=\"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Tripadvisor</a>, <a href=\"https://www.yelp.com/biz/pescaria-polignano-a-mare\" target=\"_blank\" rel=\"noopener noreferrer\">Yelp</a>.", sp:"Ottima alternativa economica a Grotta Palazzese", tripadvisor:"https://www.tripadvisor.com/Restaurant_Review-g635875-d8144682-Reviews-Pescaria-Polignano_a_Mare_Province_of_Bari_Puglia.html", thefork:"https://www.thefork.it/ristorante/pescaria-polignano-r849503" },
-      { nm:"Super Mago del Gelo", tags:["Gelateria/Caffè","$"], note:"Testimonianza diretta, non da fonte web (nessun link verificato per questa voce): fa un caffè speciale che pare si trovi solo qui, gusto amaretto e agrumi. A due passi da Pescaria e Lama Monachile, nello stesso angolo di paese.", sp:"Vale la sosta anche solo per il caffè" },
+      { nm:"Super Mago del Gelo", tags:["Gelateria/Caffè","$"], note:"Testimonianza diretta, non fonte web (nessun link verificato per questa voce): fa un caffè particolare che pare si trovi solo qui, gusto amaretto e agrumi. A due passi da Pescaria e Lama Monachile. Orario di chiusura estivo non verificato: da controllare sul posto.", sp:"Vale la sosta anche solo per il caffè" },
     ]},
-    // "Giorno 3 sera" e non piu' "Giorno 3 pranzo": il Giorno 3 tiene Alberobello per la sera
-    // (lucine sui trulli, caldo evitato), quindi l'etichetta precedente contraddiceva la giornata.
-    { area:"Alberobello", days:"Giorno 3 sera", items:[
-      { nm:"Trattoria in un trullo", tags:["Valle d'Itria","$-$$"], note:"Voce indicativa: diversi ristoranti del centro storico occupano trulli veri. Orecchiette, verdure sott'olio, formaggi locali." },
+    { area:"Cisternino", days:"Giorno 4, martedì 11 (cena scelta)", items:[
+      { nm:"Cena nei vicoli del centro storico", tags:["Valle d'Itria","$-$$"], note:"Testimonianza diretta, non fonte web: a Cisternino la cosa che vale la pena è prenotare una cena dentro i vicoli del centro storico. La testimonianza non indica un locale specifico, quindi qui non c'è nessun link: va scelto sul posto o cercato in zona, sapendo che la prenotazione è il punto e che un martedì di metà agosto senza tavolo prenotato è una scommessa persa.", sp:"È la cena scelta del Giorno 4, al posto di Alberobello" },
     ]},
-    { area:"Cisternino", days:"Giorno 3 sera, alternativa ad Alberobello", items:[
-      { nm:"Cena nei vicoli del centro storico", tags:["Valle d'Itria","$-$$"], note:"Testimonianza diretta, non da fonte web: a Cisternino la cosa che vale la pena è prenotare una cena dentro i vicoli del centro storico. La testimonianza non indica un locale specifico, quindi qui non c'è nessun link: va scelto sul posto o cercato in zona, sapendo che la prenotazione è il punto.", sp:"Alternativa alla cena ad Alberobello, non in aggiunta" },
+    { area:"Alberobello", days:"Giorno 4, solo se si cambia idea su Cisternino", items:[
+      { nm:"Trattoria in un trullo", tags:["Valle d'Itria","$-$$"], note:"Voce indicativa, non un nome verificato: diversi ristoranti del centro storico occupano trulli veri. Orecchiette, verdure sott'olio, formaggi locali. Resta l'alternativa se la cena a Cisternino non si prenota in tempo." },
     ]},
-    { area:"Martina Franca", days:"Giorno 4", items:[
-      { nm:"Ristorante del centro storico", tags:["Valle d'Itria","$-$$"], note:"Voce indicativa, come quelle di Alberobello e Ostuni: cucina della Valle d'Itria nel centro barocco. Su Martina Franca non è stata fatta una ricerca dedicata a locali specifici, quindi nessun nome e nessun link inventato." },
+    { area:"Monopoli", days:"Giorno 5, mercoledì 12", items:[
+      { nm:"Panino col polpo fritto (molo)", tags:["Street food","$"], note:"Testimonianza diretta, non fonte web: street food diffuso ovunque intorno al molo con le barchette blu, non un singolo locale specifico." },
+      { nm:"Locali per aperitivo (centro)", tags:["Aperitivo","$-$$"], note:"Testimonianza diretta: il centro di Monopoli è pieno di locali per l'aperitivo, specialmente sul tardo pomeriggio e la sera." },
+      { nm:"Ristorante sul porto", tags:["Pesce","$$-$$$"], note:"Voce indicativa: il porto vecchio ha diversi ristoranti di pesce con vista sulle barche." },
     ]},
-    { area:"Ostuni", days:"Giorno 4, solo se si sceglie Ostuni", items:[
-      { nm:"Ristorante del centro storico", tags:["Pugliese","$-$$"], note:"Voce indicativa: cucina pugliese classica (fave e cicorie, orecchiette, carne alla brace) nel centro storico della città bianca." },
-    ]},
-    { area:"Monopoli", days:"Giorno 5", items:[
-      { nm:"Panino col polpo fritto (molo)", tags:["Street food","$"], note:"Testimonianza diretta, non da fonte web: street food diffuso ovunque intorno al molo con le barchette blu, non un singolo locale specifico." },
-      { nm:"Locali per aperitivo (centro)", tags:["Aperitivo","$-$$"], note:"Testimonianza diretta: il centro di Monopoli è pieno di locali per l'aperitivo, specialmente sul tardo pomeriggio/sera." },
-      { nm:"Ristorante sul porto", tags:["Pesce","$$-$$$"], note:"Voce indicativa: il porto vecchio di Monopoli ha diversi ristoranti di pesce con vista sulle barche." },
+    { area:"Bari (sosta del rientro)", days:"Giorno 6, giovedì 13", items:[
+      { nm:"Via dell'Arco Basso", tags:["Street food","$"], note:"Non un ristorante ma una strada: le massaie di Bari Vecchia preparano orecchiette a mano davanti casa, vendute fresche. Esperienza autentica più che un pasto vero e proprio.", sp:"Sosta breve, non un pranzo completo" },
+      { nm:"Pranzo in Piazza Mercantile", tags:["Pugliese","$-$$"], note:"Voce indicativa, nessun nome verificato: la piazza è il punto naturale per il pranzo veloce prima di rimettersi in strada per 425 km." },
     ]},
   ],
 
@@ -378,35 +305,33 @@ export const TRIP_DATA = {
       { t:"Patente di guida" },
       { t:"Assicurazione auto + libretto" },
       { t:"Prenotazioni hotel (screenshot offline)" },
-      { t:"Prenotazione Grotta Palazzese, se fatta",  n:"Giorno 2" },
+      { t:"Biglietto Grotte di Castellana comprato online",  n:"Giorno 3, lunedì 10" },
       { t:"Contanti €100-150",                       n:"Spese in loco, oltre ai €150 del deposito cauzionale" },
       { t:"Carta di credito / bancomat" },
       // Voce aggiunta in coda alla categoria, non in mezzo: le chiavi delle checkbox sono
       // posizionali (`${indice categoria}-${indice voce}`), un inserimento intermedio
       // sposterebbe le spunte gia' salvate su Firestore.
-      { t:"Deposito cauzionale alloggio: €150 in contanti", n:"Rimborsabile, torna indietro: da recuperare al check-out" },
+      { t:"Deposito cauzionale alloggio: €150 in contanti", n:"Rimborsabile, torna indietro: da recuperare al check-out di giovedì" },
     ]},
     { cat:"Abbigliamento", items:[
       { t:"Magliette leggere (x5-6)" },
       { t:"Pantaloncini" },
       { t:"Abiti / vestiti per le cene",  n:"1-2 outfit" },
       { t:"Sandali da camminata" },
-      { t:"Scarpe comode per centri storici acciottolati", n:"Alberobello, Martina Franca e Ostuni sono ripidi/sconnessi" },
+      { t:"Scarpe comode per centri storici acciottolati", n:"Alberobello e Cisternino sono ripidi e sconnessi" },
       { t:"Costume da bagno x 2" },
       { t:"Copricostume / pareo" },
       { t:"Cappello da sole" },
       { t:"Occhiali da sole" },
-      // Voce aggiunta in coda alla categoria, non in mezzo: chiavi posizionali delle checkbox.
-      { t:"Felpa leggera x 2",                        n:"Grotte di Castellana: circa 16-18 gradi costanti anche ad agosto" },
+      { t:"Felpa leggera x 2",            n:"Grotte di Castellana: 16-18 gradi costanti anche ad agosto" },
     ]},
     { cat:"Mare & Spiaggia", items:[
       { t:"Crema solare 50+ (abbondante)" },
       { t:"Doposole idratante" },
       { t:"Telo mare x 2" },
       { t:"Borsa / sacca impermeabile" },
-      { t:"Maschera e boccaglio",       n:"Grotte marine di Polignano" },
+      { t:"Maschera e boccaglio",       n:"Grotte marine di Polignano, dal tour in barca" },
       { t:"Ciabatte da mare" },
-      // Voci aggiunte in coda alla categoria, non in mezzo: chiavi posizionali delle checkbox.
       { t:"Scarpette da scoglio",       n:"Lama Monachile ha il fondo di ciottoli, non di sabbia" },
       { t:"Borraccia / acqua da casa",  n:"A Lama Monachile non ci sono punti ristoro sulla riva" },
     ]},
@@ -420,7 +345,7 @@ export const TRIP_DATA = {
       { t:"Caricabatterie smartphone" },
       { t:"Power bank (5000+ mAh)" },
       { t:"Cuffie / auricolari" },
-      { t:"Macchina fotografica",      n:"Trulli e scogliere" },
+      { t:"Macchina fotografica",      n:"Trulli, scogliere e grotte" },
       { t:"Caricabatterie auto / adattatore 12V" },
     ]},
     { cat:"Per l'Auto", items:[
@@ -431,41 +356,27 @@ export const TRIP_DATA = {
       { t:"Playlist viaggio creata" },
     ]},
     { cat:"Per la Coppia", items:[
-      { t:"Prenotare Grotta Palazzese",   n:"Con largo anticipo - Giorno 2" },
-      { t:"Tramonto a Lama Monachile",    n:"Giorno 1" },
+      { t:"Prenotare la cena di sabato a Polignano",   n:"Giorno 1: oppure Pescaria, che non prende prenotazioni" },
+      { t:"Bagno a Lama Monachile entro le 9",         n:"Domenica 9 mattina, prima che si riempia" },
       { t:"Foto tra i trulli di Alberobello" },
       { t:"Foto in ogni tappa dell'itinerario" },
-      // Voci aggiunte in coda alla categoria e non in mezzo: le checkbox della valigia usano
-      // come chiave `${indice categoria}-${indice voce}` (js/itinerario.js), quindi un
-      // inserimento intermedio sposterebbe le spunte gia' salvate su Firestore.
-      { t:"Prenotare la cena nei vicoli a Cisternino", n:"Giorno 3, alternativa alla cena ad Alberobello" },
-      { t:"Controllare le date del Festival della Valle d'Itria", n:"Giorno 4, edizione 2026 dal 14 luglio al 2 agosto" },
-      { t:"Bagno a Lama Monachile entro le 9 del mattino", n:"Giorno 1 o 6: dopo si riempie e restano solo la vista e le foto dal ponte" },
-      { t:"Prenotare il tour in barca alle grotte marine", n:"Giorno 2, collettivo €20-40 a persona, con cancellazione gratuita" },
-      { t:"Comprare online il biglietto delle Grotte di Castellana", n:"Giorno 3, percorso completo: in agosto i turni si esauriscono" },
-      { t:"Incrociare le date di SpeleoNight con quelle del viaggio", n:"Giorno 3: 15, 21 e 31 agosto alle 20:30, €28 a persona" },
-      { t:"Incrociare le date di Hell in the Cave con quelle del viaggio", n:"Giorno 3: 9, 14, 22 e 29 agosto, €25 o €42 in combinato con la visita" },
+      // Voci in coda alla categoria: le due ultime sono state riscritte il 2026-08-07 perche'
+      // riguardavano SpeleoNight e Hell in the Cave, non piu' in programma con queste date.
+      { t:"Prenotare la cena nei vicoli a Cisternino", n:"Giorno 4, martedì 11: è il motivo per cui ci si va" },
+      { t:"Prenotare il tour in barca alle grotte marine", n:"Giorno 2, domenica 9: con cancellazione gratuita" },
     ]},
   ],
 
   // Nessun hotelChange: una sola base per tutto il soggiorno, niente banner di cambio hotel.
 
-  // Onestà: a differenza delle voci sopra (Bari, Grotta Palazzese, Pescaria, spiagge), qui non
-  // ho fatto una ricerca dedicata su hotel/B&B reali di Polignano: prezzi e nomi sono indicativi,
-  // da verificare su Booking/Airbnb prima di prenotare (agosto è alta stagione).
   accommodation: {
-    subtitle: "Una sola base per tutto il soggiorno - prenotazione reale, pagata su Booking",
+    subtitle: "Una sola base dall'8 al 13 agosto - prenotazione reale, pagata su Booking",
     bases: [
       {
-        name: "Polignano a Mare", location: "Giorni 1-6 (5 notti)",
+        name: "Polignano a Mare", location: "8-13 agosto (5 notti)",
         badge: "Unica base", badgeBg: "#E3F7EE", badgeColor: "#1DAD70",
         options: [
-          { name:"Magda Relax Suites, prenotata su Booking e già pagata", price:"€710,12 in tutto (5 notti, due persone)", desc:"Cifra realmente versata, non una stima: <b>€784,78</b> di totale Booking meno <b>€74,66</b> di credito wallet, quindi <b>€710,12</b> pagati, cioè €355,06 a persona. Sul posto va consegnato a parte un <b>deposito cauzionale di €150 in contanti</b>, che è rimborsabile e torna indietro al check-out: va portato, ma non è un costo del viaggio e per questo non entra nella stima. Le due voci sotto restano solo come riferimento di quanto costava indicativamente la zona, e spariscono da sole appena l'importo viene inserito nel pannello Alloggio confermato della scheda Costi." },
-          { name:"Alternativa - Airbnb/appartamento", price:"indicativo €100-180 / notte", desc:"Con cucina propria, utile per colazioni o pranzi più economici." },
-          // Voce solo descrittiva: resolveAccommodationCost() (js/itinerario.js) non legge questo
-          // campo price, il costo alloggio del totale viene da una prenotazione confermata o da un
-          // alloggio salvato in Pianifica. Nessun prezzo inventato qui.
-          { name:"Alternativa fuori base - masseria in campagna in Valle d'Itria", price:"prezzo non verificato", desc:"Testimonianza diretta, non una fonte web: chi ha già girato questa zona non alloggiava in paese ma fuori, in campagna, alla <a href=\"https://www.tripadvisor.com/Hotel_Review-g652000-d4225796-Reviews-Masseria_Peppeturro-Cisternino_Province_of_Brindisi_Puglia.html\" target=\"_blank\" rel=\"noopener noreferrer\">Masseria Peppeturro</a>, masseria di inizio Novecento con due trulli ristrutturati e piscina a pochi chilometri da Cisternino. Va letta come alternativa alla base di Polignano e non come secondo alloggio da sommare: sposta il centro del viaggio nella Valle d'Itria e allontana dalle calette di Polignano, che sono il motivo dei Giorni 1, 2 e 6. Prezzi non verificati direttamente, come per le due voci sopra. Il contatto telefonico diretto sta negli appunti privati del viaggio, non nel repository, che è pubblico." },
+          { name:"Magda Relax Suites, prenotata su Booking e già pagata", price:"€710,12 in tutto (5 notti, due persone)", desc:"Cifra realmente versata, non una stima: <b>€784,78</b> di totale Booking meno <b>€74,66</b> di credito wallet, quindi <b>€710,12</b> pagati, cioè €355,06 a persona. Sul posto va consegnato a parte un <b>deposito cauzionale di €150 in contanti</b>, rimborsabile al check-out di giovedì 13: va portato, ma non è un costo del viaggio e per questo non entra nella stima." },
         ]
       },
     ]
@@ -475,42 +386,31 @@ export const TRIP_DATA = {
   // repository conservi il dato se il documento Firestore state/costs venisse cancellato:
   // Magda Relax Suites, €784,78 di totale Booking meno €74,66 di credito wallet fanno €710,12
   // pagati, cioe' €355,06 a persona.
-  // ATTENZIONE, discrepanza aperta al 2026-08-03: il pannello Alloggio confermato su Firestore
-  // contiene €804,78, cioe' €20,00 esatti in piu' del totale Booking dichiarato, e nessuna delle
-  // due cifre meno il wallet da' 710,12 tranne 784,78. Finche' non e' chiarito quale sia il vero
-  // totale, il valore del pannello prevale su questa riga nel rendering (resolveAccommodationCost)
-  // e il totale mostrato sovrastima di €47,33 a persona. Va a parte un deposito cauzionale di €150 in contanti sul posto, correttamente NON
-  // sommato al totale: l'utente ha confermato (2026-08-03) che e' rimborsabile e torna indietro al
-  // check-out, quindi e' liquidita' da portare, non una spesa del viaggio. La riga resta il
-  // valore di partenza del file: inserendo l'importo nel pannello Alloggio confermato,
-  // resolveAccommodationCost() la sostituisce e renderInfoCosts divide per due l'importo di coppia
-  // (js/itinerario.js, non piu' public/index.html: il codice e' stato spezzato in moduli).
-  // Pasti/Biglietti: somma delle stime cf/ca già scritte in ogni giorno sopra, coerenti con quei
-  // valori.
-  // Carburante: ricalcolato con dati reali (2026-07-13, rifatto il 2026-07-31 dopo il passaggio di
-  // Ostuni a tappa opzionale), non una stima approssimativa - distanze via OSRM
-  // (Civitanova-Bari-Polignano A/R 924,4 km; giro del Giorno 3 Polignano-Castellana-Alberobello-
-  // Polignano 65,6 km, che sostituisce il vecchio Polignano-Alberobello A/R 60,2 km perche' non
-  // contava la deviazione per le Grotte; Martina Franca A/R 79,9 km al posto di Ostuni A/R;
-  // Monopoli A/R 22,8 km - totale 1092,7 km), consumo
-  // reale Alfa Romeo Giulietta 1.6 JTD diesel (2019) da fonti citate: 4,7-5,0 L/100km ciclo misto
-  // ufficiale (test reali spesso migliori, ~4L/100km). Fonti:
+  // ATTENZIONE, discrepanza ancora aperta al 2026-08-07: il pannello Alloggio confermato su
+  // Firestore contiene €804,78, cioe' €20,00 esatti in piu' del totale Booking dichiarato, e
+  // nessuna delle due cifre meno il wallet da' 710,12 tranne 784,78. Finche' non e' chiarito quale
+  // sia il vero totale, il valore del pannello prevale su questa riga nel rendering
+  // (resolveAccommodationCost) e il totale mostrato sovrastima di €47,33 a persona.
+  // Il deposito cauzionale di €150 resta correttamente NON sommato: e' rimborsabile.
+  // Pasti/Biglietti: somma delle stime cf/ca dei giorni sopra, ricalcolata dopo la
+  // riorganizzazione sulle date reali.
+  // Carburante: ricalcolato il 2026-08-07 con le tratte reali del piano nuovo (OSRM):
+  // Civitanova-Polignano diretta all'andata 460 km, rientro con sosta a Bari 36 + 425 = 461 km,
+  // Castellana A/R 34,8 km, serata Alberobello-Cisternino-Polignano 92,7 km, Monopoli A/R 26,8 km,
+  // totale 1075,3 km. Consumo reale Alfa Romeo Giulietta 1.6 JTD diesel (2019), 4,7-5,0 L/100km
+  // ciclo misto ufficiale. Fonti:
   // https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/
   // https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/
   costEstimate: {
     subtitle: "Per persona, camera doppia condivisa - alloggio reale pagato, il resto stima indicativa",
     rows: [
-      { label:"Alloggio", desc:"Cifra reale, non piu' una stima: €710,12 pagati su Booking per 5 notti a Polignano (€784,78 meno €74,66 di credito wallet), divisi tra due persone. Resta il valore di partenza del file: inserendo l'importo nel pannello Alloggio confermato, questa riga viene sostituita dal valore risolto da Firestore.", amount:"€355,06", kind:"accommodation" },
-      { label:"Pasti", desc:"Somma delle stime giornaliere sopra (Giorni 1-6)", amount:"€120-225" },
-      { label:"Biglietti e attività", desc:"Somma delle stime ca dei singoli giorni, ricalcolata il 2026-08-07 con i prezzi reali delle grotte, che prima non erano contati: Giorno 2 €20-45 (tour in barca collettivo alle grotte marine, €20-40, più maschera/kayak) e Giorno 3 €25-30 (Grotte di Castellana percorso completo €25 più Trullo Sovrano €2,50). Grotta Palazzese e Pescaria restano escluse perché già in Pasti se scelte. Le due esperienze serali di Castellana non sono nel totale perché hanno date fisse e sono alternative alla serata di Alberobello, non aggiunte: se si fanno, SpeleoNight aggiunge €28 a persona e Hell in the Cave €25, oppure €42 in combinato con la visita al posto dei €25 del solo percorso completo.", amount:"€45-75" },
-      { label:"Carburante diesel", desc:"1092,7 km reali calcolati con OSRM: Civitanova-Bari-Polignano A/R 924,4 km, giro del Giorno 3 (Polignano-Castellana-Alberobello-Polignano) 65,6 km, Martina Franca A/R 79,9 km, Monopoli A/R 22,8 km. Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0L/100km reale), €1.65/L, diviso tra 2 persone. Due varianti che spostano il conto: scegliere Ostuni al posto di Martina Franca aggiunge circa 21 km (100,9 km A/R contro 79,9), e chiudere il Giorno 3 con la cena a Cisternino invece del rientro diretto da Alberobello ne aggiunge altri 28,8. Fonti: <a href=\"https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/\" target=\"_blank\" rel=\"noopener noreferrer\">Motor1</a>, <a href=\"https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda tecnica</a>.", amount:"€42-45" },
+      { label:"Alloggio", desc:"Cifra reale, non una stima: €710,12 pagati su Booking per 5 notti (€784,78 meno €74,66 di credito wallet), divisi tra due persone. Resta il valore di partenza del file: inserendo l'importo nel pannello Alloggio confermato, questa riga viene sostituita dal valore risolto da Firestore.", amount:"€355,06", kind:"accommodation" },
+      { label:"Pasti", desc:"Somma delle stime giornaliere del piano riorganizzato: sabato 8 €25-40, domenica 9 €25-45, lunedì 10 €20-35, martedì 11 €25-45 (cena a Cisternino), mercoledì 12 €20-35, giovedì 13 €10-25 con il pranzo a Bari.", amount:"€125-225" },
+      { label:"Biglietti e attività", desc:"Domenica 9 €20-40 per il tour in barca collettivo alle grotte marine, lunedì 10 €25-30 per le Grotte di Castellana (percorso completo €25 più parcheggio), martedì 11 €0-5 per il Trullo Sovrano. Grotta Palazzese e Pescaria non sono qui: se scelte stanno in Pasti. SpeleoNight e Hell in the Cave non sono nel conto perché con queste date non sono fattibili.", amount:"€45-75" },
+      { label:"Carburante diesel", desc:"1075,3 km reali calcolati con OSRM sul piano nuovo: andata diretta Civitanova-Polignano 460 km, rientro con sosta a Bari 461 km, Grotte di Castellana A/R 34,8 km, serata Alberobello più Cisternino 92,7 km, Monopoli A/R 26,8 km. Alfa Romeo Giulietta 1.6 JTD diesel 2019 (4,7-5,0 L/100km), €1,65/L, diviso tra 2 persone. Aggiungere circa €3 a testa se si inserisce anche Trani sul rientro. Fonti: <a href=\"https://it.motor1.com/reviews/375130/alfa-romeo-giulietta-diesel-manuale-prova-consumi/\" target=\"_blank\" rel=\"noopener noreferrer\">Motor1</a>, <a href=\"https://www.linkmotors.it/scheda-tecnica/auto/2019-Alfa-Romeo-Giulietta-Type/36540/\" target=\"_blank\" rel=\"noopener noreferrer\">scheda tecnica</a>.", amount:"€42-44" },
       { label:"Extra e imprevisti", amount:"€50-100" },
     ],
-    total: { sub:"6 giorni, tutto incluso" },
-    // Importo di coppia (non per persona), sottratto coerentemente da tutte le viste che mostrano
-    // un totale (Info & Costi per persona, Costi il totale reale) - vedi renderInfoCosts e
-    // renderCostsDashboard in public/index.html. Scaduto dopo validUntil: non piu' applicato
-    // automaticamente, per non mostrare uno sconto non piu' reale.
+    total: { sub:"6 giorni, 8-13 agosto, tutto incluso" },
     // ATTENZIONE, non riportare validUntil in avanti: lo sconto e' stato usato davvero, l'utente
     // ha confermato di aver pagato la prenotazione con lo sconto applicato (2026-08-03). Essendo
     // gia' incluso nella cifra realmente pagata, riattivarlo lo sottrarrebbe una seconda volta dal
@@ -519,35 +419,27 @@ export const TRIP_DATA = {
     discount: { amount: 74.66, desc: "Sconto gia' usato: incluso nel prezzo realmente pagato", validUntil: "2026-07-30" }
   },
 
-  // Voci aggiunte il 2026-08-07 con i prezzi ufficiali o pubblicati alla stessa data: Lama
-  // Monachile (gratuita, fonte Regione Puglia e Spiagge.it), Grotte di Castellana nei due
-  // percorsi e le due esperienze serali (listino ufficiale grottedicastellana.it), tour in barca
-  // di Polignano (listino comparato CheckYeti e sito MammaMia Boat). Nessun prezzo stimato qui.
   tickets: [
-    { name:"Basilica di San Nicola (Bari)", price:"Gratuito", free:true },
-    { name:"Bari Vecchia (passeggiata)", price:"Gratuito", free:true },
     { name:"Lama Monachile / Cala Porto (Polignano)", price:"Gratuito", free:true },
-    { name:"Tour in barca alle grotte marine di Polignano", price:"€20-40 a persona (collettivo, 1h30-2h)" },
-    { name:"Tour in barca privato alle grotte (per barca, non a persona)", price:"€300-400 (2 ore)" },
+    { name:"Centro storico Polignano a Mare", price:"Gratuito", free:true },
+    { name:"Tour in barca alle grotte marine (collettivo, 1h30-2h)", price:"€20-40 a persona" },
+    { name:"Tour in barca privato alle grotte (prezzo per barca)", price:"€300-400 (2 ore)" },
     { name:"Grotte di Castellana, percorso completo 3 km con Grotta Bianca", price:"€25 (ridotto 6-14 anni €22)" },
     { name:"Grotte di Castellana, percorso parziale 1 km", price:"€22 (ridotto 6-14 anni €19)" },
-    { name:"SpeleoNight, visita notturna al buio con speleologi", price:"€28 + commissioni online" },
-    { name:"Hell in the Cave, spettacolo nella Caverna della Grave", price:"€25 (€42 in combinato con la visita)" },
     { name:"Trullo Sovrano (Alberobello)", price:"€2,50" },
+    { name:"Centro storico Alberobello", price:"Gratuito", free:true },
     { name:"Centro storico Cisternino", price:"Gratuito", free:true },
-    { name:"Centro storico Martina Franca", price:"Gratuito", free:true },
-    { name:"Musei del Palazzo Ducale (Martina Franca)", price:"Non verificato" },
-    { name:"Centro storico Ostuni (opzionale)", price:"Gratuito", free:true },
-    { name:"Centro storico Monopoli", price:"Gratuito", free:true },
+    { name:"Centro storico Monopoli e Castello di Carlo V (esterno)", price:"Gratuito", free:true },
+    { name:"Basilica di San Nicola (Bari)", price:"Gratuito", free:true },
+    { name:"Bari Vecchia (passeggiata)", price:"Gratuito", free:true },
   ],
 
   savingTips: [
     "Pescaria è un'alternativa economica di qualità a Grotta Palazzese per un pasto di pesce, senza il conto da occasione speciale",
-    "Aia Piccola ad Alberobello ha gli stessi trulli di Rione Monti, meno negozi per turisti",
-    "Spiagge libere (Torre Pozzelle, Porto Ghiacciolo, Cala Verde) invece di stabilimenti a pagamento",
     "Lama Monachile è gratuita e senza stabilimento: l'unico costo è il parcheggio, e arrivando entro le 9 si evita anche di girare a vuoto per trovarlo",
-    "Il tour in barca collettivo alle grotte (€20-40 a persona, 1h30-2h) mostra le stesse grotte del privato, che si paga a barca: €300-400 per due ore, cioè €150-200 a testa in due",
-    "Alle Grotte di Castellana il percorso completo costa solo €3 in più del parziale e in cambio include la Grotta Bianca: risparmiare qui è il taglio sbagliato",
-    "Se si vede lo spettacolo Hell in the Cave lo stesso giorno della visita, il biglietto combinato a €42 costa €8 in meno dei due separati",
+    "Il tour in barca collettivo (€20-40 a persona) mostra le stesse grotte del privato, che si paga a barca: €300-400 per due ore, cioè €150-200 a testa in due",
+    "Alle Grotte di Castellana il percorso completo costa solo €3 in più del parziale e include la Grotta Bianca: risparmiare qui è il taglio sbagliato",
+    "Aia Piccola ad Alberobello ha gli stessi trulli di Rione Monti, meno negozi per turisti",
+    "Spiagge libere (Porto Ghiacciolo, Cala Verde, Port'Alga) invece di stabilimenti a pagamento",
   ],
 };

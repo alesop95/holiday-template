@@ -38,3 +38,7 @@ Regole modulari caricate su necessità, sotto `.claude/rules/`, e skill richiama
 ## Vincoli di team
 
 Le operazioni di `git add`, commit e push restano sempre manuali dell'utente: l'agente prepara i file, non committa. L'identità git è impostata a livello locale del repo secondo `.claude/rules/git-identity-and-repo.md`: identità personale `alesop95`, remoto agganciato all'alias SSH `github-personal` verso `alesop95/holiday-template`. Lo stile di documentazione e di interazione è quello di `.claude/rules/interaction-style.md`. Claude non scrive autonomamente nei file di memoria e di contesto: li aggiorna solo su richiesta esplicita, così il versionamento resta sotto controllo umano.
+
+Anche `firebase deploy` e i deploy su Render restano manuali dell'utente. L'agente non scrive mai direttamente su Firestore: ogni contenuto nuovo di un viaggio passa da `trip.config.js`, coerentemente con ADR-007. Ogni modifica alla shell, cioè `public/index.html` e `public/js/*.js`, si propaga identica alle copie in `trips/cilento-2026/` e `trips/polignano-2026/` e si verifica con `diff` prima di proporre i comandi git.
+
+Nel contenuto dei viaggi non si scrive mai un dato non verificato come se fosse un fatto: una testimonianza diretta si marca come tale, un dato su cui le fonti discordano si dichiara discordante, un dato che manca si dice che manca. Una fonte si cita dopo averla letta, non dopo averla vista in un elenco di risultati, e un link che non si riesce ad aprire non si cita.

@@ -36,6 +36,13 @@ cd trips/<nome-viaggio>
 firebase deploy
 ```
 
+Eccezione per `trips/polignano-2026/`: il suo `.firebaserc` chiama l'alias del progetto `polignano2026` e non `default`, quindi un `firebase deploy` senza argomenti non trova il progetto. Da quella cartella il comando è questo, con `--project` obbligatorio:
+
+```bash
+cd trips/polignano-2026
+firebase deploy --only hosting:polignano-2026 --project viaggio-new
+```
+
 Deploy delle regole di sicurezza Firestore, dalla radice del repository (mai da `trips/<nome>/`, perché il `firebase.json` di quella cartella non ha una chiave `"firestore"`):
 
 ```bash
